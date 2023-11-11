@@ -1,2 +1,6 @@
 env
 .quarto
+/env/
+/.quarto/
+_site
+_freeze
