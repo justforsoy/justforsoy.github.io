@@ -39,7 +39,7 @@
     "href": "posts/实验统计原理简介/index.html#假阳性如何控制",
     "title": "实验统计简介",
     "section": "假阳性如何控制",
-    "text": "假阳性如何控制\n由于没有效果时期望为0，即\\(E(\\bar{X}_A - \\bar{X}_B) = 0\\)，假阳性是很容易控制的\n假设我们对无效的实验做了100w次，并且根据假阳性0.05选择阈值，模拟可以得到下面的结果：\n\ndef h0_simulation(alpha = 0.05, trans = 0.5, ax=None, std_err = 1):\n    norm_sample = np.random.normal(0, std_err, 1000000)\n    if ax:\n        _, bins, patches = ax.hist(norm_sample, bins=1000, alpha=trans);\n    else:\n        _, bins, patches = plt.hist(norm_sample, bins=1000, alpha=trans);\n    for index, bin in enumerate(bins):\n        if index &gt;= len(patches):\n            break\n        if -np.abs(bin) &lt;= stats.norm.ppf(alpha / 2) * std_err:\n            patches[index].set_facecolor('red')\n        else:\n            patches[index].set_facecolor('blue')\n    return norm_sample\n\nnorm_sample = h0_simulation()\n\n\n\n\n对每个情况计算起随机产生的概率值（pValue），它的分布如下：\n\ndef p_calculator(norm_sample, alpha=0.05):\n    p_values = stats.norm.cdf(-np.abs(norm_sample)) * 2\n    # counts, bins = np.histogram(p_values, bins=100)\n    _, bins, patches = plt.hist(p_values, bins=100,alpha=0.5);\n    for i in range(int(100 * alpha + 1)):\n        patches[i].set_facecolor('red')\n    for i in range(int(100 * alpha + 1), len(patches)):\n        patches[i].set_facecolor('blue')\n    return p_values\n\np_values = p_calculator(norm_sample)\n\n\n\n\n由于实验无效，每次判断都是误判。\n统计我们决策错误的频率，会发现基本等于我们的控制目标0.05。 统计下频率：\n\n(p_values &lt;= 0.05).mean()\n\n0.049946"
+    "text": "假阳性如何控制\n由于没有效果时期望为0，即\\(E(\\bar{X}_A - \\bar{X}_B) = 0\\)，假阳性是很容易控制的\n假设我们对无效的实验做了100w次，并且根据假阳性0.05选择阈值，模拟可以得到下面的结果：\n\ndef h0_simulation(alpha = 0.05, trans = 0.5, ax=None, std_err = 1):\n    norm_sample = np.random.normal(0, std_err, 1000000)\n    if ax:\n        _, bins, patches = ax.hist(norm_sample, bins=1000, alpha=trans);\n    else:\n        _, bins, patches = plt.hist(norm_sample, bins=1000, alpha=trans);\n    for index, bin in enumerate(bins):\n        if index &gt;= len(patches):\n            break\n        if -np.abs(bin) &lt;= stats.norm.ppf(alpha / 2) * std_err:\n            patches[index].set_facecolor('red')\n        else:\n            patches[index].set_facecolor('blue')\n    return norm_sample\n\nnorm_sample = h0_simulation()\n\n\n\n\n对每个情况计算起随机产生的概率值（pValue），它的分布如下：\n\ndef p_calculator(norm_sample, alpha=0.05):\n    p_values = stats.norm.cdf(-np.abs(norm_sample)) * 2\n    # counts, bins = np.histogram(p_values, bins=100)\n    _, bins, patches = plt.hist(p_values, bins=100,alpha=0.5);\n    for i in range(int(100 * alpha + 1)):\n        patches[i].set_facecolor('red')\n    for i in range(int(100 * alpha + 1), len(patches)):\n        patches[i].set_facecolor('blue')\n    return p_values\n\np_values = p_calculator(norm_sample)\n\n\n\n\n由于实验无效，每次判断都是误判。\n统计我们决策错误的频率，会发现基本等于我们的控制目标0.05。 统计下频率：\n\n(p_values &lt;= 0.05).mean()\n\n0.049912"
   },
   {
     "objectID": "posts/实验统计原理简介/index.html#假阴性控制",
@@ -53,27 +53,83 @@
     "href": "posts/实验统计原理简介/index.html#控制假阴性需要多少流量",
     "title": "实验统计简介",
     "section": "控制假阴性需要多少流量?",
-    "text": "控制假阴性需要多少流量?\n以上可知，假阴性与「真实效果」、「假阳性水平」、「样本方差」、「样本量」等因素相关，那么多大的样本量可以控制假阴性呢？\n\\[样本量 = f(真实效果,假阴性水平,假阳性水平, 流量分配比例, 样本方差)\\]\n其中入参中真实效果是未知的，导致无法直接计算，该如何解决？\n解决方案是引入最小检测效果（Minimum Detectable Effect）。基于此值计算样本量，可保证实验效果大于等于此值时「假阴性」符合标准\n控制假阴性是为了保证检出率，检出率定义为「功效（power）」：\\[功效 = 1 - 假阴性控制水平\\] 分析达到目标功效需要多少流量，称为功效分析\n以双尾等流量实验为例：\n\n定义假阳性控制目标为\\(\\alpha\\)，等流量双尾检验下，控制power需要满足条件： \\[ \\frac{MDE}{\\sqrt{(\\sigma^2 / n + \\sigma^2 / n)}} \\geq \\phi^{-1}(1 - \\alpha / 2) + \\phi^{-1}(power) \\]\n其中\\(\\phi^{-1}\\)是正态分布的逆累积分布函数，由上可推出：\\[n \\geq 2\\sigma ^{2} [ \\phi^{-1} (1 - \\alpha/2) + \\phi^{-1} (power )]^{2}/MDE^2\\]\n以mde = 1, alpha = 0.05, power = 0.8, var = 100计算需要样本量，按此样本量仿真100w次，结果如下：\n\nmde = 1\nalpha = 0.05\npower = 0.8\nvar = 100\n\nn = int(2 * var * (stats.norm.ppf(1 - alpha / 2) + stats.norm.ppf(power)) ** 2 / mde ** 2)\nstd_err = np.sqrt(var / n * 2)\n\nh0_sample = h0_simulation(trans=0.4, std_err=std_err)\nh1_sample = h1_simulation(h0_sample, std_err=std_err)\n\n\n\n\n\np_values = stats.norm.cdf(-np.abs(h1_sample) / std_err) * 2\nN, bins, patches = plt.hist(p_values, bins=100,alpha=0.5);\nfor i in range(11):\n    patches[i].set_facecolor('blue')\nfor i in range(11, len(patches)):\n    patches[i].set_facecolor('red')\n\n\n\n\n统计一下：\n\n(p_values &lt;= 0.05).mean()\n\n0.800003"
+    "text": "控制假阴性需要多少流量?\n以上可知，假阴性与「真实效果」、「假阳性水平」、「样本方差」、「样本量」等因素相关，那么多大的样本量可以控制假阴性呢？\n\\[样本量 = f(真实效果,假阴性水平,假阳性水平, 流量分配比例, 样本方差)\\]\n其中入参中真实效果是未知的，导致无法直接计算，该如何解决？\n解决方案是引入最小检测效果（Minimum Detectable Effect）。基于此值计算样本量，可保证实验效果大于等于此值时「假阴性」符合标准\n控制假阴性是为了保证检出率，检出率定义为「功效（power）」：\\[功效 = 1 - 假阴性控制水平\\] 分析达到目标功效需要多少流量，称为功效分析\n以双尾等流量实验为例：\n\n定义假阳性控制目标为\\(\\alpha\\)，等流量双尾检验下，控制power需要满足条件： \\[ \\frac{MDE}{\\sqrt{(\\sigma^2 / n + \\sigma^2 / n)}} \\geq \\phi^{-1}(1 - \\alpha / 2) + \\phi^{-1}(power) \\]\n其中\\(\\phi^{-1}\\)是正态分布的逆累积分布函数，由上可推出：\\[n \\geq 2\\sigma ^{2} [ \\phi^{-1} (1 - \\alpha/2) + \\phi^{-1} (power )]^{2}/MDE^2\\]\n以mde = 1, alpha = 0.05, power = 0.8, var = 100计算需要样本量，按此样本量仿真100w次，结果如下：\n\nmde = 1\nalpha = 0.05\npower = 0.8\nvar = 100\n\nn = int(2 * var * (stats.norm.ppf(1 - alpha / 2) + stats.norm.ppf(power)) ** 2 / mde ** 2)\nstd_err = np.sqrt(var / n * 2)\n\nh0_sample = h0_simulation(trans=0.4, std_err=std_err)\nh1_sample = h1_simulation(h0_sample, std_err=std_err)\n\n\n\n\n\np_values = stats.norm.cdf(-np.abs(h1_sample) / std_err) * 2\nN, bins, patches = plt.hist(p_values, bins=100,alpha=0.5);\nfor i in range(11):\n    patches[i].set_facecolor('blue')\nfor i in range(11, len(patches)):\n    patches[i].set_facecolor('red')\n\n\n\n\n统计一下：\n\n(p_values &lt;= 0.05).mean()\n\n0.799763"
   },
   {
-    "objectID": "posts/post-with-code/index.html",
-    "href": "posts/post-with-code/index.html",
-    "title": "Post With Code",
+    "objectID": "posts/错误的共享对照/index.html",
+    "href": "posts/错误的共享对照/index.html",
+    "title": "实验间共享对照组缺陷及对策",
     "section": "",
-    "text": "This is a post with executable code."
+    "text": "A/B实验目标是实现在线随机对照实验，因此需要满足「随机对照实验」的要求和前提。\n然而前支持的「对照组流量共享机制」违背了「随机对照实验」的基本要求。"
   },
   {
-    "objectID": "posts/welcome/index.html",
-    "href": "posts/welcome/index.html",
-    "title": "Welcome To My Blog",
-    "section": "",
-    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+    "objectID": "posts/错误的共享对照/index.html#什么是随机对照实验随机",
+    "href": "posts/错误的共享对照/index.html#什么是随机对照实验随机",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.什么是随机对照实验随机",
+    "text": "1.什么是随机对照实验随机\n对照试验的基本方法是，将研究对象随机分组，对不同组实施不同的干预。\n在这种严格的条件下对照效果的不同。在研究对象数量足够的情况下，这种方法可以抵消已知和未知的混杂因素对各组的影响，被公认为是评价干预措施的金标准。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#在线随机的一般实现",
+    "href": "posts/错误的共享对照/index.html#在线随机的一般实现",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.在线随机的一般实现",
+    "text": "2.在线随机的一般实现\n根据随机实验定义我们要保证：统一群体随机分组，分组后用户属于哪个组稳定。 一般做法：用户标识 -&gt; 拼接salt，产生新字符串 -&gt; 哈希散列为数字 -&gt; 绝对值取余编号（分桶） -&gt; 桶编号范围分组 举例：假设一个实验将用户分100个桶，049号桶用户为对照组，5099号桶用户为实验组"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#共享对照流量",
+    "href": "posts/错误的共享对照/index.html#共享对照流量",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.共享对照流量",
+    "text": "1.共享对照流量\n设计思路比较朴素：既然对照组为基线，那么切一部分做对照，剩下的只用于实验，都与对照流量对比即可。 示例：  这样做有效利用了流量，但存在重大缺陷：持续迭代下，违背了「随机对照实验」的前提。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#共享对照缺陷",
+    "href": "posts/错误的共享对照/index.html#共享对照缺陷",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.共享对照缺陷",
+    "text": "2.共享对照缺陷\n实验持续迭代，当旧实验结束后，新实验会使用其释放的流量。由于习得性效应（残留效应）影响，此时两人群常常是不同质的。 示例： 上例的实验3结束后，实验4继承了实验3的流量做实验。「共享对照组」和「实验4」还是期望同质的人群么？ 由于释放人群表现 = 原表现 + 实验3效果 —— 除非「实验3」没任何效果才能满足！  ## 3.人群是否同质的谜题 为什么讨论人群是否同质？其实是为了让实验正确决策。 - 随机对照实验下：实验组对照组期望同质，误判都是波动造成，通过统计模型可控。只要标准的统计推断即可保证「误判率」和「检出率」符合预设； - 共享对照实验下：实验组对照组期望同质不能保证，这让实验从科学变成了玄学；\n\n常见问题：实验AA组与对照组不一致，人群是不是不同质，效果可信么？ - 标准随机实验下：AA组与对照组期望同质，流量越大结果波动更小。因此建议流量合并当做对照组，再计算实验结果期望最优解。 - 共享对照实验下：无法解答，AA组和对照组都可能受残留效应影响。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#二次分流实验",
+    "href": "posts/错误的共享对照/index.html#二次分流实验",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.二次分流实验",
+    "text": "1.二次分流实验\n按实验分配流量（一个人群），实验内部再二次分配（随机分流）"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#基于二次分流的共享对照",
+    "href": "posts/错误的共享对照/index.html#基于二次分流的共享对照",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.基于二次分流的共享对照",
+    "text": "2.基于二次分流的共享对照\n每次实验内部重新随机，做多实验组是合理的，此时对照组流量共享。 有共享流量分配最优解的研究《A Common Control Group - Optimising the Experiment Design to Maximise Sensitivity》"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#增加流量的本质是什么",
+    "href": "posts/错误的共享对照/index.html#增加流量的本质是什么",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.增加流量的本质是什么？",
+    "text": "1.增加流量的本质是什么？\n流量越大结果越可信 = 样本越大均值波动越小 = 样本越大均值方差越小 = 样本越大标准误越小\n本质上我们是在追求更小的结果波动即更小的标准误。其样本量增加的收益是边际递减的。 \\[标准误 = \\sqrt{\\frac{样本方差}{对照组样本量} + \\frac{样本方差}{实验组样本量} } \\] 影响标准误的因素：样本方差、样本量"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#增加样本量的收益",
+    "href": "posts/错误的共享对照/index.html#增加样本量的收益",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.增加样本量的收益",
+    "text": "2.增加样本量的收益\n通过案例估算： 假设一些用户其样本方差约35000，分配比例1:1， 标准差随样本量变化曲线为：  由上可知：其边际收益递减，大约几十万样本后就不会有特别快的下降。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#降低样本方差可能是更好的方法",
+    "href": "posts/错误的共享对照/index.html#降低样本方差可能是更好的方法",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "3.降低样本方差可能是更好的方法",
+    "text": "3.降低样本方差可能是更好的方法\n控制变量法、过滤离群点等降噪方法可以降低样本方差，而且常常对一些指标来说方差很容易就可以下降50%以上 样本方差从35000降低到5000收益："
   },
   {
     "objectID": "index.html",
     "href": "index.html",
     "title": "rock’s blog",
     "section": "",
-    "text": "Post With Code\n\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\nHarlow Malloc\n\n\n\n\n\n\n  \n\n\n\n\n实验统计简介\n\n\n\n\n\n\n\nAB\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\n  \n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\n\n\nNov 8, 2023\n\n\nTristan O’Malley\n\n\n\n\n\n\nNo matching items"
+    "text": "实验间共享对照组缺陷及对策\n\n\n\n\n\n\n\nAB\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\n  \n\n\n\n\n实验统计简介\n\n\n\n\n\n\n\nAB\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\nNo matching items"
   }
 ]

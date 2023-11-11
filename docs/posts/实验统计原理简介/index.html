@@ -297,7 +297,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(p_values <span class="op">&lt;=</span> <span class="fl">0.05</span>).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
-<pre><code>0.049946</code></pre>
+<pre><code>0.049912</code></pre>
 </div>
 </div>
 </section>
@@ -325,7 +325,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>h1_simulation(h0_sample)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="index_files/figure-html/cell-9-output-1.png" width="583" height="412"></p>
+<p><img src="index_files/figure-html/cell-9-output-1.png" width="583" height="411"></p>
 </div>
 </div>
 <p>要降低假阴性，我们可以怎么做？ - 尽量增大实验效果，增大两峰之间距离 —— 这与创意质量相关，实验无法影响</p>
@@ -368,7 +368,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>h0_sample <span class="op">=</span> h0_simulation(trans<span class="op">=</span><span class="fl">0.4</span>, std_err<span class="op">=</span><span class="fl">0.5</span>, ax<span class="op">=</span>axs[<span class="dv">1</span>])</span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>h1_simulation(h0_sample, std_err<span class="op">=</span><span class="fl">0.5</span>, ax<span class="op">=</span>axs[<span class="dv">1</span>])<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="index_files/figure-html/cell-12-output-1.png" width="955" height="411"></p>
+<p><img src="index_files/figure-html/cell-12-output-1.png" width="955" height="412"></p>
 </div>
 </div>
 <p>降低波动是控制检出率的关键。<strong>减少波动方法</strong>：<br>
@@ -400,7 +400,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>h0_sample <span class="op">=</span> h0_simulation(trans<span class="op">=</span><span class="fl">0.4</span>, std_err<span class="op">=</span>std_err)</span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>h1_sample <span class="op">=</span> h1_simulation(h0_sample, std_err<span class="op">=</span>std_err)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="index_files/figure-html/cell-13-output-1.png" width="583" height="411"></p>
+<p><img src="index_files/figure-html/cell-13-output-1.png" width="583" height="414"></p>
 </div>
 </div>
 <div class="cell" data-execution_count="13">
@@ -418,7 +418,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>(p_values <span class="op">&lt;=</span> <span class="fl">0.05</span>).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="14">
-<pre><code>0.800003</code></pre>
+<pre><code>0.799763</code></pre>
 </div>
 </div>
 

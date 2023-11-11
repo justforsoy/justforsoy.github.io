@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2023-11-11">
 
-<title>Rock’s blog - rock’s blog</title>
+<title>Rock’s blog - 实验间共享对照组缺陷及对策</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +24,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -61,50 +60,21 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed">
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Rock’s blog</span>
     </a>
   </div>
@@ -115,7 +85,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html" rel="" target="">
+    <a class="nav-link" href="../../about.html" rel="" target="">
  <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
@@ -138,108 +108,107 @@ ul.task-list li input[type="checkbox"] {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">rock’s blog</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">实验间共享对照组缺陷及对策</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">AB</div>
+              </div>
+                  </div>
   </div>
     
   
   <div class="quarto-title-meta">
 
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 11, 2023</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(2)</span></div><div class="category" data-category="AB">AB <span class="quarto-category-count">(2)</span></div></div></div>
+    
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
+<section id="背景" class="level1">
+<h1>背景</h1>
+<p><strong>A/B实验目标是实现在线随机对照实验</strong>，因此需要满足「随机对照实验」的要求和前提。<br>
+然而前支持的「对照组流量共享机制」违背了「随机对照实验」的基本要求。</p>
+</section>
+<section id="相关知识" class="level1">
+<h1>相关知识</h1>
+<section id="什么是随机对照实验随机" class="level2">
+<h2 class="anchored" data-anchor-id="什么是随机对照实验随机">1.什么是随机对照实验随机</h2>
+<p>对照试验的基本方法是，<strong>将研究对象随机分组</strong>，对不同组实施不同的干预。<br>
+在这种严格的条件下对照效果的不同。在研究对象数量足够的情况下，这种方法可以抵消已知和未知的混杂因素对各组的影响，被公认为是评价干预措施的金标准。 <img src="随机对照实验.png" class="img-fluid"></p>
+</section>
+<section id="在线随机的一般实现" class="level2">
+<h2 class="anchored" data-anchor-id="在线随机的一般实现">2.在线随机的一般实现</h2>
+<p>根据随机实验定义我们要保证：统一群体随机分组，分组后用户属于哪个组稳定。 一般做法：用户标识 -&gt; 拼接salt，产生新字符串 -&gt; 哈希散列为数字 -&gt; 绝对值取余编号（分桶） -&gt; 桶编号范围分组 举例：假设一个实验将用户分100个桶，0<sub>49号桶用户为对照组，50</sub>99号桶用户为实验组 <img src="分组示例.jpg" class="img-fluid"></p>
+</section>
+</section>
+<section id="共享对照组" class="level1">
+<h1>共享对照组</h1>
+<section id="共享对照流量" class="level2">
+<h2 class="anchored" data-anchor-id="共享对照流量">1.共享对照流量</h2>
+<p>设计思路比较朴素：既然对照组为基线，那么切一部分做对照，剩下的只用于实验，都与对照流量对比即可。 示例： <img src="错误1.png" class="img-fluid"> 这样做有效利用了流量，但存在重大缺陷：<strong>持续迭代下，违背了「随机对照实验」的前提</strong>。</p>
+</section>
+<section id="共享对照缺陷" class="level2">
+<h2 class="anchored" data-anchor-id="共享对照缺陷">2.共享对照缺陷</h2>
+<p>实验持续迭代，当旧实验结束后，新实验会使用其释放的流量。由于<strong>习得性效应（残留效应）</strong>影响，此时两人群常常是不同质的。 示例： 上例的实验3结束后，实验4继承了实验3的流量做实验。「共享对照组」和「实验4」还是期望同质的人群么？ 由于释放人群表现 = 原表现 + 实验3效果 —— <code>除非「实验3」没任何效果才能满足</code>！ <img src="错误2.png" class="img-fluid"> ## 3.人群是否同质的谜题 为什么讨论人群是否同质？其实是为了让实验正确决策。 - 随机对照实验下：<strong>实验组对照组期望同质，误判都是波动造成，通过统计模型可控</strong>。只要标准的统计推断即可保证「误判率」和「检出率」符合预设； - 共享对照实验下：<strong>实验组对照组期望同质不能保证，<code>这让实验从科学变成了玄学</code></strong>；</p>
+<blockquote class="blockquote">
+<p>常见问题：实验AA组与对照组不一致，人群是不是不同质，效果可信么？ - 标准随机实验下：AA组与对照组期望同质，流量越大结果波动更小。因此建议流量合并当做对照组，再计算实验结果期望最优解。 - 共享对照实验下：无法解答，AA组和对照组都可能受残留效应影响。</p>
+</blockquote>
+</section>
+</section>
+<section id="正确的分流方法" class="level1">
+<h1>正确的分流方法</h1>
+<section id="二次分流实验" class="level2">
+<h2 class="anchored" data-anchor-id="二次分流实验">1.二次分流实验</h2>
+<p>按实验分配流量（一个人群），实验内部再二次分配（随机分流） <img src="正确1.png" class="img-fluid"></p>
+</section>
+<section id="基于二次分流的共享对照" class="level2">
+<h2 class="anchored" data-anchor-id="基于二次分流的共享对照">2.基于二次分流的共享对照</h2>
+<p>每次实验内部重新随机，做多实验组是合理的，此时对照组流量共享。 有共享流量分配最优解的研究《A Common Control Group - Optimising the Experiment Design to Maximise Sensitivity》 <img src="正确2.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="流量饥渴怎么办" class="level1">
+<h1>流量饥渴怎么办</h1>
+<p>共享对照的一个好处是可以用流量变多了（然而弊大于利），去掉此机制后可用流量可能更少，该如何解决？</p>
+<section id="增加流量的本质是什么" class="level2">
+<h2 class="anchored" data-anchor-id="增加流量的本质是什么">1.增加流量的本质是什么？</h2>
+<p>流量越大结果越可信 = 样本越大均值波动越小 = 样本越大均值方差越小 = 样本越大标准误越小<br>
+本质上我们是在追求更小的结果波动即<strong>更小的标准误</strong>。其样本量增加的收益是边际递减的。 <span class="math display">\[标准误 = \sqrt{\frac{样本方差}{对照组样本量} + \frac{样本方差}{实验组样本量} } \]</span> <strong>影响标准误的因素：样本方差、样本量</strong></p>
+</section>
+<section id="增加样本量的收益" class="level2">
+<h2 class="anchored" data-anchor-id="增加样本量的收益">2.增加样本量的收益</h2>
+<p>通过案例估算： 假设一些用户其样本方差约35000，分配比例1:1， 标准差随样本量变化曲线为： <img src="增加样本收益.jpg" class="img-fluid"> 由上可知：其边际收益递减，大约几十万样本后就不会有特别快的下降。</p>
+</section>
+<section id="降低样本方差可能是更好的方法" class="level2">
+<h2 class="anchored" data-anchor-id="降低样本方差可能是更好的方法">3.降低样本方差可能是更好的方法</h2>
+<p>控制变量法、过滤离群点等降噪方法可以降低样本方差，而且常常对一些指标来说方差很容易就可以下降50%以上 样本方差从35000降低到5000收益： <img src="降低样本方差收益.jpg" class="img-fluid"></p>
+</section>
+</section>
+<section id="总结" class="level1">
+<h1>总结</h1>
+<p>多个实验共享一块对照流量的设计违背了随机对照实验原则，舍本逐末是不划算的。<br>
+对于减少结果波动性，我们可以有更高效且更科学的方法。</p>
 
 
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="AB" data-listing-date-sort="1699632000000" data-listing-file-modified-sort="1699701571692" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./posts/错误的共享对照/index.html"> <p class="card-img-top"><img src="posts/错误的共享对照/随机对照实验.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/错误的共享对照/index.html">
-<h3 class="no-anchor listing-title">
-实验间共享对照组缺陷及对策
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('AB'); return false;">
-AB
-</div>
-</div>
-<a href="./posts/错误的共享对照/index.html">
-<div class="listing-description">
-<strong>A/B实验目标是实现在线随机对照实验</strong>，因此需要满足「随机对照实验」的要求和前提。<br>
-然而前支持的「对照组流量共享机制」违背了「随机对照实验」的基本要求。
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/错误的共享对照/index.html">
-<div class="listing-date">
-Nov 11, 2023
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="AB" data-listing-date-sort="1699632000000" data-listing-file-modified-sort="1699693960414" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
-<div class="thumbnail">
-<p><a href="./posts/实验统计原理简介/index.html"> <p class="card-img-top"><img src="posts/实验统计原理简介/index_files/figure-html/cell-3-output-1.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/实验统计原理简介/index.html">
-<h3 class="no-anchor listing-title">
-实验统计简介
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('AB'); return false;">
-AB
-</div>
-</div>
-<a href="./posts/实验统计原理简介/index.html">
-<div class="listing-description">
-两个现实中的问题 - 应用新版本发布7天后，新版用户留存率比老版本用户留存率提升10%，是否说明新版本取得了成功？ - 对商品涨价后，单月收入环比上月提升30%，同比去年提升10%，收入增长了么？赚了多少？
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/实验统计原理简介/index.html">
-<div class="listing-date">
-Nov 11, 2023
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
