@@ -1,0 +1,11 @@
+{
+  "hash": "1c1f48e472dbba553dc17f144f7c2eb6",
+  "result": {
+    "markdown": "---\ntitle: 实验统计简介\ndate: '2023-11-11'\ncategories:\n  - AB testing\n---\n\n## 为什么要做实验？\n\n两个现实中的问题\n- 应用新版本发布7天后，新版用户留存率比老版本用户留存率提升10%，是否说明新版本取得了成功？\n- 对商品涨价后，单月收入环比上月提升30%，同比去年提升10%，收入增长了么？赚了多少？       \n    \n    \n虽然有了数据，我们仍然很难得到判断，因为我们关注的是**因果（反事实）**。而随机实验可以观测**因果**，所以要做实验\n\n## 实验结果可信么？\n\n我做了AB实验，实验组平均付费比对照组提升了1.1元，我的实验策略是否是有效的？    \n由于现实中充满波动性，这个问题很难直接回答。但如果知道事件随机发生概率是多少，我们至少有一些把握      \n\n以最简单的抛硬币为例：\n\n::: {.cell execution_count=1}\n``` {.python .cell-code}\nimport numpy as np\nimport pandas as pd\nfrom scipy import stats\nimport matplotlib.pyplot as plt\n\ndef binom_plot(n, obs, p=0.5):\n    dist = stats.binom(n, p)\n    x = np.arange(0, n+1)\n    pmf = dist.pmf(x)\n\n    thres = np.abs(np.abs(obs) - n/2)\n    plt.bar(x, pmf, color=['red' if np.abs(np.abs(i) - n/2) >= thres else 'blue' for i in range(len(x))], alpha=0.5)\n    plt.show()\n```\n:::\n\n\n- 一枚硬币扔了10次，其中6次正面，硬币是否均匀？    \n如果硬币是均匀的，得到这种情况或者更极端情况的概率是多少：$$P(投10次6次以上某一面 | 硬币均匀)$$\n\n::: {.cell execution_count=2}\n``` {.python .cell-code}\nbinom_plot(10, 6)\n```\n\n::: {.cell-output .cell-output-display}\n![](index_files/figure-html/cell-3-output-1.png){width=579 height=411}\n:::\n:::\n\n\n- 一枚硬币扔了100次，其中60次正面，它是否均匀？    \n$$P(投100次60次以上某一面 | 硬币均匀)$$    \n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}
