@@ -1,3 +1,9 @@
+---
+title: "赌徒破产和序贯检验"
+date: "2023-11-12"
+categories: [AB,序贯检验,赌徒破产,随机游走]
+---
+
 本文是对[Simple Sequential A/B Testing](https://www.evanmiller.org/sequential-ab-testing.html)的解读。
 该方法归属序贯检测类，可以用于伯努利分布场景，随着抽样持续进行，判断接受零假设或备择假设（[关于序贯检测](https://baike.baidu.com/item/%E5%BA%8F%E8%B4%AF)）。
 
