@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2023-11-13">
 
-<title>Rock’s blog - 学习 &amp; 工作 &amp; 思考</title>
+<title>Rock’s blog - A/B实验设计 —— 样本量选择</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +24,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -61,50 +60,21 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed">
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Rock’s blog</span>
     </a>
   </div>
@@ -115,7 +85,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html" rel="" target="">
+    <a class="nav-link" href="../../about.html" rel="" target="">
  <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
@@ -138,184 +108,112 @@ ul.task-list li input[type="checkbox"] {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">学习 &amp; 工作 &amp; 思考</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">A/B实验设计 —— 样本量选择</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">AB</div>
+                <div class="quarto-category">实验设计</div>
+              </div>
+                  </div>
   </div>
     
   
   <div class="quarto-title-meta">
 
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 13, 2023</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(4)</span></div><div class="category" data-category="AB">AB <span class="quarto-category-count">(4)</span></div><div class="category" data-category="实验设计">实验设计 <span class="quarto-category-count">(1)</span></div><div class="category" data-category="序贯检验">序贯检验 <span class="quarto-category-count">(1)</span></div><div class="category" data-category="赌徒破产">赌徒破产 <span class="quarto-category-count">(1)</span></div><div class="category" data-category="随机游走">随机游走 <span class="quarto-category-count">(1)</span></div></div></div>
+    
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
+<p>本文介绍样本量对实验效果的影响，以及如何正确选择样本量。仅作为实验设计者可跳过最后数学推导过程，直接使用工具运算。</p>
+<section id="样本量的影响" class="level1">
+<h1>样本量的影响</h1>
+<p>假设一个这样的实验，按钮颜色对用户点击率的影响： <img src="1.webp" class="img-fluid"></p>
+<p>假设A样式点击率30%，B样式点击率为40%。考虑以下两种情况：</p>
+<ol type="1">
+<li>当每个页面有10次访问时，直观感受上并不能证明B比A的点击率高。实际约65%的可能性差异是随机产生的。</li>
+<li>当每个页面有1000次访问时，差异不像是随机产生了。实际只有约0.0002%可能性差异是随机产生的。</li>
+</ol>
+<p>通过上面例子发现，相同的差异程度下，样本数量越多，我们越有把握两者并不相同。这也是符合生活经验的。</p>
+</section>
+<section id="样本量选择原则" class="level1">
+<h1>样本量选择原则</h1>
+<p>我们已经知道了样本数越多，证据会越可信，那么样本数该怎么选择呢？</p>
+<section id="实验角度样本量越多越好" class="level2">
+<h2 class="anchored" data-anchor-id="实验角度样本量越多越好">实验角度，样本量越多越好</h2>
+<p>样本数量变多，实验则有了更多的“证据”，实验的“可靠性”也就越强。</p>
+</section>
+<section id="业务角度样本量越少越好" class="level2">
+<h2 class="anchored" data-anchor-id="业务角度样本量越少越好">业务角度，样本量越少越好</h2>
+<p>样本量应该越少越好，因为：</p>
+<ol type="1">
+<li><p><strong>试错成本大</strong>。假设我们拿50%用的户来跑实验，但不幸的是，1周后结果表明实验组的总收入下降了20%。算下来，你的实验在一周内给整个公司带来了10%的损失。这个试错成本未免高了一些…</p></li>
+<li><p><strong>其它风险增加</strong>。移动端例子，假设B方案崩溃率增长，1%流量我们可以从容处理，50%流量会对业务造成严重影响，甚至事故定责。</p></li>
+<li><p><strong>流量有限</strong>。流量总数是确定的，同类型的实验不能重叠，实验流量更小，就可以同时运行更多的实验。</p></li>
+</ol>
+</section>
+</section>
+<section id="样本量如何选择" class="level1">
+<h1>样本量如何选择</h1>
+<p>通过样本量计算工具可以直接得到，有很多的在线工具，例如对转化率可使用<a href="https://www.evanmiller.org/ab-testing/sample-size.html">Evan’s Awesome A/B Tools</a></p>
+<p><img src="2.webp" class="img-fluid"></p>
+<section id="参数解释" class="level2">
+<h2 class="anchored" data-anchor-id="参数解释">参数解释</h2>
+<ol type="1">
+<li><strong>Baseline conversion rate</strong>：填入实验前估测到的转化率，可以通过旧数据统计作为估算。</li>
+<li><strong>Minimum Detectable Effect</strong>：填入希望观测到的最小效果。填入实验的预期。</li>
+<li><strong>Statistical power</strong>：1 - 假阴性概率。实验效果真实有效时，能被正确发现的概率。</li>
+<li><strong>Significance level</strong>：假阳性概率。实验实际没有效果时，被错误发现的概率。</li>
+</ol>
+</section>
+</section>
+<section id="总结" class="level1">
+<h1>总结</h1>
+<p>样本量选择一般过程：打开样量计算器，填入α, power, MDE，填入已知参数（转化率、均值、方差等），得到结果。 ___</p>
+</section>
+<section id="附录样本量计算原理" class="level1">
+<h1>附录：样本量计算原理</h1>
+<p>需要读者有一定数理统计知识，跳过不影响实验设计。从单尾假设检验出发进行推导，然后扩展到双尾假设检验。</p>
+<section id="单尾假设检验" class="level2">
+<h2 class="anchored" data-anchor-id="单尾假设检验">单尾假设检验</h2>
+<p><img src="3.webp" class="img-fluid"></p>
+<p>定义θ = μ2 - μ1，图中对应假设可转换为： 原假设：θ = 0，此时对应红色曲线 备择假设：θ &gt; 0，此时对应绿色曲线</p>
+<p>μ1：方案A的期望值，不可改变。 μ2：方案B的期望值，不可改变。 $ x$：方案A的均值，会随机波动。 $ y$：方案B的均值，会随机波动。<br>
+$ = ( &gt; C | = ) $ ，红色曲线下，红色面积占比。 $ = ( &lt;= C | &gt; ) $ 。 $ power = ( &gt; C | &gt; ) $ ，绿色曲线下，绿色面积占比。 MDE：根据期望效果取的值，会参与样本量计算 μ2 - μ1 &gt;= mde时，power大于等于预设值，实验容易显著。 μ2 - μ1 &lt; mde时，power小于预设，实验不容易显著。</p>
+<p>在$ &gt; C <span class="math inline">\(中，C为预设常量，\)</span> x<span class="math inline">\(、\)</span> y<span class="math inline">\(通过实验获取无法控制，唯一可以改变的是\)</span>SD( y - x))$，样本量增大 -&gt; $ SD( y - x)) $减少 -&gt; 实验显著概率升高。</p>
+<p>计算过程： <span class="math inline">\({SD( \bar y - \bar x)} = MDE / [ \phi^{-1} (\alpha) + \phi^{-1} (power )]\)</span> ,</p>
+<p>x、y样本量同为n，标准差同为$$时， <span class="math inline">\({SD( \bar y - \bar x)} = \sqrt{2\sigma ^{2}/ n}\)</span>,</p>
+<p>易得<span class="math inline">\(n = 2\sigma ^{2} [ \phi^{-1} (1- \alpha) + \phi^{-1} (power )]^{2}/MDE^{2}\)</span></p>
+</section>
+<section id="双尾假设检验" class="level2">
+<h2 class="anchored" data-anchor-id="双尾假设检验">双尾假设检验</h2>
+<p>定义θ = μ2 - μ1，双尾情况下对应假设： 原假设：θ = 0； 备择假设：θ ≠ 0 ，等价于 θ &gt; 0 or θ &lt; 0。</p>
+<p>双尾假设检验一般是对称的，在此情况下有： 1. $= ( &gt; C1 | = ) + ( &lt; C2 | = ) $ 2. $( &gt; C1 | = ) = ( &lt; C2 | = ) $</p>
+<p>正态分布的概率密度函数特点为左右对称(钟形曲线)，由此可知： $ C1 &gt; 0, C2 &lt; 0, |C1| = |C2| $</p>
+<p>可以理解为一个α水平的双尾假设检验，等于两个α/2水平的单尾假设检验。 将α/2带入单尾计算公式，得到双尾检验需要的样本量为： <span class="math inline">\(n = 2\sigma ^{2} [ \phi^{-1} (1 - \alpha/2) + \phi^{-1} (power )]^{2}/MDE^{2}\)</span></p>
 
 
+</section>
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="AB,实验设计" data-listing-date-sort="1699804800000" data-listing-file-modified-sort="1699882223139" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./posts/实验设计_如何选择样本量/index.html"> <p class="card-img-top"><img src="posts/实验设计_如何选择样本量/1.webp"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/实验设计_如何选择样本量/index.html">
-<h3 class="no-anchor listing-title">
-A/B实验设计 —— 样本量选择
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('AB'); return false;">
-AB
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('实验设计'); return false;">
-实验设计
-</div>
-</div>
-<a href="./posts/实验设计_如何选择样本量/index.html">
-<div class="listing-description">
-本文介绍样本量对实验效果的影响，以及如何正确选择样本量。仅作为实验设计者可跳过最后数学推导过程，直接使用工具运算。
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/实验设计_如何选择样本量/index.html">
-<div class="listing-date">
-Nov 13, 2023
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="AB,序贯检验,赌徒破产,随机游走" data-listing-date-sort="1699718400000" data-listing-file-modified-sort="1699789314024" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
-<div class="thumbnail">
-<p><a href="./posts/破产问题和简单序贯检验/index.html"> <p class="card-img-top"><img src="posts/破产问题和简单序贯检验/1.webp"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/破产问题和简单序贯检验/index.html">
-<h3 class="no-anchor listing-title">
-赌徒破产和序贯检验
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('AB'); return false;">
-AB
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('序贯检验'); return false;">
-序贯检验
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('赌徒破产'); return false;">
-赌徒破产
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('随机游走'); return false;">
-随机游走
-</div>
-</div>
-<a href="./posts/破产问题和简单序贯检验/index.html">
-<div class="listing-description">
-本文是对Simple Sequential A/B Testing的解读。 该方法归属序贯检测类，可以用于伯努利分布场景，随着抽样持续进行，判断接受零假设或备择假设（关于序贯检测）。
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/破产问题和简单序贯检验/index.html">
-<div class="listing-date">
-Nov 12, 2023
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="AB" data-listing-date-sort="1699632000000" data-listing-file-modified-sort="1699701851437" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
-<div class="thumbnail">
-<p><a href="./posts/错误的共享对照/index.html"> <p class="card-img-top"><img src="posts/错误的共享对照/随机对照实验.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/错误的共享对照/index.html">
-<h3 class="no-anchor listing-title">
-实验间共享对照组缺陷及对策
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('AB'); return false;">
-AB
-</div>
-</div>
-<a href="./posts/错误的共享对照/index.html">
-<div class="listing-description">
-<strong>A/B实验目标是实现在线随机对照实验</strong>，因此需要满足「随机对照实验」的要求和前提。<br>
-然而前支持的「对照组流量共享机制」违背了「随机对照实验」的基本要求。
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/错误的共享对照/index.html">
-<div class="listing-date">
-Nov 11, 2023
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="AB" data-listing-date-sort="1699632000000" data-listing-file-modified-sort="1699693960414" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
-<div class="thumbnail">
-<p><a href="./posts/实验统计原理简介/index.html"> <p class="card-img-top"><img src="posts/实验统计原理简介/index_files/figure-html/cell-3-output-1.png"  class="thumbnail-image card-img"/></p> </a></p>
-</div>
-<div class="body">
-<a href="./posts/实验统计原理简介/index.html">
-<h3 class="no-anchor listing-title">
-实验统计简介
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('AB'); return false;">
-AB
-</div>
-</div>
-<a href="./posts/实验统计原理简介/index.html">
-<div class="listing-description">
-两个现实中的问题 - 应用新版本发布7天后，新版用户留存率比老版本用户留存率提升10%，是否说明新版本取得了成功？ - 对商品涨价后，单月收入环比上月提升30%，同比去年提升10%，收入增长了么？赚了多少？
-</div>
-</a>
-</div>
-<div class="metadata">
-<a href="./posts/实验统计原理简介/index.html">
-<div class="listing-date">
-Nov 11, 2023
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
