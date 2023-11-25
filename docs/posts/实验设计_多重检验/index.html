@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2023-11-13">
+<meta name="dcterms.date" content="2023-11-25">
 
-<title>Rock’s blog - A/B实验设计 —— 样本量计算</title>
+<title>Rock’s blog - A/B实验设计 —— 多重检验</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -109,10 +109,11 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">A/B实验设计 —— 样本量计算</h1>
+      <h1 class="title">A/B实验设计 —— 多重检验</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">AB</div>
                 <div class="quarto-category">实验设计</div>
+                <div class="quarto-category">多重检验</div>
               </div>
                   </div>
   </div>
@@ -124,7 +125,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 13, 2023</p>
+        <p class="date">November 25, 2023</p>
       </div>
     </div>
     
@@ -142,72 +143,95 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>本文介绍样本量对实验效果的影响，以及如何正确选择样本量。仅作为实验设计者可跳过最后数学推导过程，直接使用工具运算。</p>
-<section id="样本量的影响" class="level1">
-<h1>样本量的影响</h1>
-<p>假设一个这样的实验，按钮颜色对用户点击率的影响： <img src="1.webp" class="img-fluid"></p>
-<p>假设A样式点击率30%，B样式点击率为40%。考虑以下两种情况：</p>
+<p>本文介绍A/B实验中一个常见的错误——多重检验错误，它经常影响实验得到错误的结论。相关数学推导放在文末，跳过不影响理解。</p>
+<section id="错误案例" class="level1">
+<h1>错误案例</h1>
+<p>让我们从先看一个例子：软糖会导致粉刺么？<br>
+<img src="1.webp" class="img-fluid"></p>
+<p>如图，各实验组食用不同颜色软糖，绿色软糖组粉刺情况与对照组显著改变(p &lt; 0.05)，似乎可以得到绿色软糖会影响粉刺。但是各种软糖成分几乎是相同的，为什么只有绿色会影响呢？问题出在哪？</p>
+<section id="错误原因" class="level2">
+<h2 class="anchored" data-anchor-id="错误原因">错误原因</h2>
 <ol type="1">
-<li>当每个页面有10次访问时，直观感受上并不能证明B比A的点击率高。实际约65%的可能性差异是随机产生的。</li>
-<li>当每个页面有1000次访问时，差异不像是随机产生了。实际只有约0.0002%可能性差异是随机产生的。</li>
-</ol>
-<p>通过上面例子发现，相同的差异程度下，样本数量越多，我们越有把握两者并不相同。这也是符合生活经验的。</p>
-</section>
-<section id="样本量选择原则" class="level1">
-<h1>样本量选择原则</h1>
-<p>我们已经知道了样本数越多，证据会越可信，那么样本数该怎么选择呢？</p>
-<section id="实验角度样本量越多越好" class="level2">
-<h2 class="anchored" data-anchor-id="实验角度样本量越多越好">实验角度，样本量越多越好</h2>
-<p>样本数量变多，实验则有了更多的“证据”，实验的“可靠性”也就越强。</p>
-</section>
-<section id="业务角度样本量越少越好" class="level2">
-<h2 class="anchored" data-anchor-id="业务角度样本量越少越好">业务角度，样本量越少越好</h2>
-<p>样本量应该越少越好，因为：</p>
-<ol type="1">
-<li><p><strong>试错成本大</strong>。假设我们拿50%用的户来跑实验，但不幸的是，1周后结果表明实验组的总收入下降了20%。算下来，你的实验在一周内给整个公司带来了10%的损失。这个试错成本未免高了一些…</p></li>
-<li><p><strong>其它风险增加</strong>。移动端例子，假设B方案崩溃率增长，1%流量我们可以从容处理，50%流量会对业务造成严重影响，甚至事故定责。</p></li>
-<li><p><strong>流量有限</strong>。流量总数是确定的，同类型的实验不能重叠，实验流量更小，就可以同时运行更多的实验。</p></li>
+<li>假设检验通建立在统计学原理上，假设检验并不能不产生误判，而是控制误判在我们预设范围之内，称为假阳性错误（α水平，一般选在5%）<br>
+</li>
+<li>每次验证都会有错误的概率，因此只要检验次数增加，遇到至少一次错误的概率也会增加。</li>
 </ol>
 </section>
+<section id="案例分析" class="level2">
+<h2 class="anchored" data-anchor-id="案例分析">案例分析</h2>
+<p>上面的例子中，把各种颜色的糖作为不同实验组，与对照组进行对比。假设有20种糖，假阳性水平控制为5%，预期得到的显著结果为 20 * 5% = 1。我们很容易发现某种颜色糖果“似乎”与粉刺有关系，然而这是错误的。</p>
 </section>
-<section id="样本量如何选择" class="level1">
-<h1>样本量如何选择</h1>
-<p>通过样本量计算工具可以直接得到，有很多的在线工具，例如对转化率可使用<a href="https://www.evanmiller.org/ab-testing/sample-size.html">Evan’s Awesome A/B Tools</a></p>
-<p><img src="2.webp" class="img-fluid"></p>
-<section id="参数解释" class="level2">
-<h2 class="anchored" data-anchor-id="参数解释">参数解释</h2>
-<ol type="1">
-<li><strong>Baseline conversion rate</strong>：填入实验前估测到的转化率，可以通过旧数据统计作为估算。</li>
-<li><strong>Minimum Detectable Effect</strong>：填入希望观测到的最小效果。填入实验的预期。</li>
-<li><strong>Statistical power</strong>：1 - 假阴性概率。实验效果真实有效时，能被正确发现的概率。</li>
-<li><strong>Significance level</strong>：假阳性概率。实验实际没有效果时，被错误发现的概率。</li>
-</ol>
+</section>
+<section id="如何避免" class="level1">
+<h1>如何避免</h1>
+<section id="合理的设计实验" class="level2">
+<h2 class="anchored" data-anchor-id="合理的设计实验">1. 合理的设计实验</h2>
+<p>设计实验前充分分析、调查，针对相关可能最大的因素进行实验，避免大量无用因素干扰得到错误结论。</p>
+<p><strong>宗旨：尽量减少检验次数，降低犯错概率</strong></p>
+<ul>
+<li>控制实验组尽可能少<br>
+不同颜色软糖对粉刺的影响不应该有区别，因此只需要设计一组实验组。<br>
+</li>
+<li>控制指标尽可能少<br>
+我们可以同时检验软糖实验组对粉刺、喉咙痛、高血压…再夸张些，婚姻幸福度、孩子情况…检验的指标越多，得到假阳性结果的可能性同样上升（吃软糖与生女孩相关明显是荒谬的）。 <img src="2.webp" class="img-fluid"></li>
+</ul>
+</section>
+<section id="多次检验校正" class="level2">
+<h2 class="anchored" data-anchor-id="多次检验校正">2. 多次检验校正</h2>
+<p>统计学领域已经发明了一些方法来对多次检验进行校正。主要思想是检验次数越多，就要对显著采用更严格的限制，但是都会导致power的损失，降低发现率。<br>
+常用方式：<a href="https://en.wikipedia.org/wiki/Bonferroni_correction">Bonferroni correction</a>、<a href="https://en.wikipedia.org/wiki/Holm%E2%80%93Bonferroni_method" title="Holm–Bonferroni method">Holm–Bonferroni method</a>。<br>
+缺点：会导致power有所损失（特别是检验结果不独立时）。</p>
+</section>
+<section id="实验后分析" class="level2">
+<h2 class="anchored" data-anchor-id="实验后分析">3. 实验后分析</h2>
+<p>显著不等于一定正确。实验后需要对实验进行因果分析，结果需要可合理解释（不是编故事）。如果采用了多次检验校正，还需要考虑假阴性问题。</p>
 </section>
 </section>
 <section id="总结" class="level1">
 <h1>总结</h1>
-<p>样本量选择一般过程：打开样量计算器，填入α, power, MDE，填入已知参数（转化率、均值、方差等），得到结果。 ___</p>
+<p>明确概念，显著 ≠ 正确。 谨慎设计实验，尽量规避多重检验问题，必要情况下通过统计学方法校正。</p>
+<hr>
 </section>
-<section id="附录样本量计算原理" class="level1">
-<h1>附录：样本量计算原理</h1>
-<p>需要读者有一定数理统计知识，跳过不影响实验设计。从单尾假设检验出发进行推导，然后扩展到双尾假设检验。</p>
-<section id="单尾假设检验" class="level2">
-<h2 class="anchored" data-anchor-id="单尾假设检验">单尾假设检验</h2>
-<p><img src="3.webp" class="img-fluid"></p>
-<p>定义θ = μ2 - μ1，图中对应假设可转换为： 原假设：θ = 0，此时对应红色曲线 备择假设：θ &gt; 0，此时对应绿色曲线</p>
-<p>μ1：方案A的期望值，不可改变。 μ2：方案B的期望值，不可改变。 $ x$：方案A的均值，会随机波动。 $ y$：方案B的均值，会随机波动。<br>
-$ = ( &gt; C | = ) $ ，红色曲线下，红色面积占比。 $ = ( &lt;= C | &gt; ) $ 。 $ power = ( &gt; C | &gt; ) $ ，绿色曲线下，绿色面积占比。 MDE：根据期望效果取的值，会参与样本量计算 μ2 - μ1 &gt;= mde时，power大于等于预设值，实验容易显著。 μ2 - μ1 &lt; mde时，power小于预设，实验不容易显著。</p>
-<p>在$ &gt; C <span class="math inline">\(中，C为预设常量，\)</span> x<span class="math inline">\(、\)</span> y<span class="math inline">\(通过实验获取无法控制，唯一可以改变的是\)</span>SD( y - x))$，样本量增大 -&gt; $ SD( y - x)) $减少 -&gt; 实验显著概率升高。</p>
-<p>计算过程： <span class="math inline">\({SD( \bar y - \bar x)} = MDE / [ \phi^{-1} (\alpha) + \phi^{-1} (power )]\)</span> ,</p>
-<p>x、y样本量同为n，标准差同为$$时， <span class="math inline">\({SD( \bar y - \bar x)} = \sqrt{2\sigma ^{2}/ n}\)</span>,</p>
-<p>易得<span class="math inline">\(n = 2\sigma ^{2} [ \phi^{-1} (1- \alpha) + \phi^{-1} (power )]^{2}/MDE^{2}\)</span></p>
+<section id="多重检验校正方法推导" class="level1">
+<h1>多重检验校正方法推导</h1>
+<section id="符号定义" class="level2">
+<h2 class="anchored" data-anchor-id="符号定义">符号定义</h2>
+<p><img src="3.webp" class="img-fluid"> m：总检验假设数<br>
+m0：零假设正确的数量，我们无法得知<br>
+m - m0：备择假设正确的数量<br>
+V：假阳性结论数量<br>
+S：真阳性数量<br>
+T：假阴性数量<br>
+U：真阴性数量<br>
+R = V + S：拒绝零假设数量<br>
+在m个假设检验中，m0个零假设为真，R是观察到的显著情况的随机变量，S、T、U、V都是不可观测的随机变量。</p>
 </section>
-<section id="双尾假设检验" class="level2">
-<h2 class="anchored" data-anchor-id="双尾假设检验">双尾假设检验</h2>
-<p>定义θ = μ2 - μ1，双尾情况下对应假设： 原假设：θ = 0； 备择假设：θ ≠ 0 ，等价于 θ &gt; 0 or θ &lt; 0。</p>
-<p>双尾假设检验一般是对称的，在此情况下有： 1. $= ( &gt; C1 | = ) + ( &lt; C2 | = ) $ 2. $( &gt; C1 | = ) = ( &lt; C2 | = ) $</p>
-<p>正态分布的概率密度函数特点为左右对称(钟形曲线)，由此可知： $ C1 &gt; 0, C2 &lt; 0, |C1| = |C2| $</p>
-<p>可以理解为一个α水平的双尾假设检验，等于两个α/2水平的单尾假设检验。 将α/2带入单尾计算公式，得到双尾检验需要的样本量为： <span class="math inline">\(n = 2\sigma ^{2} [ \phi^{-1} (1 - \alpha/2) + \phi^{-1} (power )]^{2}/MDE^{2}\)</span></p>
+<section id="相关推导" class="level2">
+<h2 class="anchored" data-anchor-id="相关推导">相关推导</h2>
+<p>如果m次检验是独立的，则产生假阳性的概率为:<br>
+<span class="math inline">\(\alpha = 1 - ( 1 - \alpha_{sub} )^{m}\)</span><br>
+如果检验不是独立的，仍然有：<br>
+<span class="math inline">\(\alpha \leq m * \alpha_{sub}\)</span></p>
+</section>
+<section id="bonferroni-correction" class="level2">
+<h2 class="anchored" data-anchor-id="bonferroni-correction">Bonferroni correction</h2>
+<p>方法：将每次检验的显著性从$ <em>{sub}<span class="math inline">\(调整为\)</span></em>{newSub}$ = $ _{sub} / m$<br>
+原理：根据上述不等式，则有<span class="math inline">\(\alpha \leq m * \alpha_{newSub} = \alpha_{sub}\)</span> ，因此可以有效将假阳性水平控制在预设之内。<br>
+优点：简单好理解。<br>
+缺点：由于条件过于严格，假阴性错误率升高。</p>
+</section>
+<section id="holmbonferroni-method" class="level2">
+<h2 class="anchored" data-anchor-id="holmbonferroni-method">Holm–Bonferroni method</h2>
+<p>方法：将得到的P值从小到大排序记序号为i(1 ~ m)，从i = 1开始与 <span class="math inline">\(\alpha / (m - i + 1)\)</span>比较，小于就继续比较下一个。直到找出不符合条件的i(也可能不存在) ，i之前的全部认为显著，i及i之后的全部不显著。 原理： &gt;1. 将p值从大到小排序；<br>
+&gt;2. 我们只需要关心P值最小的第一个零假设为真的情况：如果被拒绝，产生假阳性；否则，比较过程停止，未产生假阳性；<br>
+&gt;3. 设第一个零假设为真的比较序号为h，则共有h - 1次正确的拒绝零假设，则：<br>
+本次拒绝零假设条件为<span class="math inline">\(\alpha / (m - h + 1)\)</span> (a);<br>
+<span class="math inline">\(h - 1 \leq m - m0\)</span>（正确拒绝的次数，一定小于等于备择假设为真的次数）；<br>
+推出<span class="math inline">\(\frac{1}{m - h + 1} \leq \frac{1}{m_0}\)</span> (b)；<br>
+不等式两边乘以<span class="math inline">\(\alpha\)</span>，得到(a)$ <span class="math inline">\(。 &gt;4. 根据相关推导中结论，单次比较\)</span>_{sub} <span class="math inline">\(，又\)</span>m_0$种等可能情况，则:<br>
+<span class="math inline">\(\alpha_{_{real}} \leq m_0 * \alpha_{sub} \leq \alpha\)</span></p>
+<p>优点：相对简单，假阴性错误率小于等于Bonferroni correction。<br>
+缺点：假阴性依然高于预设（尤其是在检验结果相关情况下）。</p>
 
 
 </section>
