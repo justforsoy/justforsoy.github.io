@@ -1,0 +1,76 @@
+---
+title: "双样本客观贝叶斯检验"
+date: "2023-11-26"
+categories: [AB,贝叶斯,旧文迁移]
+---
+
+
+本文是对[《Objective Bayesian Two Sample Hypothesis Testing for
+Online Controlled Experiments》](https://alexdeng.github.io/public/files/BayesianAB.pdf)的理解。    
+
+# 为什么选贝叶斯
+相比固定水平假设检验的优势：    
+1. $P(H0|Data)$相对p值更直接；    
+2. 正确先验前提，支持多次观测，可选择最佳停止时机；    
+3. 无需多重检验修正；    
+4. 可主动接受零假设。    
+
+# 贝叶斯检验
+$\frac{P(H1 | \Delta)}{P(H0 | \Delta)} = \frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)}$    
+
+两个假设是对立事件，根据两种假设的后验概率之比选择接受哪种假设。    
+
+从公式可知，后验比率$\frac{P(H1 | \Delta)}{P(H0 | \Delta)}$依赖于先验比率$ \frac{P(H1)}{P(H0)}$、贝叶斯因子$\frac{P(\Delta|H1)}{P(\Delta|H0)}$，确定了两者就可以求出。    
+
+那么如何选择两者呢？   
+
+# 模型和先验问题
+1. 贝叶斯因子计算    
+通过大数定理、中心极限定理可知，$\Delta$服从正态分布，可以使用**正态分布模型**。    
+在$H0$下，$\Delta \sim N(0, \sigma^2_T/N_T + \sigma^2_C/N_C)$；    
+在$H1$下，$(\mu, \sigma^2)$会怎么？一般我们认为$\Delta \sim N(\mu, \sigma^2_T/N_T + \sigma^2_C/N_C)$，$\mu$为某非零的值。    
+2. 先验比率计算    
+$ \frac{P(H1)}{P(H0)}$按照主观贝叶斯，我们可按自己理解指定，但选取不好会影响敏感度甚至得到错误的结果；    
+如果按照客观贝叶斯，可使用经验贝叶斯或全贝叶斯。    
+这里介绍经验贝叶斯方案：如果我们已经进行了很多次实验，且已知各实验分别属于零假设和备择假设的数量，这是一个伯努利分布模型，则我们可以求得两者的经验分布，以及先验比率的估计。    
+
+# 计算细节
+
+## 定义
+$Z = \frac{ \Delta }{ \sqrt {\sigma^2_T/N_T + \sigma^2_C/N_C}} $    
+$N_E = \frac{1}{1/N_T + 1/N_C}$    
+$\sigma^2 / N_E = \sigma^2_T/N_T + \sigma^2_C/N_C$    
+$\delta = \Delta / \sigma$    
+$\mu = E(\delta)$    
+    
+则根据定义：    
+$ \delta \sim N ( \mu, 1 / N_E ) $    
+$Z = \frac{\delta} {\sqrt{1 / N_E}}$    
+
+## 模型设计
+$H0:\mu = 0$    
+$H1:\mu \sim \pi(\mu)$    
+$H1$为真概率为$p$，则$H0$概率为$1 - p$    
+    
+$P(\delta|H_1) = \int _Mf_\mu(\delta)\pi(\mu)d\mu$    
+关于$\mu$的先验$\pi$，采用一个简单的正态分布模型：$\pi(\mu) =N(0, V^2)$，    
+>1.$\delta = \mu + \sqrt{1 / N_E} * \varepsilon,  \varepsilon \sim  N(0, 1)$     
+>2.$\mu =0 + V * \varepsilon_0,  \varepsilon_0 \sim  N(0,1) \$     
+>则$\delta =  \sqrt{1 / N_E} * \varepsilon+ V * \varepsilon_0,  \varepsilon_0 \sim  N(0,1) ,  \varepsilon \sim  N(0, 1)$     
+
+可求得$E(\delta) = 0, Var(\delta) = 1/N_{E} + V^2$,    
+则$(\delta|\pi, N_E) \sim N(0, 1/N_{E} + V^2)$    
+
+## 先验概率与V的选取
+我们并不知道历史实验中，哪些$\delta_i$属于$H0$哪些属于$H1$。    
+如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用[最大期望算法](https://zh.wikipedia.org/wiki/%E6%9C%80%E5%A4%A7%E6%9C%9F%E6%9C%9B%E7%AE%97%E6%B3%95)：    
+
+1. $\frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)} = \frac{p}{1 - p} * \frac{\phi (\delta_i; 0, 1/N_{Ei} + V^2)}{\phi (\delta_i; 0, 1/N_{Ei})}$    
+求得$P_i = P(H1|\delta_i;p,V)$    
+2. 将$p$设置为1中得到的$P_i$的均值    
+3. $V^2 =\frac{\sum{var(\delta_i) * P_i}}{\sum{P_i}} - \frac{\sum{1 / N_{Ei} * P_i}}{\sum{P_i}} = \frac{\sum{\delta_i^2 * P_i}}{\sum{P_i}} - \frac{\sum{1 / N_{Ei} * P_i}}{\sum{P_i}}$    
+
+重复上述步骤直到$p$与$V$收敛，作为它们的最大似然估计。    
+
+# 题外话
+我们需要先验特别客观么？这样成本是非常高的。有时达到我们的目标即可，可以用上下界来约束

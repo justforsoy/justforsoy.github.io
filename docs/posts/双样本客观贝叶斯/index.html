@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2023-11-25">
+<meta name="dcterms.date" content="2023-11-26">
 
-<title>Rock’s blog - A/B实验设计 —— 多重检验</title>
+<title>Rock’s blog - 双样本客观贝叶斯检验</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -109,11 +109,10 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">A/B实验设计 —— 多重检验</h1>
+      <h1 class="title">双样本客观贝叶斯检验</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">AB</div>
-                <div class="quarto-category">实验设计</div>
-                <div class="quarto-category">多重检验</div>
+                <div class="quarto-category">贝叶斯</div>
                 <div class="quarto-category">旧文迁移</div>
               </div>
                   </div>
@@ -126,7 +125,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 25, 2023</p>
+        <p class="date">November 26, 2023</p>
       </div>
     </div>
     
@@ -144,98 +143,81 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>本文介绍A/B实验中一个常见的错误——多重检验错误，它经常影响实验得到错误的结论。相关数学推导放在文末，跳过不影响理解。</p>
-<section id="错误案例" class="level1">
-<h1>错误案例</h1>
-<p>让我们从先看一个例子：软糖会导致粉刺么？<br>
-<img src="1.webp" class="img-fluid"></p>
-<p>如图，各实验组食用不同颜色软糖，绿色软糖组粉刺情况与对照组显著改变(p &lt; 0.05)，似乎可以得到绿色软糖会影响粉刺。但是各种软糖成分几乎是相同的，为什么只有绿色会影响呢？问题出在哪？</p>
-<section id="错误原因" class="level2">
-<h2 class="anchored" data-anchor-id="错误原因">错误原因</h2>
+<p>本文是对<a href="https://alexdeng.github.io/public/files/BayesianAB.pdf">《Objective Bayesian Two Sample Hypothesis Testing for Online Controlled Experiments》</a>的理解。</p>
+<section id="为什么选贝叶斯" class="level1">
+<h1>为什么选贝叶斯</h1>
+<p>相比固定水平假设检验的优势：<br>
+1. <span class="math inline">\(P(H0|Data)\)</span>相对p值更直接；<br>
+2. 正确先验前提，支持多次观测，可选择最佳停止时机；<br>
+3. 无需多重检验修正；<br>
+4. 可主动接受零假设。</p>
+</section>
+<section id="贝叶斯检验" class="level1">
+<h1>贝叶斯检验</h1>
+<p><span class="math inline">\(\frac{P(H1 | \Delta)}{P(H0 | \Delta)} = \frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)}\)</span></p>
+<p>两个假设是对立事件，根据两种假设的后验概率之比选择接受哪种假设。</p>
+<p>从公式可知，后验比率<span class="math inline">\(\frac{P(H1 | \Delta)}{P(H0 | \Delta)}\)</span>依赖于先验比率$ <span class="math inline">\(、贝叶斯因子\)</span>$，确定了两者就可以求出。</p>
+<p>那么如何选择两者呢？</p>
+</section>
+<section id="模型和先验问题" class="level1">
+<h1>模型和先验问题</h1>
 <ol type="1">
-<li>假设检验通建立在统计学原理上，假设检验并不能不产生误判，而是控制误判在我们预设范围之内，称为假阳性错误（α水平，一般选在5%）<br>
+<li>贝叶斯因子计算<br>
+通过大数定理、中心极限定理可知，<span class="math inline">\(\Delta\)</span>服从正态分布，可以使用<strong>正态分布模型</strong>。<br>
+在<span class="math inline">\(H0\)</span>下，<span class="math inline">\(\Delta \sim N(0, \sigma^2_T/N_T + \sigma^2_C/N_C)\)</span>；<br>
+在<span class="math inline">\(H1\)</span>下，<span class="math inline">\((\mu, \sigma^2)\)</span>会怎么？一般我们认为<span class="math inline">\(\Delta \sim N(\mu, \sigma^2_T/N_T + \sigma^2_C/N_C)\)</span>，<span class="math inline">\(\mu\)</span>为某非零的值。<br>
 </li>
-<li>每次验证都会有错误的概率，因此只要检验次数增加，遇到至少一次错误的概率也会增加。</li>
+<li>先验比率计算<br>
+$ $按照主观贝叶斯，我们可按自己理解指定，但选取不好会影响敏感度甚至得到错误的结果；<br>
+如果按照客观贝叶斯，可使用经验贝叶斯或全贝叶斯。<br>
+这里介绍经验贝叶斯方案：如果我们已经进行了很多次实验，且已知各实验分别属于零假设和备择假设的数量，这是一个伯努利分布模型，则我们可以求得两者的经验分布，以及先验比率的估计。</li>
 </ol>
 </section>
-<section id="案例分析" class="level2">
-<h2 class="anchored" data-anchor-id="案例分析">案例分析</h2>
-<p>上面的例子中，把各种颜色的糖作为不同实验组，与对照组进行对比。假设有20种糖，假阳性水平控制为5%，预期得到的显著结果为 20 * 5% = 1。我们很容易发现某种颜色糖果“似乎”与粉刺有关系，然而这是错误的。</p>
+<section id="计算细节" class="level1">
+<h1>计算细节</h1>
+<section id="定义" class="level2">
+<h2 class="anchored" data-anchor-id="定义">定义</h2>
+<p>$Z = $<br>
+<span class="math inline">\(N_E = \frac{1}{1/N_T + 1/N_C}\)</span><br>
+<span class="math inline">\(\sigma^2 / N_E = \sigma^2_T/N_T + \sigma^2_C/N_C\)</span><br>
+<span class="math inline">\(\delta = \Delta / \sigma\)</span><br>
+<span class="math inline">\(\mu = E(\delta)\)</span></p>
+<p>则根据定义：<br>
+$ N ( , 1 / N_E ) $<br>
+<span class="math inline">\(Z = \frac{\delta} {\sqrt{1 / N_E}}\)</span></p>
 </section>
+<section id="模型设计" class="level2">
+<h2 class="anchored" data-anchor-id="模型设计">模型设计</h2>
+<p><span class="math inline">\(H0:\mu = 0\)</span><br>
+<span class="math inline">\(H1:\mu \sim \pi(\mu)\)</span><br>
+<span class="math inline">\(H1\)</span>为真概率为<span class="math inline">\(p\)</span>，则<span class="math inline">\(H0\)</span>概率为<span class="math inline">\(1 - p\)</span></p>
+<p><span class="math inline">\(P(\delta|H_1) = \int _Mf_\mu(\delta)\pi(\mu)d\mu\)</span><br>
+关于<span class="math inline">\(\mu\)</span>的先验<span class="math inline">\(\pi\)</span>，采用一个简单的正态分布模型：<span class="math inline">\(\pi(\mu) =N(0, V^2)\)</span>，<br>
+&gt;1.<span class="math inline">\(\delta = \mu + \sqrt{1 / N_E} * \varepsilon, \varepsilon \sim N(0, 1)\)</span><br>
+&gt;2.<span class="math inline">\(\mu =0 + V * \varepsilon_0, \varepsilon_0 \sim N(0,1) \$ &gt;则\)</span>= * + V * _0, _0 N(0,1) , N(0, 1)$</p>
+<p>可求得<span class="math inline">\(E(\delta) = 0, Var(\delta) = 1/N_{E} + V^2\)</span>,<br>
+则<span class="math inline">\((\delta|\pi, N_E) \sim N(0, 1/N_{E} + V^2)\)</span></p>
 </section>
-<section id="如何避免" class="level1">
-<h1>如何避免</h1>
-<section id="合理的设计实验" class="level2">
-<h2 class="anchored" data-anchor-id="合理的设计实验">1. 合理的设计实验</h2>
-<p>设计实验前充分分析、调查，针对相关可能最大的因素进行实验，避免大量无用因素干扰得到错误结论。</p>
-<p><strong>宗旨：尽量减少检验次数，降低犯错概率</strong></p>
-<ul>
-<li>控制实验组尽可能少<br>
-不同颜色软糖对粉刺的影响不应该有区别，因此只需要设计一组实验组。<br>
+<section id="先验概率与v的选取" class="level2">
+<h2 class="anchored" data-anchor-id="先验概率与v的选取">先验概率与V的选取</h2>
+<p>我们并不知道历史实验中，哪些<span class="math inline">\(\delta_i\)</span>属于<span class="math inline">\(H0\)</span>哪些属于<span class="math inline">\(H1\)</span>。<br>
+如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用<a href="https://zh.wikipedia.org/wiki/%E6%9C%80%E5%A4%A7%E6%9C%9F%E6%9C%9B%E7%AE%97%E6%B3%95">最大期望算法</a>：</p>
+<ol type="1">
+<li><span class="math inline">\(\frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)} = \frac{p}{1 - p} * \frac{\phi (\delta_i; 0, 1/N_{Ei} + V^2)}{\phi (\delta_i; 0, 1/N_{Ei})}\)</span><br>
+求得<span class="math inline">\(P_i = P(H1|\delta_i;p,V)\)</span><br>
 </li>
-<li>控制指标尽可能少<br>
-我们可以同时检验软糖实验组对粉刺、喉咙痛、高血压…再夸张些，婚姻幸福度、孩子情况…检验的指标越多，得到假阳性结果的可能性同样上升（吃软糖与生女孩相关明显是荒谬的）。 <img src="2.webp" class="img-fluid"></li>
-</ul>
-</section>
-<section id="多次检验校正" class="level2">
-<h2 class="anchored" data-anchor-id="多次检验校正">2. 多次检验校正</h2>
-<p>统计学领域已经发明了一些方法来对多次检验进行校正。主要思想是检验次数越多，就要对显著采用更严格的限制，但是都会导致power的损失，降低发现率。<br>
-常用方式：<a href="https://en.wikipedia.org/wiki/Bonferroni_correction">Bonferroni correction</a>、<a href="https://en.wikipedia.org/wiki/Holm%E2%80%93Bonferroni_method" title="Holm–Bonferroni method">Holm–Bonferroni method</a>。<br>
-缺点：会导致power有所损失（特别是检验结果不独立时）。</p>
-</section>
-<section id="实验后分析" class="level2">
-<h2 class="anchored" data-anchor-id="实验后分析">3. 实验后分析</h2>
-<p>显著不等于一定正确。实验后需要对实验进行因果分析，结果需要可合理解释（不是编故事）。如果采用了多次检验校正，还需要考虑假阴性问题。</p>
+<li>将<span class="math inline">\(p\)</span>设置为1中得到的<span class="math inline">\(P_i\)</span>的均值<br>
+</li>
+<li><span class="math inline">\(V^2 =\frac{\sum{var(\delta_i) * P_i}}{\sum{P_i}} - \frac{\sum{1 / N_{Ei} * P_i}}{\sum{P_i}} = \frac{\sum{\delta_i^2 * P_i}}{\sum{P_i}} - \frac{\sum{1 / N_{Ei} * P_i}}{\sum{P_i}}\)</span></li>
+</ol>
+<p>重复上述步骤直到<span class="math inline">\(p\)</span>与<span class="math inline">\(V\)</span>收敛，作为它们的最大似然估计。</p>
 </section>
 </section>
-<section id="总结" class="level1">
-<h1>总结</h1>
-<p>明确概念，显著 ≠ 正确。 谨慎设计实验，尽量规避多重检验问题，必要情况下通过统计学方法校正。</p>
-<hr>
-</section>
-<section id="多重检验校正方法推导" class="level1">
-<h1>多重检验校正方法推导</h1>
-<section id="符号定义" class="level2">
-<h2 class="anchored" data-anchor-id="符号定义">符号定义</h2>
-<p><img src="3.webp" class="img-fluid"> m：总检验假设数<br>
-m0：零假设正确的数量，我们无法得知<br>
-m - m0：备择假设正确的数量<br>
-V：假阳性结论数量<br>
-S：真阳性数量<br>
-T：假阴性数量<br>
-U：真阴性数量<br>
-R = V + S：拒绝零假设数量<br>
-在m个假设检验中，m0个零假设为真，R是观察到的显著情况的随机变量，S、T、U、V都是不可观测的随机变量。</p>
-</section>
-<section id="相关推导" class="level2">
-<h2 class="anchored" data-anchor-id="相关推导">相关推导</h2>
-<p>如果m次检验是独立的，则产生假阳性的概率为:<br>
-<span class="math inline">\(\alpha = 1 - ( 1 - \alpha_{sub} )^{m}\)</span><br>
-如果检验不是独立的，仍然有：<br>
-<span class="math inline">\(\alpha \leq m * \alpha_{sub}\)</span></p>
-</section>
-<section id="bonferroni-correction" class="level2">
-<h2 class="anchored" data-anchor-id="bonferroni-correction">Bonferroni correction</h2>
-<p>方法：将每次检验的显著性从$ <em>{sub}<span class="math inline">\(调整为\)</span></em>{newSub}$ = $ _{sub} / m$<br>
-原理：根据上述不等式，则有<span class="math inline">\(\alpha \leq m * \alpha_{newSub} = \alpha_{sub}\)</span> ，因此可以有效将假阳性水平控制在预设之内。<br>
-优点：简单好理解。<br>
-缺点：由于条件过于严格，假阴性错误率升高。</p>
-</section>
-<section id="holmbonferroni-method" class="level2">
-<h2 class="anchored" data-anchor-id="holmbonferroni-method">Holm–Bonferroni method</h2>
-<p>方法：将得到的P值从小到大排序记序号为i(1 ~ m)，从i = 1开始与 <span class="math inline">\(\alpha / (m - i + 1)\)</span>比较，小于就继续比较下一个。直到找出不符合条件的i(也可能不存在) ，i之前的全部认为显著，i及i之后的全部不显著。 原理： &gt;1. 将p值从大到小排序；<br>
-&gt;2. 我们只需要关心P值最小的第一个零假设为真的情况：如果被拒绝，产生假阳性；否则，比较过程停止，未产生假阳性；<br>
-&gt;3. 设第一个零假设为真的比较序号为h，则共有h - 1次正确的拒绝零假设，则：<br>
-本次拒绝零假设条件为<span class="math inline">\(\alpha / (m - h + 1)\)</span> (a);<br>
-<span class="math inline">\(h - 1 \leq m - m0\)</span>（正确拒绝的次数，一定小于等于备择假设为真的次数）；<br>
-推出<span class="math inline">\(\frac{1}{m - h + 1} \leq \frac{1}{m_0}\)</span> (b)；<br>
-不等式两边乘以<span class="math inline">\(\alpha\)</span>，得到(a)$ <span class="math inline">\(。 &gt;4. 根据相关推导中结论，单次比较\)</span>_{sub} <span class="math inline">\(，又\)</span>m_0$种等可能情况，则:<br>
-<span class="math inline">\(\alpha_{_{real}} \leq m_0 * \alpha_{sub} \leq \alpha\)</span></p>
-<p>优点：相对简单，假阴性错误率小于等于Bonferroni correction。<br>
-缺点：假阴性依然高于预设（尤其是在检验结果相关情况下）。</p>
+<section id="题外话" class="level1">
+<h1>题外话</h1>
+<p>我们需要先验特别客观么？这样成本是非常高的。有时达到我们的目标即可，可以用上下界来约束</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

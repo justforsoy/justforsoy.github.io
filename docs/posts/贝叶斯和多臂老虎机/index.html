@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2023-11-25">
+<meta name="dcterms.date" content="2023-11-26">
 
-<title>Rock’s blog - A/B实验设计 —— 多重检验</title>
+<title>Rock’s blog - 贝叶斯和多臂老虎机</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -109,11 +109,10 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">A/B实验设计 —— 多重检验</h1>
+      <h1 class="title">贝叶斯和多臂老虎机</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">AB</div>
-                <div class="quarto-category">实验设计</div>
-                <div class="quarto-category">多重检验</div>
+                <div class="quarto-category">贝叶斯</div>
+                <div class="quarto-category">多臂老虎机</div>
                 <div class="quarto-category">旧文迁移</div>
               </div>
                   </div>
@@ -126,7 +125,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 25, 2023</p>
+        <p class="date">November 26, 2023</p>
       </div>
     </div>
     
@@ -144,98 +143,127 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>本文介绍A/B实验中一个常见的错误——多重检验错误，它经常影响实验得到错误的结论。相关数学推导放在文末，跳过不影响理解。</p>
-<section id="错误案例" class="level1">
-<h1>错误案例</h1>
-<p>让我们从先看一个例子：软糖会导致粉刺么？<br>
-<img src="1.webp" class="img-fluid"></p>
-<p>如图，各实验组食用不同颜色软糖，绿色软糖组粉刺情况与对照组显著改变(p &lt; 0.05)，似乎可以得到绿色软糖会影响粉刺。但是各种软糖成分几乎是相同的，为什么只有绿色会影响呢？问题出在哪？</p>
-<section id="错误原因" class="level2">
-<h2 class="anchored" data-anchor-id="错误原因">错误原因</h2>
-<ol type="1">
-<li>假设检验通建立在统计学原理上，假设检验并不能不产生误判，而是控制误判在我们预设范围之内，称为假阳性错误（α水平，一般选在5%）<br>
-</li>
-<li>每次验证都会有错误的概率，因此只要检验次数增加，遇到至少一次错误的概率也会增加。</li>
-</ol>
+<section id="背景" class="level2">
+<h2 class="anchored" data-anchor-id="背景">背景</h2>
+<p>多臂老虎机是一个在探索(exploration)和开发(exploitation)过程中寻找最高收益的问题。此类“实验”能力几乎已经成为了优秀实验平台的标配。<br>
+本篇是阅读《A modern Bayesian look at the multi-armed bandit》后结合个人理解的学习总结。它总结了基于贝叶斯的随机概率匹配法和其它相关方法。</p>
 </section>
-<section id="案例分析" class="level2">
-<h2 class="anchored" data-anchor-id="案例分析">案例分析</h2>
-<p>上面的例子中，把各种颜色的糖作为不同实验组，与对照组进行对比。假设有20种糖，假阳性水平控制为5%，预期得到的显著结果为 20 * 5% = 1。我们很容易发现某种颜色糖果“似乎”与粉刺有关系，然而这是错误的。</p>
+<section id="随机概率匹配rpm" class="level2">
+<h2 class="anchored" data-anchor-id="随机概率匹配rpm">1. 随机概率匹配（RPM）</h2>
+<p>定义<span class="math inline">\(Y_t = (y_1, ..., y_t)\)</span>代表t时为止的奖励序列，<span class="math inline">\(a_t\)</span>代表t时选择的臂，t时刻奖励<span class="math inline">\(y_t \sim f_{a_t}(y|\theta)\)</span>，<span class="math inline">\(\theta\)</span>是一个未知向量。</p>
+<p><span class="math inline">\(y_t \in (0, 1)\)</span>情况下两种例子：<br>
+1. 伯努利老虎机，<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>，<span class="math inline">\(f_{a_t}(y|\theta)\)</span>参数为<span class="math inline">\(\theta_a\)</span><br>
+2. fractional factorial bandit（本文不关注）</p>
+<p>定义<span class="math inline">\(\mu_a(\theta) = E(y_t | \theta, a_t = a)\)</span>是<span class="math inline">\(f_{a}(y|\theta)\)</span>的期望值，最佳策略应该一直选择<span class="math inline">\(\mu_a(\theta)\)</span>最大的臂。<br>
+在伯努利分布下，<span class="math inline">\(\theta_a = \mu_a(\theta)\)</span>。</p>
+<p>定义<span class="math inline">\(p(\theta)\)</span>是<span class="math inline">\(\theta\)</span>的先验概率密度，此时以$p() <span class="math inline">\(产生\)</span><span class="math inline">\(，\)</span><span class="math inline">\(产生y，则0时刻选择a正确概率： &gt;\)</span>w_{a0} = Pr(_a = max{_1,… })$ （1)</p>
+<p>定义<span class="math inline">\(I_a(\theta)\)</span>为指示函数，<span class="math inline">\(\mu_a = max\{\mu_1,...\mu_k\}\)</span>时<span class="math inline">\(I_a(\theta)=1\)</span>：<br>
+&gt; <span class="math inline">\(w_{a0} = E(I_a(\theta)) = \int I_a(\theta) p(\theta) d\theta\)</span> （2）</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="1.webp" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">一个例子，先验可以Beta分布，两臂时为二元</figcaption>
+</figure>
+</div>
+<p>如果没有关于<span class="math inline">\(\theta\)</span>的先验，则先验视为各个<span class="math inline">\(\mu\)</span>是一样的，<span class="math inline">\(w_{a0}\)</span>是均匀分布。<br>
+观测到奖励情况后，通过贝叶斯方法进行更新，<span class="math inline">\(p(\theta | Y_t ) = \frac{p(Y_t|\theta)p(\theta)}{p(Y_t)}\)</span>。t时刻：<br>
+&gt; <span class="math inline">\(p(\theta | Y_t ) \propto p(\theta)\prod _{\tau = 1}^t f_{a_\tau}(y|\theta)\)</span> (3)<br>
+则此时$w_{at} = Pr(_a = max{_1,…} | Y_t ) = E(I_a() | Y_t ) $ （4）</p>
+<p>随机概率匹配用<span class="math inline">\(w_{at}\)</span>来分配a的t+1时观测值，通过一种自然平衡探索与开发的方式。</p>
+<section id="概率分配计算" class="level3">
+<h3 class="anchored" data-anchor-id="概率分配计算">1.1 概率分配计算</h3>
+<p>如果<span class="math inline">\(\theta^{(1)},...,\theta^{(G)}\)</span>是来自<span class="math inline">\(p(\theta|Y_t)\)</span>的独立抽样，则基于大数定理：<br>
+&gt;<span class="math inline">\(w_{at} = \lim_{g\rightarrow \infty }\frac{1}{G}\sum^G_{g=1}I_a(\theta^g).\)</span> （5）</p>
+<p>如果<span class="math inline">\(f_a\)</span>是指数族，而且<span class="math inline">\(p(\theta)\)</span>是它的共轭分布，则可以独立的抽样<span class="math inline">\(\theta\)</span>，否则可以用马可夫相关的方法进行抽样模拟。</p>
+<p><strong><span class="math inline">\(\theta\)</span>的后验抽样足够对概率匹配进行支持</strong>。</p>
+</section>
+<section id="隐式分配" class="level3">
+<h3 class="anchored" data-anchor-id="隐式分配">1.2 隐式分配</h3>
+<p>（5）可以不用显式计算，从<span class="math inline">\(p(\theta|Y_t)\)</span>模拟 <span class="math inline">\(\theta^{t}\)</span>，并选择<span class="math inline">\(a = argmax_a\mu_a(\theta^t)\)</span></p>
+</section>
+<section id="探索exploration开发exploitation和不确定性" class="level3">
+<h3 class="anchored" data-anchor-id="探索exploration开发exploitation和不确定性">1.3 探索(exploration)、开发(exploitation)和不确定性</h3>
+<p>随机概率匹配自然的包含了不确定性，下图为两臂情况下的情况：<br>
+<img src="2.webp" class="img-fluid"></p>
+<p>在(a)中，错误选中概率为18%；在(b)中，错误选中概率为0.8%。<br>
+这个例子说明，随着学习的进行，探索的占比会减少。</p>
 </section>
 </section>
-<section id="如何避免" class="level1">
-<h1>如何避免</h1>
-<section id="合理的设计实验" class="level2">
-<h2 class="anchored" data-anchor-id="合理的设计实验">1. 合理的设计实验</h2>
-<p>设计实验前充分分析、调查，针对相关可能最大的因素进行实验，避免大量无用因素干扰得到错误结论。</p>
-<p><strong>宗旨：尽量减少检验次数，降低犯错概率</strong></p>
+<section id="其它方法" class="level2">
+<h2 class="anchored" data-anchor-id="其它方法">2. 其它方法</h2>
+<section id="the-gittins-index基廷斯指数" class="level3">
+<h3 class="anchored" data-anchor-id="the-gittins-index基廷斯指数">2.1 The Gittins index(基廷斯指数)</h3>
+<p>此方法假设单臂未来的奖励会与一个几何分布有关：<span class="math inline">\(\sum_{t = 0} ^ {\infty} \gamma ^ty_t\)</span>，其中<span class="math inline">\(0 \leq \gamma &lt; 1\)</span><br>
+基廷斯提供了一种计算各个臂价值的算法，得到的结果称为<strong>基廷斯指数</strong>。它在前提可保证时是最优方案。<br>
+<img src="3.webp" class="img-fluid"><br>
+<img src="4.webp" class="img-fluid"></p>
+<p>这部分的数学相关很复杂先跳过，简单了解可参考《算法之美》第二章相关部分。</p>
+<p>对基廷斯指数的三个问题：<br>
+1. 不完全学习，可能最终收敛到次优解；<br>
+2. 各臂的参数需要是固定的；<br>
+3. 奖励减少结构必须是几何分布。</p>
+</section>
+<section id="ucb算法upper-confidence-bounds" class="level3">
+<h3 class="anchored" data-anchor-id="ucb算法upper-confidence-bounds">2.2 UCB算法(Upper Confidence Bounds)</h3>
+<p>计算每个手臂奖励均值及置信区间上限，然后选上限最高的手臂。<br>
+值得注意的是，此上限并不是常见的置信区间算法，而且比较难计算。</p>
+</section>
+<section id="启发式策略" class="level3">
+<h3 class="anchored" data-anchor-id="启发式策略">2.3 启发式策略</h3>
 <ul>
-<li>控制实验组尽可能少<br>
-不同颜色软糖对粉刺的影响不应该有区别，因此只需要设计一组实验组。<br>
+<li><strong>2.3.1 平均分配</strong><br>
+次策略均匀的探索每个臂，直到其中一个臂奖励超过某个阈值，然后一直选择此臂。这种方法对<span class="math inline">\(\theta\)</span>探索效果很好，但是前期成本高，导致整体奖励效果较差。类似于先进行一轮随机实验评估效果，然后选择效果最好的方案。<br>
 </li>
-<li>控制指标尽可能少<br>
-我们可以同时检验软糖实验组对粉刺、喉咙痛、高血压…再夸张些，婚姻幸福度、孩子情况…检验的指标越多，得到假阳性结果的可能性同样上升（吃软糖与生女孩相关明显是荒谬的）。 <img src="2.webp" class="img-fluid"></li>
+<li><strong>2.3.2 连胜就继续，输了就换其它</strong><br>
+至少好于随机选择……当最优秀的策略效果也没有特别好时，此方案会过度探索，导致效果很差。<br>
+</li>
+<li><strong>2.3.3 贪心策略</strong><br>
+简单的贪心策略效果很差，比较好的是deterministic probability matching做法。但是在批量更新场景，一个更新周期只能探索一种方案，所以前期会表现特别差。<br>
+</li>
+<li><strong>2.3.4 混合策略</strong><br>
+混合策略是贪心之外，强制进行一定比例的探索，比如Epsilon-greedy或Epsilon-decreasing。不过上两种方法的敏感度不够高，因此还可以参考Softmax learning方法。</li>
 </ul>
 </section>
-<section id="多次检验校正" class="level2">
-<h2 class="anchored" data-anchor-id="多次检验校正">2. 多次检验校正</h2>
-<p>统计学领域已经发明了一些方法来对多次检验进行校正。主要思想是检验次数越多，就要对显著采用更严格的限制，但是都会导致power的损失，降低发现率。<br>
-常用方式：<a href="https://en.wikipedia.org/wiki/Bonferroni_correction">Bonferroni correction</a>、<a href="https://en.wikipedia.org/wiki/Holm%E2%80%93Bonferroni_method" title="Holm–Bonferroni method">Holm–Bonferroni method</a>。<br>
-缺点：会导致power有所损失（特别是检验结果不独立时）。</p>
-</section>
-<section id="实验后分析" class="level2">
-<h2 class="anchored" data-anchor-id="实验后分析">3. 实验后分析</h2>
-<p>显著不等于一定正确。实验后需要对实验进行因果分析，结果需要可合理解释（不是编故事）。如果采用了多次检验校正，还需要考虑假阴性问题。</p>
+<section id="与概率匹配的对比" class="level3">
+<h3 class="anchored" data-anchor-id="与概率匹配的对比">2.4 与概率匹配的对比</h3>
+<p>概率匹配结合了2.3中的多种好处。</p>
 </section>
 </section>
-<section id="总结" class="level1">
-<h1>总结</h1>
-<p>明确概念，显著 ≠ 正确。 谨慎设计实验，尽量规避多重检验问题，必要情况下通过统计学方法校正。</p>
-<hr>
+<section id="伯努利老虎机上使用不同策略的对比" class="level2">
+<h2 class="anchored" data-anchor-id="伯努利老虎机上使用不同策略的对比">3. 伯努利老虎机上使用不同策略的对比</h2>
+<p>定义<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>，先验为<span class="math inline">\(\theta_a \sim U(0, 1)\)</span>，它们之间相互独立。<br>
+<span class="math inline">\(Y_{at},N_{at}\)</span>分别代表t时刻a的累计成功次数和观测次数。<br>
+则<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>的后验为：<br>
+&gt;<span class="math inline">\(p(\theta|Y_t) =\prod ^k_{a=1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\)</span> (10)</p>
+<p>其中<span class="math inline">\(B_e(\theta|\alpha, \beta)\)</span>是贝塔分布。此时最佳概率为：<br>
+&gt; <span class="math inline">\(w_{at} = \int_{0}^{1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\prod_{j\neq a}Pr(\theta_j &lt; \theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\theta_a\)</span> (11)</p>
+<p>验证主要关注regret，最佳选择<span class="math inline">\(\mu^*(\theta) = max_a\{\mu_a(\theta) \}\)</span>，手臂a在t时刻的观测次数为<span class="math inline">\(n_{at}\)</span>，则t时刻的regret为：<br>
+&gt; $L_t = <em>an</em>{at}(^*() - _a()) $ (12)</p>
+<p>则T时段累计regret为<span class="math inline">\(L = \sum_{t= 1}^TL_t\)</span>。以下是一些模拟对比结果。</p>
+<section id="批量更新场景" class="level3">
+<h3 class="anchored" data-anchor-id="批量更新场景">3.1 批量更新场景</h3>
+<section id="rpm对比平均分配" class="level4">
+<h4 class="anchored" data-anchor-id="rpm对比平均分配">3.1.1 RPM对比平均分配</h4>
+<p><img src="5.webp" class="img-fluid" alt="Cumulative regret in each of 100 simulation experiments under (a) randomized probability matching and (b) equal allocation. Note that the scales differ by an order of magnitude. For comparison purposes, both panels include a rug-plot showing the regret distribution under probability matching."> <img src="6.webp" class="img-fluid" alt="Expected regret per time period under (a) randomized probability matching and (b) equal allocation. Boxplots show variation across 100 simulated experiments."> <img src="7.webp" class="img-fluid" alt="Evolution of the posterior distribution (means and upper and lower 95% credibility bounds) of under (a) randomized probability matching and (b) equal allocation. Each panel corresponds to an arm. Arms are sorted according to optimality probability when the experiment ends."><br>
+从测试数据看RPM会比后者好得多。</p>
 </section>
-<section id="多重检验校正方法推导" class="level1">
-<h1>多重检验校正方法推导</h1>
-<section id="符号定义" class="level2">
-<h2 class="anchored" data-anchor-id="符号定义">符号定义</h2>
-<p><img src="3.webp" class="img-fluid"> m：总检验假设数<br>
-m0：零假设正确的数量，我们无法得知<br>
-m - m0：备择假设正确的数量<br>
-V：假阳性结论数量<br>
-S：真阳性数量<br>
-T：假阴性数量<br>
-U：真阴性数量<br>
-R = V + S：拒绝零假设数量<br>
-在m个假设检验中，m0个零假设为真，R是观察到的显著情况的随机变量，S、T、U、V都是不可观测的随机变量。</p>
+<section id="rpm对比贪心" class="level4">
+<h4 class="anchored" data-anchor-id="rpm对比贪心">3.1.2 RPM对比贪心</h4>
+<p><img src="8.webp" class="img-fluid" alt="Regret from deterministic probability matching. The first ten periods were spent learning the parameters of each arm."> <img src="9.webp" class="img-fluid" alt="(a) Stacked stripchart showing cumulative regret after excluding the first 10 test periods. Panel (b) shows means and standard deviations of the expected losses plotted in panel (a). Greedy methods have a higher chance of zero regret. Randomized probability matching has a lower variance."></p>
+<p>可发现在批量更新场景，两种贪心策略效果都是比RPM差的。</p>
 </section>
-<section id="相关推导" class="level2">
-<h2 class="anchored" data-anchor-id="相关推导">相关推导</h2>
-<p>如果m次检验是独立的，则产生假阳性的概率为:<br>
-<span class="math inline">\(\alpha = 1 - ( 1 - \alpha_{sub} )^{m}\)</span><br>
-如果检验不是独立的，仍然有：<br>
-<span class="math inline">\(\alpha \leq m * \alpha_{sub}\)</span></p>
 </section>
-<section id="bonferroni-correction" class="level2">
-<h2 class="anchored" data-anchor-id="bonferroni-correction">Bonferroni correction</h2>
-<p>方法：将每次检验的显著性从$ <em>{sub}<span class="math inline">\(调整为\)</span></em>{newSub}$ = $ _{sub} / m$<br>
-原理：根据上述不等式，则有<span class="math inline">\(\alpha \leq m * \alpha_{newSub} = \alpha_{sub}\)</span> ，因此可以有效将假阳性水平控制在预设之内。<br>
-优点：简单好理解。<br>
-缺点：由于条件过于严格，假阴性错误率升高。</p>
+<section id="实时更新场景" class="level3">
+<h3 class="anchored" data-anchor-id="实时更新场景">3.2 实时更新场景</h3>
+<p><img src="10.webp" class="img-fluid" alt="(a) Expected regret under real-time sampling across 100 experiments, each simulated for 10 000 time steps and (b) mean and standard deviation of the expected losses plotted in panel (a), along with the percentage of experiments for which the optimal arm was selected at time 10 000."><br>
+平均效果来看，RPM效果最差，但是它的标准差最小，最优解命中率最高；参数为0.999的Gittins index平均效果最好，标准差较大，且最优解的命中率低于RPM。</p>
 </section>
-<section id="holmbonferroni-method" class="level2">
-<h2 class="anchored" data-anchor-id="holmbonferroni-method">Holm–Bonferroni method</h2>
-<p>方法：将得到的P值从小到大排序记序号为i(1 ~ m)，从i = 1开始与 <span class="math inline">\(\alpha / (m - i + 1)\)</span>比较，小于就继续比较下一个。直到找出不符合条件的i(也可能不存在) ，i之前的全部认为显著，i及i之后的全部不显著。 原理： &gt;1. 将p值从大到小排序；<br>
-&gt;2. 我们只需要关心P值最小的第一个零假设为真的情况：如果被拒绝，产生假阳性；否则，比较过程停止，未产生假阳性；<br>
-&gt;3. 设第一个零假设为真的比较序号为h，则共有h - 1次正确的拒绝零假设，则：<br>
-本次拒绝零假设条件为<span class="math inline">\(\alpha / (m - h + 1)\)</span> (a);<br>
-<span class="math inline">\(h - 1 \leq m - m0\)</span>（正确拒绝的次数，一定小于等于备择假设为真的次数）；<br>
-推出<span class="math inline">\(\frac{1}{m - h + 1} \leq \frac{1}{m_0}\)</span> (b)；<br>
-不等式两边乘以<span class="math inline">\(\alpha\)</span>，得到(a)$ <span class="math inline">\(。 &gt;4. 根据相关推导中结论，单次比较\)</span>_{sub} <span class="math inline">\(，又\)</span>m_0$种等可能情况，则:<br>
-<span class="math inline">\(\alpha_{_{real}} \leq m_0 * \alpha_{sub} \leq \alpha\)</span></p>
-<p>优点：相对简单，假阴性错误率小于等于Bonferroni correction。<br>
-缺点：假阴性依然高于预设（尤其是在检验结果相关情况下）。</p>
+</section>
+<section id="后记" class="level2">
+<h2 class="anchored" data-anchor-id="后记">后记</h2>
+<p>RPM可以用来解决多臂老虎机问题，它基于后验抽样，易于实现、健壮性好，且在批量更新场景表现更佳。</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
