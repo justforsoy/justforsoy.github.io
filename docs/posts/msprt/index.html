@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2020-08-28">
+
+<title>Rock’s blog - Peeking at A/B test：mSPRT简介</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Rock’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/justforsoy" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Peeking at A/B test：mSPRT简介</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">AB</div>
+                <div class="quarto-category">序贯检验</div>
+                <div class="quarto-category">假设检验</div>
+                <div class="quarto-category">旧文迁移</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 28, 2020</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Optimizely通过mSPRT理论的扩展，提供了时时有效的P值与置信区间，解决了<a href="http://library.usc.edu.ph/ACM/KKD%202017/pdfs/p1517.pdf">ab实验中的偷看问题</a>。</p>
+<section id="定义" class="level1">
+<h1>1. 定义</h1>
+<p><strong>单样本</strong>： <span class="math inline">\(\theta_{0}\)</span>已知，<span class="math inline">\(X = (X_{iid,n})_{n=1}^{\infty} \sim F_{\theta }\)</span>。<br>
+<span class="math inline">\(H_{0}: \theta = \theta_{0}\)</span><br>
+<span class="math inline">\(H_{1}: \theta \neq \theta_{0}\)</span></p>
+<p><strong>双样本</strong>： X、Y独立同分布。<br>
+<span class="math inline">\(H_{0}: \theta = \mu ^{B} - \mu ^{A} = 0\)</span><br>
+<span class="math inline">\(H_{1}: \theta \neq 0\)</span></p>
+<p><strong>判决条件</strong>： <span class="math inline">\((T, \delta )\)</span>，<span class="math inline">\(T\)</span>为结束时间(样本量)，允许为<span class="math inline">\(\infty\)</span>，<span class="math inline">\(\delta=1\)</span>代表拒绝原假设。</p>
+</section>
+<section id="始终有效推断" class="level1">
+<h1>2. 始终有效推断</h1>
+<p>为了解决偷看，需要始终有效。</p>
+<section id="始终有效的p" class="level2">
+<h2 class="anchored" data-anchor-id="始终有效的p">2.1 始终有效的P</h2>
+<p>任意时间T，满足： <span class="math display">\[\forall s\ \epsilon\ [0,1],\ \mathbb{P}_{\theta _{0}}(p_T \leq s) \leq s\]</span></p>
+</section>
+<section id="始终有效的贯序检测" class="level2">
+<h2 class="anchored" data-anchor-id="始终有效的贯序检测">2.2 始终有效的贯序检测</h2>
+<p>依靠样本数据决策样本量。</p>
+<p><strong>判决条件</strong>：<br>
+<span class="math inline">\((T(\alpha), \delta(\alpha) )\)</span><br>
+<span class="math inline">\(\mathbb{P}_{\theta _{0}}( \delta(\alpha) = 1) \leq \alpha\)</span><br>
+$T(),() <span class="math inline">\(不会影响\)</span>$水平</p>
+</section>
+<section id="置信区间" class="level2">
+<h2 class="anchored" data-anchor-id="置信区间">2.3 置信区间</h2>
+<p>对<span class="math inline">\(\theta = \widetilde{\theta}\)</span>来说，如果<span class="math inline">\(p_{n}^{\widetilde{\theta}}\)</span>始终有效，$I_{n} = {: p_{n}^{} &gt; } $就是始终有效的<span class="math inline">\(1-\alpha\)</span>水平置信区间。</p>
+</section>
+</section>
+<section id="构造始终有效的p" class="level1">
+<h1>3. 构造始终有效的P</h1>
+<p>Optimizely通过混合贯序检验(mSPRT)构造始终有效的P值。</p>
+<section id="混合贯序检验msprt" class="level2">
+<h2 class="anchored" data-anchor-id="混合贯序检验msprt">3.1 混合贯序检验(mSPRT)</h2>
+<p>H为$<span class="math inline">\(上的混合分布，概率密度函数为h。计算H的似然比除以\)</span>_{0}$的似然比： <span class="math display">\[\Lambda _{n}^{H,\theta _{0}} = \int _{\Theta }\prod_{m=1}^{n}\frac{f_{\theta}(X_{m})}{f_{\theta_{0}}(X_{m})}h(\theta)d\theta\]</span></p>
+<p>mSPRT判断流程：<br>
+选择<span class="math inline">\(\alpha\)</span>，则拒绝原假设条件为<span class="math inline">\(\Lambda_{T}^{H,\theta_{0}} \ge \alpha^{-1}\)</span>，此时<span class="math inline">\(T = T^{\alpha}\)</span>。<br>
+详细原理参照文末。</p>
+</section>
+<section id="msprt的p值与置信区间" class="level2">
+<h2 class="anchored" data-anchor-id="msprt的p值与置信区间">3.2 mSPRT的P值与置信区间</h2>
+<p><span class="math inline">\(p_0 = 1;p_n=min\{p_{n-1},1/\Lambda _{n}^{H,\theta _0 } \}\)</span><br>
+$I_0 = ; I_n = I_{n-1} { : _n ^ {H, } ^{-1} } $</p>
+<p>如果数据自正态分布<span class="math inline">\(N(\theta, \sigma^2)\)</span>，且混合分布<span class="math inline">\(H = N(\theta_0, \tau^2)\)</span>，则<br>
+<span class="math display">\[\Lambda _{n}^{H,\theta _{0}} = \frac{\sigma}{\sqrt{\sigma^2 + n\tau^2 }} exp\{\frac{n^2\tau^2(\bar{X}_{n} - \theta_0)^2}{2\sigma^2(\sigma^2 + n\tau^2)}\}\]</span></p>
+</section>
+<section id="msprt扩展到ab" class="level2">
+<h2 class="anchored" data-anchor-id="msprt扩展到ab">3.3 mSPRT扩展到A/B</h2>
+<p>定义<span class="math inline">\(Z_n = Y_n - X_n \sim N(\theta, 2\sigma^2)\)</span>，并对其做mSPRT检测，则： <span class="math display">\[\Lambda _{n}^{H,\theta _{0}} = \sqrt {\frac {2\sigma^2} {2\sigma^2 + n \tau^2 } } exp \{ \frac{n^2\tau^2(\bar{Y}_n - \bar{X}_{n} - \theta_0)^2}{4\sigma^2(2\sigma^2 + n\tau^2)} \}\]</span></p>
+<p>对于0/1型数据，<span class="math inline">\(\bar{Y}_n - \bar{X}_n\)</span>近似于正态分布<span class="math inline">\(N(\theta, V_n/n)\)</span>，<span class="math inline">\(V_n = \bar{X}_n(1-\bar{X}_n) + \bar{Y}_n(1- \bar{Y}_n)\)</span>，则： <span class="math display">\[\Lambda _{n}^{H,\theta _{0}} = \sqrt{\frac{V_n}{V_n + n\tau^2 }} exp\{\frac{n^2\tau^2(\bar{Y}_n - \bar{X}_{n} - \theta_0)^2}{2V_{n}(V_n + n\tau^2)}\}\]</span></p>
+</section>
+<section id="实现细节" class="level2">
+<h2 class="anchored" data-anchor-id="实现细节">3.4 实现细节</h2>
+<p>对于一些连续性指标，比如“付费”（严重右斜）使用正态分布是不合适的，需要其它更适应这种偏斜的分布。<br>
+由于为了保证单调性，可能导致后期<span class="math inline">\(\bar{Y}_n - \bar{X}_n\)</span>跑出置信区间，此时Optimizely会重置显著性。这样的做法只会让p值更大、置信区间更宽，不会增加假阳性错误，但是可能增大假阴性错误。</p>
+</section>
+</section>
+<section id="回归测试" class="level1">
+<h1>4.回归测试</h1>
+<p>假阳性错误已知被控制了，但是假阴性怎么样？Optimizely进行了一些优化和测试。</p>
+<section id="优化" class="level2">
+<h2 class="anchored" data-anchor-id="优化">4.1 优化</h2>
+<p>实验者不会永远等待，因此有最大等待样本量M。<br>
+经过Optimizely验证，带M截断的mSPRT比一般的假设检验平均花费更少的样本量。</p>
+</section>
+<section id="混合分布的选择" class="level2">
+<h2 class="anchored" data-anchor-id="混合分布的选择">4.2 混合分布的选择</h2>
+<p>之前选择了混合分布为<span class="math inline">\(H = N(\theta_0, \tau^2)\)</span>。对于混合分布如何选择，没有现存的理论指导。<br>
+Optimizely选择的先验为<span class="math inline">\(G = N(0, \tau_0^2)\)</span>，并且通过数据仿真得到<span class="math inline">\(\tau_0^2\)</span>。</p>
+</section>
+</section>
+<section id="多重比较问题" class="level1">
+<h1>5.多重比较问题</h1>
+<p>Optimizely通过Benjamini-Hochberg方法对多重比较进行校正。</p>
+<hr>
+</section>
+<section id="附-statistical-methods-related-to-the-law-of-the-iterated-logarithm" class="level1">
+<h1>附: <a href="https://projecteuclid.org/download/pdf_1/euclid.aoms/1177696786">Statistical Methods Related to the Law of The Iterated Logarithm</a></h1>
+<p>若对随机变量<span class="math inline">\(x_1,...,x_n\)</span>，有联合概率密度函数<span class="math inline">\(g_{n}(x1,...,xn)\)</span>，<span class="math inline">\(g_{n}'(x1,...,xn)\)</span>为任意其他概率密度函数，且$Zn= g_{n}’(x1,…,xn)/g_{n}(x1,…,xn) <span class="math inline">\(，则对任意\)</span>&gt; 1$，存在这样的n的概率小于<span class="math inline">\(1/\xi\)</span>，即 <span class="math display">\[P(Zn \ge \xi\ for\ some\ n\ge1) \leq 1/\xi\]</span></p>
+<p><strong>以下仅简述x为正态分布下、混合函数为标准正态分布的场景</strong></p>
+<p>如果<span class="math inline">\(x.iid \sim N(\theta, 1)\)</span>,则:<br>
+<span class="math inline">\(\varphi (x) = (2\pi )^{-\frac{1}{2}}exp(-x^{2}/2),\ \Phi (x) = \int _{-\infty }^{x} \varphi (t)dt,\ S_n = x_{1} + ... + x_{n}\)</span><br>
+<span class="math inline">\(x_1,...,x_n\)</span>的联合概率密度函数为:<br>
+<span class="math inline">\(g_{\theta,n}(x_1...x_n) = \prod_1^n \varphi (x_i - \theta)\)</span>,<br>
+<span class="math inline">\(g_{\theta,n}(x_1...x_n)' = \int _{-\infty }^{\infty} \prod_1^n \varphi (x_i - \theta)dF(\theta)\)</span><br>
+<span class="math inline">\(Zn = g_n'/g_{0,n} = \int _{-\infty }^{\infty}exp(\theta S_n - 1/2n\theta^2 )dF(\theta)\)</span><br>
+定义<span class="math inline">\(f(x,y) = \int _{-\infty }^{\infty}exp(xy - 1/2ny^2 )dF(y)\)</span>，如果将<span class="math inline">\(F(\theta)\)</span>替换为<span class="math inline">\(F(\theta m^{1/2})\)</span>:<br>
+<span class="math inline">\(Zn = \int _{-\infty }^{\infty}exp(\theta S_n - 1/2n\theta^2 )dF(\theta m^{1/2}) = f(S_n/m^{1/2},n/m)\ \ \ \  (m&gt;0)\)</span> <span class="math display">\[P(f(S_n/m^{1/2},n/m) \ge \xi\ for\ some \ n\ge1) \leq 1/\xi\ \ \ \    (m&gt;0,\xi&gt;1)\]</span></p>
+<p>若<span class="math inline">\(F=\Phi,x.iid\sim N(0,1)\)</span><br>
+<span class="math inline">\(双尾：P(|S_n| \ge [(n + m)(a^2 + log(n/m + 1))]^{\frac{1}{2}}\ for\ some\ n\ge1)\leq e^{-\frac{1}{2}a^2}\)</span><br>
+<span class="math inline">\(单尾: P(|S_n| \ge [(n + m)(a^2 + log(n/m + 1))]^{\frac{1}{2}}\ for\ some\ n\ge1)\leq e^{-\frac{1}{2}a^2}/\Phi(a)\)</span></p>
+<p><strong>与维纳过程的联系</strong> <span class="math inline">\(w(t)\)</span>表示标准维纳过程，<span class="math inline">\(x.iid \sim N(0, 1)\)</span>，下面另个数列对任意<span class="math inline">\(m &gt; 0\)</span>具有相同的联合分布。<br>
+<span class="math inline">\((S_1/m^{1/2}, S_2/m^{1/2},...)\)</span><br>
+<span class="math inline">\((w(1/m),\  w(2/m),...)\)</span><br>
+<span class="math display">\[P(w(t) \ge A(t, \xi)\ for \ some\ t \ge 0) = 1/\xi\]</span></p>
+<p><strong>检验与置信区间</strong> <span class="math inline">\(x.iid \sim N(\theta, 1)\)</span>，如果<span class="math inline">\(c_n = [(n + m)(a^2 + log(n/m + 1)] ^{1/2}\)</span>，则<span class="math inline">\(P_0(|S_n| \ge c_n\ for \ some\ n \ge 1) \le exp(-1/2a^2)\)</span></p>
+<p>如果<span class="math inline">\(a^2 \cong 6,\ 1-exp(-1/2a^2) = 0.95\)</span>，因此可以得到<span class="math inline">\(I_n与C_n\)</span>序列，使得对<span class="math inline">\(\theta\)</span>的覆盖率超过0.95。</p>
+<p><strong>power分析</strong> 单边检验：<span class="math inline">\(H_0:\theta\le0,H_1:\theta &gt; 0\)</span>，则 <span class="math display">\[N = first \ n\ge1\ such \ that\ S_n \ge c_n\ else\  \infty\ if \ no \ such\ n\]</span></p>
+<p>假阴性错误概率：<span class="math inline">\(P_\theta(not\ reject\ H_0) = P_\theta(S_n &lt; c_n\ for\ all\ n\ge1)\)</span>，此时power为1。</p>
+<p>下边界：当<span class="math inline">\(\theta &gt; 0\)</span>时，<span class="math inline">\(E_\theta(N) \ge -2logP_0(N &lt; \infty)/\theta^2\)</span></p>
+<p><span class="math inline">\(如果P_0(N &lt; \infty) = 0.05，则E_\theta(N) \ge 6/\theta^2\)</span>。根据一些其它研究：<br>
+上边界：当<span class="math inline">\(\theta &gt; 0\)</span>时，<span class="math inline">\(E_\theta(N) \le \frac{c_{E_\theta(N)}}{\theta} + \frac{\varphi (\theta)}{\theta\Phi(\theta)} + 1\)</span></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
