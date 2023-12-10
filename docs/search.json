@@ -98,18 +98,25 @@
     "text": "原文《Objective Bayesian Two Sample Hypothesis Testing for Online Controlled Experiments》。"
   },
   {
+    "objectID": "posts/双样本经验贝叶斯检验/index.html#定义",
+    "href": "posts/双样本经验贝叶斯检验/index.html#定义",
+    "title": "双样本经验贝叶斯检验",
+    "section": "定义",
+    "text": "定义\n$Z = $\n\\(N_E = \\frac{1}{1/N_T + 1/N_C}\\)\n\\(\\sigma^2 / N_E = \\sigma^2_T/N_T + \\sigma^2_C/N_C\\)\n\\(\\delta = \\Delta / \\sigma\\)\n\\(\\mu = E(\\delta)\\)\n则根据定义：\n$ N ( , 1 / N_E ) $\n\\(Z = \\frac{\\delta} {\\sqrt{1 / N_E}}\\)"
+  },
+  {
     "objectID": "posts/双样本经验贝叶斯检验/index.html#模型设计",
     "href": "posts/双样本经验贝叶斯检验/index.html#模型设计",
     "title": "双样本经验贝叶斯检验",
     "section": "模型设计",
-    "text": "模型设计\n\\(H0:\\mu = 0\\) \\(H1:\\mu \\sim \\pi(\\mu)\\) \\(H1\\)为真概率为\\(p\\)，则\\(H0\\)概率为\\(1 - p\\)\n\\(P(\\delta|H_1) = \\int _Mf_\\mu(\\delta)\\pi(\\mu)d\\mu\\) 关于\\(\\mu\\)的先验\\(\\pi\\)，采用一个简单的正态分布模型：\\(\\pi(\\mu) =N(0, V^2)\\)， &gt;1.\\(\\delta = \\mu + \\sqrt{1 / N_E} * \\varepsilon, \\varepsilon \\sim N(0, 1)\\) &gt;2.\\(\\mu =0 + V * \\varepsilon_0, \\varepsilon_0 \\sim N(0,1) \\$ &gt;则\\)= * + V * _0, _0 N(0,1) , N(0, 1)$\n可求得\\(E(\\delta) = 0, Var(\\delta) = 1/N_{E} + V^2\\), 则\\((\\delta|\\pi, N_E) \\sim N(0, 1/N_{E} + V^2)\\)"
+    "text": "模型设计\n\\(H0:\\mu = 0\\)\n\\(H1:\\mu \\sim \\pi(\\mu)\\)\n\\(H1\\)为真概率为\\(p\\)，则\\(H0\\)概率为\\(1 - p\\)\n\\(P(\\delta|H_1) = \\int _Mf_\\mu(\\delta)\\pi(\\mu)d\\mu\\)\n关于\\(\\mu\\)的先验\\(\\pi\\)，采用一个简单的正态分布模型：\\(\\pi(\\mu) =N(0, V^2)\\)，\n1.\\(\\delta = \\mu + \\sqrt{1 / N_E} * \\varepsilon, \\varepsilon \\sim N(0, 1)\\) 2.$ + V * _0, _0 N(0,1) $\n则\\(\\delta = \\sqrt{1 / N_E} * \\varepsilon+ V * \\varepsilon_0, \\varepsilon_0 \\sim N(0,1) , \\varepsilon \\sim N(0, 1)\\)\n可求得\\(E(\\delta) = 0, Var(\\delta) = 1/N_{E} + V^2\\)，则\\((\\delta|\\pi, N_E) \\sim N(0, 1/N_{E} + V^2)\\)"
   },
   {
     "objectID": "posts/双样本经验贝叶斯检验/index.html#先验概率与v的选取",
     "href": "posts/双样本经验贝叶斯检验/index.html#先验概率与v的选取",
     "title": "双样本经验贝叶斯检验",
     "section": "先验概率与V的选取",
-    "text": "先验概率与V的选取\n我们并不知道历史实验中，哪些\\(\\delta_i\\)属于\\(H0\\)哪些属于\\(H1\\)。 如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用最大期望算法：\n\n\\(\\frac{P(H1)}{P(H0)} * \\frac{P(\\Delta|H1)}{P(\\Delta|H0)} = \\frac{p}{1 - p} * \\frac{\\phi (\\delta_i; 0, 1/N_{Ei} + V^2)}{\\phi (\\delta_i; 0, 1/N_{Ei})}\\) 求得\\(P_i = P(H1|\\delta_i;p,V)\\)\n将\\(p\\)设置为1中得到的\\(P_i\\)的均值\n\\(V^2 =\\frac{\\sum{var(\\delta_i) * P_i}}{\\sum{P_i}} - \\frac{\\sum{1 / N_{Ei} * P_i}}{\\sum{P_i}} = \\frac{\\sum{\\delta_i^2 * P_i}}{\\sum{P_i}} - \\frac{\\sum{1 / N_{Ei} * P_i}}{\\sum{P_i}}\\)\n\n重复上述步骤直到\\(p\\)与\\(V\\)收敛，作为它们的最大似然估计。"
+    "text": "先验概率与V的选取\n我们并不知道历史实验中，哪些\\(\\delta_i\\)属于\\(H0\\)哪些属于\\(H1\\)。\n如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用最大期望算法：\n\n\\(\\frac{P(H1)}{P(H0)} * \\frac{P(\\Delta|H1)}{P(\\Delta|H0)} = \\frac{p}{1 - p} * \\frac{\\phi (\\delta_i; 0, 1/N_{Ei} + V^2)}{\\phi (\\delta_i; 0, 1/N_{Ei})}\\) 求得\\(P_i = P(H1|\\delta_i;p,V)\\)\n\n将\\(p\\)设置为1中得到的\\(P_i\\)的均值\n\n\\(V^2 =\\frac{\\sum{var(\\delta_i) * P_i}}{\\sum{P_i}} - \\frac{\\sum{1 / N_{Ei} * P_i}}{\\sum{P_i}} = \\frac{\\sum{\\delta_i^2 * P_i}}{\\sum{P_i}} - \\frac{\\sum{1 / N_{Ei} * P_i}}{\\sum{P_i}}\\)\n\n重复上述步骤直到\\(p\\)与\\(V\\)收敛，作为它们的最大似然估计。"
   },
   {
     "objectID": "posts/实验设计_如何选择样本量/index.html",

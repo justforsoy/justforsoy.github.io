@@ -143,27 +143,66 @@ ul.task-list li input[type="checkbox"] {
 <p>原文<a href="https://alexdeng.github.io/public/files/BayesianAB.pdf">《Objective Bayesian Two Sample Hypothesis Testing for Online Controlled Experiments》</a>。</p>
 <section id="为什么选贝叶斯" class="level1">
 <h1>为什么选贝叶斯</h1>
-<p>相比固定水平假设检验的优势： 1. <span class="math inline">\(P(H0|Data)\)</span>相对p值更直接； 2. 正确先验前提，支持多次观测，可选择最佳停止时机； 3. 无需多重检验修正； 4. 可主动接受零假设。</p>
+<p>相比固定水平假设检验的优势：</p>
+<ol type="1">
+<li><span class="math inline">\(P(H0|Data)\)</span>相对p值更直接；</li>
+<li>正确先验前提，支持多次观测，可选择最佳停止时机；</li>
+<li>无需多重检验修正；</li>
+<li>可主动接受零假设。</li>
+</ol>
 </section>
 <section id="贝叶斯检验" class="level1">
 <h1>贝叶斯检验</h1>
-<p><span class="math inline">\(\frac{P(H1 | \Delta)}{P(H0 | \Delta)} = \frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)}\)</span></p>
+<p><span class="math display">\[\frac{P(H1 | \Delta)}{P(H0 | \Delta)} = \frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)}\]</span></p>
 <p>两个假设是对立事件，根据两种假设的后验概率之比选择接受哪种假设。</p>
 <p>从公式可知，后验比率<span class="math inline">\(\frac{P(H1 | \Delta)}{P(H0 | \Delta)}\)</span>依赖于先验比率$ <span class="math inline">\(、贝叶斯因子\)</span>$，确定了两者就可以求出。</p>
-<p>那么如何选择两者呢？ # 模型和先验问题 1. 贝叶斯因子计算 通过大数定理、中心极限定理可知，<span class="math inline">\(\Delta\)</span>服从正态分布，可以使用<strong>正态分布模型</strong>。 在<span class="math inline">\(H0\)</span>下，<span class="math inline">\(\Delta \sim N(0, \sigma^2_T/N_T + \sigma^2_C/N_C)\)</span>； 在<span class="math inline">\(H1\)</span>下，<span class="math inline">\((\mu, \sigma^2)\)</span>会怎么？一般我们认为<span class="math inline">\(\Delta \sim N(\mu, \sigma^2_T/N_T + \sigma^2_C/N_C)\)</span>，<span class="math inline">\(\mu\)</span>为某非零的值。 2. 先验比率计算 $ $按照主观贝叶斯，我们可按自己理解指定，但选取不好会影响敏感度甚至得到错误的结果； 如果按照客观贝叶斯，可使用经验贝叶斯或全贝叶斯。 这里介绍经验贝叶斯方案：如果我们已经进行了很多次实验，且已知各实验分别属于零假设和备择假设的数量，这是一个伯努利分布模型，则我们可以求得两者的经验分布，以及先验比率的估计。 # 计算细节 ## 定义 $Z = $ <span class="math inline">\(N_E = \frac{1}{1/N_T + 1/N_C}\)</span> <span class="math inline">\(\sigma^2 / N_E = \sigma^2_T/N_T + \sigma^2_C/N_C\)</span> <span class="math inline">\(\delta = \Delta / \sigma\)</span> <span class="math inline">\(\mu = E(\delta)\)</span></p>
-<p>则根据定义： $ N ( , 1 / N_E ) $ <span class="math inline">\(Z = \frac{\delta} {\sqrt{1 / N_E}}\)</span></p>
+<p>那么如何选择两者呢？</p>
+</section>
+<section id="模型和先验问题" class="level1">
+<h1>模型和先验问题</h1>
+<ol type="1">
+<li>贝叶斯因子计算 通过大数定理、中心极限定理可知，<span class="math inline">\(\Delta\)</span>服从正态分布，可以使用<strong>正态分布模型</strong>。<br>
+在<span class="math inline">\(H0\)</span>下，<span class="math inline">\(\Delta \sim N(0, \sigma^2_T/N_T + \sigma^2_C/N_C)\)</span>；<br>
+在<span class="math inline">\(H1\)</span>下，<span class="math inline">\((\mu, \sigma^2)\)</span>会怎么？一般我们认为<span class="math inline">\(\Delta \sim N(\mu, \sigma^2_T/N_T + \sigma^2_C/N_C)\)</span>，<span class="math inline">\(\mu\)</span>为某非零的值。<br>
+</li>
+<li>先验比率计算 $ $按照主观贝叶斯，我们可按自己理解指定，但选取不好会影响敏感度甚至得到错误的结果；<br>
+如果按照客观贝叶斯，可使用经验贝叶斯或全贝叶斯。<br>
+这里介绍经验贝叶斯方案：如果我们已经进行了很多次实验，且已知各实验分别属于零假设和备择假设的数量，这是一个伯努利分布模型，则我们可以求得两者的经验分布，以及先验比率的估计。</li>
+</ol>
+</section>
+<section id="计算细节" class="level1">
+<h1>计算细节</h1>
+<section id="定义" class="level2">
+<h2 class="anchored" data-anchor-id="定义">定义</h2>
+<p>$Z = $<br>
+<span class="math inline">\(N_E = \frac{1}{1/N_T + 1/N_C}\)</span><br>
+<span class="math inline">\(\sigma^2 / N_E = \sigma^2_T/N_T + \sigma^2_C/N_C\)</span><br>
+<span class="math inline">\(\delta = \Delta / \sigma\)</span><br>
+<span class="math inline">\(\mu = E(\delta)\)</span></p>
+<p>则根据定义：<br>
+$ N ( , 1 / N_E ) $<br>
+<span class="math inline">\(Z = \frac{\delta} {\sqrt{1 / N_E}}\)</span></p>
+</section>
 <section id="模型设计" class="level2">
 <h2 class="anchored" data-anchor-id="模型设计">模型设计</h2>
-<p><span class="math inline">\(H0:\mu = 0\)</span> <span class="math inline">\(H1:\mu \sim \pi(\mu)\)</span> <span class="math inline">\(H1\)</span>为真概率为<span class="math inline">\(p\)</span>，则<span class="math inline">\(H0\)</span>概率为<span class="math inline">\(1 - p\)</span></p>
-<p><span class="math inline">\(P(\delta|H_1) = \int _Mf_\mu(\delta)\pi(\mu)d\mu\)</span> 关于<span class="math inline">\(\mu\)</span>的先验<span class="math inline">\(\pi\)</span>，采用一个简单的正态分布模型：<span class="math inline">\(\pi(\mu) =N(0, V^2)\)</span>， &gt;1.<span class="math inline">\(\delta = \mu + \sqrt{1 / N_E} * \varepsilon, \varepsilon \sim N(0, 1)\)</span> &gt;2.<span class="math inline">\(\mu =0 + V * \varepsilon_0, \varepsilon_0 \sim N(0,1) \$ &gt;则\)</span>= * + V * _0, _0 N(0,1) , N(0, 1)$</p>
-<p>可求得<span class="math inline">\(E(\delta) = 0, Var(\delta) = 1/N_{E} + V^2\)</span>, 则<span class="math inline">\((\delta|\pi, N_E) \sim N(0, 1/N_{E} + V^2)\)</span></p>
+<p><span class="math inline">\(H0:\mu = 0\)</span><br>
+<span class="math inline">\(H1:\mu \sim \pi(\mu)\)</span><br>
+<span class="math inline">\(H1\)</span>为真概率为<span class="math inline">\(p\)</span>，则<span class="math inline">\(H0\)</span>概率为<span class="math inline">\(1 - p\)</span></p>
+<p><span class="math inline">\(P(\delta|H_1) = \int _Mf_\mu(\delta)\pi(\mu)d\mu\)</span><br>
+关于<span class="math inline">\(\mu\)</span>的先验<span class="math inline">\(\pi\)</span>，采用一个简单的正态分布模型：<span class="math inline">\(\pi(\mu) =N(0, V^2)\)</span>，</p>
+<p>1.<span class="math inline">\(\delta = \mu + \sqrt{1 / N_E} * \varepsilon, \varepsilon \sim N(0, 1)\)</span> 2.$ + V * _0, _0 N(0,1) $</p>
+<p>则<span class="math inline">\(\delta = \sqrt{1 / N_E} * \varepsilon+ V * \varepsilon_0, \varepsilon_0 \sim N(0,1) , \varepsilon \sim N(0, 1)\)</span></p>
+<p>可求得<span class="math inline">\(E(\delta) = 0, Var(\delta) = 1/N_{E} + V^2\)</span>，则<span class="math inline">\((\delta|\pi, N_E) \sim N(0, 1/N_{E} + V^2)\)</span></p>
 </section>
 <section id="先验概率与v的选取" class="level2">
 <h2 class="anchored" data-anchor-id="先验概率与v的选取">先验概率与V的选取</h2>
-<p>我们并不知道历史实验中，哪些<span class="math inline">\(\delta_i\)</span>属于<span class="math inline">\(H0\)</span>哪些属于<span class="math inline">\(H1\)</span>。 如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用<a href="https://zh.wikipedia.org/wiki/%E6%9C%80%E5%A4%A7%E6%9C%9F%E6%9C%9B%E7%AE%97%E6%B3%95">最大期望算法</a>：</p>
+<p>我们并不知道历史实验中，哪些<span class="math inline">\(\delta_i\)</span>属于<span class="math inline">\(H0\)</span>哪些属于<span class="math inline">\(H1\)</span>。<br>
+如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用<a href="https://zh.wikipedia.org/wiki/%E6%9C%80%E5%A4%A7%E6%9C%9F%E6%9C%9B%E7%AE%97%E6%B3%95">最大期望算法</a>：</p>
 <ol type="1">
-<li><span class="math inline">\(\frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)} = \frac{p}{1 - p} * \frac{\phi (\delta_i; 0, 1/N_{Ei} + V^2)}{\phi (\delta_i; 0, 1/N_{Ei})}\)</span> 求得<span class="math inline">\(P_i = P(H1|\delta_i;p,V)\)</span></li>
-<li>将<span class="math inline">\(p\)</span>设置为1中得到的<span class="math inline">\(P_i\)</span>的均值</li>
+<li><span class="math inline">\(\frac{P(H1)}{P(H0)} * \frac{P(\Delta|H1)}{P(\Delta|H0)} = \frac{p}{1 - p} * \frac{\phi (\delta_i; 0, 1/N_{Ei} + V^2)}{\phi (\delta_i; 0, 1/N_{Ei})}\)</span> 求得<span class="math inline">\(P_i = P(H1|\delta_i;p,V)\)</span><br>
+</li>
+<li>将<span class="math inline">\(p\)</span>设置为1中得到的<span class="math inline">\(P_i\)</span>的均值<br>
+</li>
 <li><span class="math inline">\(V^2 =\frac{\sum{var(\delta_i) * P_i}}{\sum{P_i}} - \frac{\sum{1 / N_{Ei} * P_i}}{\sum{P_i}} = \frac{\sum{\delta_i^2 * P_i}}{\sum{P_i}} - \frac{\sum{1 / N_{Ei} * P_i}}{\sum{P_i}}\)</span></li>
 </ol>
 <p>重复上述步骤直到<span class="math inline">\(p\)</span>与<span class="math inline">\(V\)</span>收敛，作为它们的最大似然估计。</p>
