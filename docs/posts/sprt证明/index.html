@@ -142,19 +142,36 @@ ul.task-list li input[type="checkbox"] {
 <section id="sprt简介" class="level2">
 <h2 class="anchored" data-anchor-id="sprt简介">1. SPRT简介</h2>
 <p>SPRT是在二战中由Wald发明的，最初用于检验炮弹质量。</p>
-<p>如果X1, X2,…是iid的分布为P的随机变量，H0 : P = P0， H1：P= P1 SPRT抽样数量为： <span class="math inline">\(N = inf\{n \ge 1: R_n \geq A\ or\ R_n \leq B \}\)</span> 其中A &gt; 1 &gt; B &gt; 0，被称为停止边界，根据α、β选取。 其中Rn为似然比： <span class="math inline">\(R_n = \prod_{i=1}^{n}\frac{f_1(X_i)}{f_0(X_i)}\)</span> RN &gt;= A时接受H1，RN &lt;= B时接受H0。</p>
+<p>如果X1, X2,…是iid的分布为P的随机变量，H0 : P = P0， H1：P= P1<br>
+SPRT抽样数量为：<br>
+<span class="math inline">\(N = inf\{n \ge 1: R_n \geq A\ or\ R_n \leq B \}\)</span><br>
+其中A &gt; 1 &gt; B &gt; 0，被称为停止边界，根据α、β选取。<br>
+其中Rn为似然比：<br>
+<span class="math inline">\(R_n = \prod_{i=1}^{n}\frac{f_1(X_i)}{f_0(X_i)}\)</span><br>
+RN &gt;= A时接受H1，RN &lt;= B时接受H0。</p>
 </section>
 <section id="鞅的定义" class="level2">
 <h2 class="anchored" data-anchor-id="鞅的定义">2. 鞅的定义</h2>
-<p>设X和Y是两个随机过程，满足以下条件则过程X是关于Y的鞅。 若对每个n &gt;=0 : (1) E(|Xn|) &lt; 无穷 (2) Xn是Y0, Y1, … Yn的函数 (3) E(Xn+1 | Y0,…Yn) = Xn <img src="https://upload-images.jianshu.io/upload_images/6655519-d397c6a177ec9697.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240.png" class="img-fluid"></p>
+<p>设X和Y是两个随机过程，满足以下条件则过程X是关于Y的鞅。<br>
+若对每个n &gt;=0 :<br>
+(1) E(|Xn|) &lt; 无穷<br>
+(2) Xn是Y0, Y1, … Yn的函数<br>
+(3) E(Xn+1 | Y0,…Yn) = Xn<br>
+<img src="1.webp" class="img-fluid"></p>
 </section>
 <section id="doobs-martingale-inequality" class="level2">
 <h2 class="anchored" data-anchor-id="doobs-martingale-inequality">3. Doob’s martingale inequality</h2>
-<p>设{Xn; n &gt;=0} 为鞅或非负下鞅，那么： <span class="math inline">\(P(\sup_{0&lt;k&lt;n}|X_k| \ge C) \leq \frac{ E( |X_n|)}{C}\)</span></p>
+<p>设{Xn; n &gt;=0} 为鞅或非负下鞅，那么：<br>
+<span class="math inline">\(P(\sup_{0&lt;k&lt;n}|X_k| \ge C) \leq \frac{ E( |X_n|)}{C}\)</span></p>
 </section>
 <section id="一类错误被控制的证明" class="level2">
 <h2 class="anchored" data-anchor-id="一类错误被控制的证明">4. 一类错误被控制的证明</h2>
-<p>此时H0为真时，则： ### (1) 似然比过程是一个鞅 <span class="math inline">\(E(R_{1} | X_1) = \int^{+\infty}_{{-\infty}}\frac{f_1(x_{1})}{f_0(x_{1})}{f_0(x_{1})}dx = 1\)</span> <span class="math inline">\(E(R_{n+1} | X_1,..X_n) = E(R_n\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_nE(\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_n\int^{+\infty}_{{-\infty}}\frac{f_1(x_{n + 1})}{f_0(x_{n+1})}{f_0(x_{n+1})}dx \\= R_n\)</span> ### (2) 带入Doob’s martingale inequality <span class="math inline">\(P(\sup_{0&lt;i&lt;n}|R_n| \ge \frac{1}{\alpha}) \leq \frac{E(|R_n|)}{\frac{1}{\alpha}} = \alpha\)</span> ## 其他 同理也可以证明H1为真时，对二类错误的控制是正确的。 mSPRT使用分部积分法展开，也可以用类似的过程证明。</p>
+<p>此时H0为真时，则：<br>
+### (1) 似然比过程是一个鞅 <span class="math inline">\(E(R_{1} | X_1) = \int^{+\infty}_{{-\infty}}\frac{f_1(x_{1})}{f_0(x_{1})}{f_0(x_{1})}dx = 1\)</span><br>
+<span class="math inline">\(E(R_{n+1} | X_1,..X_n) = E(R_n\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_nE(\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_n\int^{+\infty}_{{-\infty}}\frac{f_1(x_{n + 1})}{f_0(x_{n+1})}{f_0(x_{n+1})}dx \\= R_n\)</span><br>
+### (2) 带入Doob’s martingale inequality <span class="math inline">\(P(\sup_{0&lt;i&lt;n}|R_n| \ge \frac{1}{\alpha}) \leq \frac{E(|R_n|)}{\frac{1}{\alpha}} = \alpha\)</span><br>
+## 其他 同理也可以证明H1为真时，对二类错误的控制是正确的。<br>
+mSPRT使用分部积分法展开，也可以用类似的过程证明。</p>
 <p>PS：欢迎对ab testing希望知其然知其所以然的朋友私信我，交个朋友以后共同探讨。</p>
 
 

@@ -564,35 +564,35 @@
     "href": "posts/sprt证明/index.html",
     "title": "SPRT可控制两种错误的证明",
     "section": "",
-    "text": "SPRT是在二战中由Wald发明的，最初用于检验炮弹质量。\n如果X1, X2,…是iid的分布为P的随机变量，H0 : P = P0， H1：P= P1 SPRT抽样数量为： \\(N = inf\\{n \\ge 1: R_n \\geq A\\ or\\ R_n \\leq B \\}\\) 其中A &gt; 1 &gt; B &gt; 0，被称为停止边界，根据α、β选取。 其中Rn为似然比： \\(R_n = \\prod_{i=1}^{n}\\frac{f_1(X_i)}{f_0(X_i)}\\) RN &gt;= A时接受H1，RN &lt;= B时接受H0。"
+    "text": "SPRT是在二战中由Wald发明的，最初用于检验炮弹质量。\n如果X1, X2,…是iid的分布为P的随机变量，H0 : P = P0， H1：P= P1\nSPRT抽样数量为：\n\\(N = inf\\{n \\ge 1: R_n \\geq A\\ or\\ R_n \\leq B \\}\\)\n其中A &gt; 1 &gt; B &gt; 0，被称为停止边界，根据α、β选取。\n其中Rn为似然比：\n\\(R_n = \\prod_{i=1}^{n}\\frac{f_1(X_i)}{f_0(X_i)}\\)\nRN &gt;= A时接受H1，RN &lt;= B时接受H0。"
   },
   {
     "objectID": "posts/sprt证明/index.html#sprt简介",
     "href": "posts/sprt证明/index.html#sprt简介",
     "title": "SPRT可控制两种错误的证明",
     "section": "",
-    "text": "SPRT是在二战中由Wald发明的，最初用于检验炮弹质量。\n如果X1, X2,…是iid的分布为P的随机变量，H0 : P = P0， H1：P= P1 SPRT抽样数量为： \\(N = inf\\{n \\ge 1: R_n \\geq A\\ or\\ R_n \\leq B \\}\\) 其中A &gt; 1 &gt; B &gt; 0，被称为停止边界，根据α、β选取。 其中Rn为似然比： \\(R_n = \\prod_{i=1}^{n}\\frac{f_1(X_i)}{f_0(X_i)}\\) RN &gt;= A时接受H1，RN &lt;= B时接受H0。"
+    "text": "SPRT是在二战中由Wald发明的，最初用于检验炮弹质量。\n如果X1, X2,…是iid的分布为P的随机变量，H0 : P = P0， H1：P= P1\nSPRT抽样数量为：\n\\(N = inf\\{n \\ge 1: R_n \\geq A\\ or\\ R_n \\leq B \\}\\)\n其中A &gt; 1 &gt; B &gt; 0，被称为停止边界，根据α、β选取。\n其中Rn为似然比：\n\\(R_n = \\prod_{i=1}^{n}\\frac{f_1(X_i)}{f_0(X_i)}\\)\nRN &gt;= A时接受H1，RN &lt;= B时接受H0。"
   },
   {
     "objectID": "posts/sprt证明/index.html#鞅的定义",
     "href": "posts/sprt证明/index.html#鞅的定义",
     "title": "SPRT可控制两种错误的证明",
     "section": "2. 鞅的定义",
-    "text": "2. 鞅的定义\n设X和Y是两个随机过程，满足以下条件则过程X是关于Y的鞅。 若对每个n &gt;=0 : (1) E(|Xn|) &lt; 无穷 (2) Xn是Y0, Y1, … Yn的函数 (3) E(Xn+1 | Y0,…Yn) = Xn"
+    "text": "2. 鞅的定义\n设X和Y是两个随机过程，满足以下条件则过程X是关于Y的鞅。\n若对每个n &gt;=0 :\n(1) E(|Xn|) &lt; 无穷\n(2) Xn是Y0, Y1, … Yn的函数\n(3) E(Xn+1 | Y0,…Yn) = Xn"
   },
   {
     "objectID": "posts/sprt证明/index.html#doobs-martingale-inequality",
     "href": "posts/sprt证明/index.html#doobs-martingale-inequality",
     "title": "SPRT可控制两种错误的证明",
     "section": "3. Doob’s martingale inequality",
-    "text": "3. Doob’s martingale inequality\n设{Xn; n &gt;=0} 为鞅或非负下鞅，那么： \\(P(\\sup_{0&lt;k&lt;n}|X_k| \\ge C) \\leq \\frac{ E( |X_n|)}{C}\\)"
+    "text": "3. Doob’s martingale inequality\n设{Xn; n &gt;=0} 为鞅或非负下鞅，那么：\n\\(P(\\sup_{0&lt;k&lt;n}|X_k| \\ge C) \\leq \\frac{ E( |X_n|)}{C}\\)"
   },
   {
     "objectID": "posts/sprt证明/index.html#一类错误被控制的证明",
     "href": "posts/sprt证明/index.html#一类错误被控制的证明",
     "title": "SPRT可控制两种错误的证明",
     "section": "4. 一类错误被控制的证明",
-    "text": "4. 一类错误被控制的证明\n此时H0为真时，则： ### (1) 似然比过程是一个鞅 \\(E(R_{1} | X_1) = \\int^{+\\infty}_{{-\\infty}}\\frac{f_1(x_{1})}{f_0(x_{1})}{f_0(x_{1})}dx = 1\\) \\(E(R_{n+1} | X_1,..X_n) = E(R_n\\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_nE(\\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_n\\int^{+\\infty}_{{-\\infty}}\\frac{f_1(x_{n + 1})}{f_0(x_{n+1})}{f_0(x_{n+1})}dx \\\\= R_n\\) ### (2) 带入Doob’s martingale inequality \\(P(\\sup_{0&lt;i&lt;n}|R_n| \\ge \\frac{1}{\\alpha}) \\leq \\frac{E(|R_n|)}{\\frac{1}{\\alpha}} = \\alpha\\) ## 其他 同理也可以证明H1为真时，对二类错误的控制是正确的。 mSPRT使用分部积分法展开，也可以用类似的过程证明。\nPS：欢迎对ab testing希望知其然知其所以然的朋友私信我，交个朋友以后共同探讨。"
+    "text": "4. 一类错误被控制的证明\n此时H0为真时，则：\n### (1) 似然比过程是一个鞅 \\(E(R_{1} | X_1) = \\int^{+\\infty}_{{-\\infty}}\\frac{f_1(x_{1})}{f_0(x_{1})}{f_0(x_{1})}dx = 1\\)\n\\(E(R_{n+1} | X_1,..X_n) = E(R_n\\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_nE(\\frac{f_1(X_{n + 1})}{f_0(X_{n+1})}) = R_n\\int^{+\\infty}_{{-\\infty}}\\frac{f_1(x_{n + 1})}{f_0(x_{n+1})}{f_0(x_{n+1})}dx \\\\= R_n\\)\n### (2) 带入Doob’s martingale inequality \\(P(\\sup_{0&lt;i&lt;n}|R_n| \\ge \\frac{1}{\\alpha}) \\leq \\frac{E(|R_n|)}{\\frac{1}{\\alpha}} = \\alpha\\)\n## 其他 同理也可以证明H1为真时，对二类错误的控制是正确的。\nmSPRT使用分部积分法展开，也可以用类似的过程证明。\nPS：欢迎对ab testing希望知其然知其所以然的朋友私信我，交个朋友以后共同探讨。"
   },
   {
     "objectID": "posts/双样本客观贝叶斯/index.html",
