@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-12-10">
+
+<title>Rock’s blog - 【Bayesian Modeling and Computation in Python】1.贝叶斯推断</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Rock’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/justforsoy" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">【Bayesian Modeling and Computation in Python】1.贝叶斯推断</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">读书摘录</div>
+                <div class="quarto-category">贝叶斯建模</div>
+                <div class="quarto-category">Bayesian Modeling and Computation in Python</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 10, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>现代贝叶斯主要通过计算机程序来执行，但是还是需要知道基本原理。<br>
+第一章中主要介绍贝叶斯相关概念和方法<a href="https://bayesiancomputationbook.com/markdown/chp_01.html">原文链接</a>。</p>
+<section id="贝叶斯建模" class="level2">
+<h2 class="anchored" data-anchor-id="贝叶斯建模">1.1. 贝叶斯建模</h2>
+<p>建设模型需要结合领域知识和统计技能。数据是原材料、统计分布是塑造统计模型的主要数据工具。</p>
+<section id="贝叶斯模型" class="level3">
+<h3 class="anchored" data-anchor-id="贝叶斯模型">1.1.1 贝叶斯模型</h3>
+<p>贝叶斯建模的两个特点：</p>
+<ul>
+<li>用概率分布描绘未知数值。这些数值称为「参数」；<br>
+</li>
+<li>结合观测数值，通过贝叶斯定理更新参数值。</li>
+</ul>
+<p>贝叶斯建模的三个步骤：</p>
+<ol type="1">
+<li>建模。给定一些数值及这些数值如何被生成的假设，通过随机变量的组合和转换来设计模型；<br>
+</li>
+<li>推断。结合观测到的数据，基于贝叶斯定理更新我们的模型得到后验分布。这个过程称为<strong>推断</strong>，通过数据来减少不确定性；<br>
+</li>
+<li>验证。通过数据和领域知识来批判模型。有时需要比较多个模型好坏。</li>
+</ol>
+<p><code>第3步验证非常重要！</code></p>
+</section>
+<section id="贝叶斯推断" class="level3">
+<h3 class="anchored" data-anchor-id="贝叶斯推断">1.1.2 贝叶斯推断</h3>
+<p>推断一般指通过证据和理由得出结论贝叶斯推断是统计推断的一种。<br>
+贝叶斯理论给了一种基于<span class="math inline">\(\boldsymbol{Y}\)</span>来估计<span class="math inline">\(\theta\)</span>的通用框架：</p>
+<p><span class="math display">\[\underbrace{p(\boldsymbol{\theta} \mid \boldsymbol{Y})}_{\text{posterior}} = \frac{\overbrace{p(\boldsymbol{Y} \mid \boldsymbol{\theta})}^{\text{likelihood}}\; \overbrace{p(\boldsymbol{\theta})}^{\text{prior}}}{\underbrace{{p(\boldsymbol{Y})}}_{\text{marginal likelihood}}}\]</span></p>
+<p>先验分布代表不确定性，通过似然函数(likelihood function)链接观测值和不确定的参数。相乘后得到后验的联合分布。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="bayesian_triad.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Fig. 1.1</figcaption>
+</figure>
+</div>
+<p>计算后验概率还需要知道归一化常数<span class="math inline">\(p(\boldsymbol{Y})\)</span>：</p>
+<p><span class="math display">\[{p(\boldsymbol{Y}) = \int_{\boldsymbol{\Theta}} p(\boldsymbol{Y} \mid \boldsymbol{\theta})p(\boldsymbol{\theta}) d\boldsymbol{\theta}}\]</span></p>
+<p>计算上面的积分常常非常困难，好在一些数值方案可以应对。由于边际似然通常不计算，因此贝叶斯定理经常表示为比例：</p>
+<p><span class="math display">\[\underbrace{p(\boldsymbol{\theta} \mid \boldsymbol{Y})}_{\text{posterior}} \propto \overbrace{p(\boldsymbol{Y} \mid \boldsymbol{\theta})}^{\text{likelihood}}\; \overbrace{p(\boldsymbol{\theta})}^{\text{prior}}
+\]</span></p>
+<p>错误的数据和模型会导致无意义的结果。我们必须始终对我们的数据、模型和结果保持一定程度的怀疑：</p>
+<p><span class="math display">\[p(\boldsymbol{\theta} \mid  \boldsymbol{Y}, M) \propto  p(\boldsymbol{Y} \mid \boldsymbol{\theta}, M) \; p(\boldsymbol{\theta}, M)
+\]</span></p>
+<p>推断永远基于假设模型<span class="math inline">\(\boldsymbol{M}\)</span>。</p>
+</section>
+</section>
+<section id="一个diy采样器请勿在家里尝试" class="level2">
+<h2 class="anchored" data-anchor-id="一个diy采样器请勿在家里尝试">1.2. 一个DIY采样器，请勿在家里尝试</h2>
+<p>归一化常数常不能直接计算，现代贝叶斯推断一般用称为<strong>Universal Inference Engines</strong>的数值方法。</p>
+<p><strong>Universal Inference Engines</strong>有多种算法。应用可能最广泛也最强大的是Markov chain Monte Carlo methods (MCMC)。从很高的视角来看，所有的MCMC方法都是通过抽样来逼近后验分布。后验分布的样本是通过接受或拒绝proposal distribution生成样本而得到的。因此MCMC也称为采样器，它们都能够评估给定参数值的先验和可能性。也就是说，即使我们不知道整个后验是什么样子，我们也可以逐点询问得到密度。</p>
+<p>MCMC的一种算法是Metropolis-Hastings。它一个非常现代或特别有效的算法，但 Metropolis-Hastings 很容易理解，并且还为理解更复杂和强大的方法提供基础。</p>
+<p>Metropolis-Hasting算法：</p>
+<ol type="1">
+<li>以<span class="math inline">\(x_i\)</span>初始化参数值<span class="math inline">\(\boldsymbol{X}\)</span><br>
+</li>
+<li>通过proposal distribution <span class="math inline">\(q(x_{i+1} \mid x_i)\)</span>从<span class="math inline">\(x_i\)</span>产生<span class="math inline">\(x_{i+1}\)</span><br>
+</li>
+<li>计算接受新值的概率： <span class="math display">\[p_a (x_{i + 1} \mid x_i) = \min \left (1, \frac{p(x_{i + 1}) \;q(x_i \mid x_{i + 1})} {p(x_i) \; q (x_{i + 1} \mid x_i)} \right)\]</span><br>
+</li>
+<li><span class="math inline">\(R \sim U(0, 1)\)</span>，如果<span class="math inline">\(p_a &gt; R\)</span>，保存新值，否则保存旧值<br>
+</li>
+<li>重复2到4的步骤直到生成<em>足够大</em>的值样本</li>
+</ol>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/0lpT-yveuIA" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+<p>举一个具体的例子，简单的Beta-Binomial模型：</p>
+<p><span class="math display">\[\theta \sim \text{Beta}(\alpha, \beta)\]</span></p>
+<p><span class="math display">\[Y \sim \text{Bin}(n=1, p=\theta)\]</span></p>
+<p>以上模型有解析解（共轭先验），但是这里我们通过Metropolis-Hastings来计算近：</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> post(θ, Y, α<span class="op">=</span><span class="dv">1</span>, β<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="dv">0</span> <span class="op">&lt;=</span> θ <span class="op">&lt;=</span> <span class="dv">1</span>:</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        prior <span class="op">=</span> stats.beta(α, β).pdf(θ)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        like  <span class="op">=</span> stats.bernoulli(θ).pmf(Y).prod()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        prob <span class="op">=</span> like <span class="op">*</span> prior</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        prob <span class="op">=</span> <span class="op">-</span>np.inf</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> prob</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>此随机生成一些假数据做观测数据来进行推断：</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> stats.bernoulli(<span class="fl">0.7</span>).rvs(<span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>之后即可运行Metropolis-Hastings：</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>n_iters <span class="op">=</span> <span class="dv">2000</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>can_sd <span class="op">=</span> <span class="fl">0.05</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>α <span class="op">=</span> β <span class="op">=</span>  <span class="dv">1</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>θ <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>trace <span class="op">=</span> {<span class="st">"θ"</span>:np.zeros(n_iters)}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>p2 <span class="op">=</span> post(θ, Y, α, β)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="bu">iter</span> <span class="kw">in</span> <span class="bu">range</span>(n_iters):</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    θ_can <span class="op">=</span> stats.norm(θ, can_sd).rvs(<span class="dv">1</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    p1 <span class="op">=</span> post(θ_can, Y, α, β)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    pa <span class="op">=</span> p1 <span class="op">/</span> p2</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pa <span class="op">&gt;</span> stats.uniform(<span class="dv">0</span>, <span class="dv">1</span>).rvs(<span class="dv">1</span>):</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        θ <span class="op">=</span> θ_can</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        p2 <span class="op">=</span> p1</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    trace[<span class="st">"θ"</span>][<span class="bu">iter</span>] <span class="op">=</span> θ</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_51324/3034504359.py:19: DeprecationWarning: Conversion of an array with ndim &gt; 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)
+  trace["θ"][iter] = θ</code></pre>
+</div>
+</div>
+<p>以上代码仅是示例，并不高效而且可能因为计算精度产生溢出等问题。同样理论上can_sd并不影响结果，但是实践中它非常重要，会影响方法效率。</p>
+<p>现在我们有了 MCMC 示例，我们想要了解它是什么样的。检查贝叶斯推理结果的常见方法是将每次迭代的采样值与直方图或其他可视化工具一起绘制以表示分布：</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>_, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">2</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot(trace[<span class="st">'θ'</span>], <span class="st">'0.5'</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">'θ'</span>, rotation<span class="op">=</span><span class="dv">0</span>, labelpad<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].hist(trace[<span class="st">'θ'</span>], color<span class="op">=</span><span class="st">'0.5'</span>, orientation<span class="op">=</span><span class="st">"horizontal"</span>, density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticks([])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>[]</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-5-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>计算一些数值摘要也很有用：</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arviz <span class="im">as</span> az</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>az.summary(trace, kind<span class="op">=</span><span class="st">"stats"</span>, round_to<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">mean</th>
+<th data-quarto-table-cell-role="th">sd</th>
+<th data-quarto-table-cell-role="th">hdi_3%</th>
+<th data-quarto-table-cell-role="th">hdi_97%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">θ</td>
+<td>0.72</td>
+<td>0.09</td>
+<td>0.55</td>
+<td>0.89</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>ArviZ函数<code>summary</code>计算了均值、标注差和<span class="math inline">\(\theta\)</span>的94%最高密度区间（HDI）<br>
+也可以通过<code>az.plot_posterior(trace)</code>得到类似的结果。图通过<strong>kernel density estimator (KDE)</strong>计算生成。</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>az.plot_posterior(trace)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>&lt;Axes: title={'center': 'θ'}&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-7-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>HDI一般选择50%或95%水平，但是ArviZ选择94%。这样的原因是94%跟95%差不多，而且提醒用户95%没什么特别之处。</p>
+</section>
+<section id="要自动推断不要自动建模" class="level2">
+<h2 class="anchored" data-anchor-id="要自动推断不要自动建模">1.3. 要自动推断，不要自动建模</h2>
+<p>我们应该拥抱 <strong>Probabilistic Programming Languages (PPL)</strong> 但不是用<code>scipy.stats</code>自己造轮子。<br>
+有很多工具允许用户贝叶斯建模，并且自动化执行贝叶斯推断。不幸的是Universal Inference Engines并不是真正的universal。现代贝叶斯实践者需要理解并解决这些限制。</p>
+<p>本书中将使用PyMC和TensorFlow Probability。让我们用PyMC对上面的例子建模：</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymc <span class="im">as</span> pm</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Declare a model in PyMC</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> model:</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Specify the prior distribution of unknown parameter</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    θ <span class="op">=</span> pm.Beta(<span class="st">"θ"</span>, alpha<span class="op">=</span><span class="dv">1</span>, beta<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Specify the likelihood distribution and condition on the observed data</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    y_obs <span class="op">=</span> pm.Binomial(<span class="st">"y_obs"</span>, n<span class="op">=</span><span class="dv">1</span>, p<span class="op">=</span>θ, observed<span class="op">=</span>Y)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sample from the posterior distribution</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    idata <span class="op">=</span> pm.sample(<span class="dv">2000</span>, return_inferencedata<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [θ]
+Sampling 4 chains for 1_000 tune and 2_000 draw iterations (4_000 + 8_000 draws total) took 20 seconds.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="12000" class="" max="12000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [12000/12000 00:02&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+</div>
+<p>以上代码写起来更加简洁，并且可以通过<code>pm.model_to_graphviz(model)</code>对模型进行可视化。</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>pm.model_to_graphviz(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<p><img src="index_files/figure-html/cell-9-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>Probabilistic Programming Language不仅能计算后验分布，而且可以模拟各种分布</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pred_dists <span class="op">=</span> (pm.sample_prior_predictive(<span class="dv">2000</span>, model).prior_predictive.y_obs.to_numpy()[<span class="dv">0</span>],</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>              pm.sample_posterior_predictive(idata, predictions<span class="op">=</span><span class="va">True</span>, model <span class="op">=</span> model).predictions.y_obs.to_numpy()[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Sampling: [y_obs, θ]
+Sampling: [y_obs]</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="8000" class="" max="8000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [8000/8000 00:00&lt;00:00]
+    </div>
+    
+</div>
+</div>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">4</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">9</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(hspace<span class="op">=</span><span class="dv">1</span>) </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, n_d, dist <span class="kw">in</span> <span class="bu">zip</span>((<span class="dv">1</span>, <span class="dv">3</span>), (<span class="st">"Prior"</span>, <span class="st">"Posterior"</span>), pred_dists):</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    az.plot_dist(dist.<span class="bu">sum</span>(<span class="dv">1</span>), hist_kwargs<span class="op">=</span>{<span class="st">"color"</span>:<span class="st">"0.5"</span>, <span class="st">"bins"</span>:<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">22</span>)},</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                           ax<span class="op">=</span>axes[idx])</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    axes[idx].set_title(<span class="ss">f"</span><span class="sc">{</span>n_d<span class="sc">}</span><span class="ss"> predictive distribution"</span>,fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    axes[idx].set_xlim(<span class="op">-</span><span class="dv">1</span>, <span class="dv">21</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    axes[idx].set_ylim(<span class="dv">0</span>, <span class="fl">0.15</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    axes[idx].set_xlabel(<span class="st">"number of success"</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>az.plot_dist(pm.draw(θ, <span class="dv">1000</span>), plot_kwargs<span class="op">=</span>{<span class="st">"color"</span>:<span class="st">"0.5"</span>},</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>             fill_kwargs<span class="op">=</span>{<span class="st">'alpha'</span>:<span class="dv">1</span>}, ax<span class="op">=</span>axes[<span class="dv">0</span>])</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Prior distribution"</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylim(<span class="dv">0</span>, <span class="dv">4</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].tick_params(axis<span class="op">=</span><span class="st">'both'</span>, pad<span class="op">=</span><span class="dv">7</span>)</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"θ"</span>)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>az.plot_dist(idata.posterior[<span class="st">"θ"</span>], plot_kwargs<span class="op">=</span>{<span class="st">"color"</span>:<span class="st">"0.5"</span>},</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>             fill_kwargs<span class="op">=</span>{<span class="st">'alpha'</span>:<span class="dv">1</span>}, ax<span class="op">=</span>axes[<span class="dv">2</span>])</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_title(<span class="st">"Posterior distribution"</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_xlim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_ylim(<span class="dv">0</span>, <span class="dv">5</span>)</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].tick_params(axis<span class="op">=</span><span class="st">'both'</span>, pad<span class="op">=</span><span class="dv">7</span>)</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_xlabel(<span class="st">"θ"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>Text(0.5, 0, 'θ')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-11-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> model:</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    y_obs_test <span class="op">=</span> pm.Binomial(<span class="st">"y_obs_new"</span>, n<span class="op">=</span><span class="dv">1</span>, p<span class="op">=</span>idata.posterior[<span class="st">"θ"</span>].mean().item(), observed<span class="op">=</span>Y)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>temp <span class="op">=</span> pm.draw(y_obs_test, <span class="dv">2000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>值得注意的是，后验预测分布依然保留了先验的不确定性，所以对比以后验参数预测均值做参数值产生的预测分布，它会更宽。</p>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> (temp, pred_dists[<span class="dv">1</span>])</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> d, c, l <span class="kw">in</span> <span class="bu">zip</span>(predictions, (<span class="st">"C0"</span>, <span class="st">"C4"</span>), (<span class="st">"posterior mean"</span>, <span class="st">"posterior predictive"</span>)):</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> az.plot_dist(d.<span class="bu">sum</span>(<span class="dv">1</span>),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                      label<span class="op">=</span>l,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                      figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                      hist_kwargs<span class="op">=</span>{<span class="st">"alpha"</span>: <span class="fl">0.5</span>, <span class="st">"color"</span>:c, <span class="st">"bins"</span>:<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">22</span>)})</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks([])</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"number of success"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-13-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="先验的几种选择" class="level2">
+<h2 class="anchored" data-anchor-id="先验的几种选择">1.4. 先验的几种选择</h2>
+<p>必须选择先验分布既是一种负担也是一种福利。从业者了解模型假设并能够灵活地改变它们是有优势的。先验只是假设的一种形式。</p>
+<p>本节讨论几种选择先验分布的常见方法，信息梯度（<em>nformativeness gradient</em>）从不包含任何信息的“白板”到包含尽可能多的信息的高信息量。</p>
+<section id="共轭先验" class="level3">
+<h3 class="anchored" data-anchor-id="共轭先验">1.4.1. 共轭先验</h3>
+<p>如果后验分布与先验分布属于同一分布族，则先验与似然共轭。例如似然是泊松分布，先验是伽马分布，那么后验也是伽马分布。</p>
+<p>共轭先验在数学上很方便，不需要复杂的计算，可通过笔和纸完成。现代一般有更好的选择，因为计算几乎允许使用任何先验进行推理，不仅仅包含共轭先验。 但是在学习中和特定场景近实时推断时，它依然很有用。以下对Beta Binomial模型举例：</p>
+<p>如上所述，Binomial分布的共轭先验是Beta分布。我们可以通过以下方式计算后验分布：</p>
+<p><span class="math display">\[
+p(\theta \mid Y) \propto \overbrace{\frac{N!}{y!(N-y)!} \theta^y (1 - \theta)^{N-y}}^{\text{binomial-likelihood}} \: \overbrace{\frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\, \theta^{\alpha-1}(1-\theta)^{\beta-1}}^{\text{beta.prior}}
+\]</span></p>
+<p>由于不包含<span class="math inline">\(\theta\)</span>的项都是常数，因此可以简化为：</p>
+<p><span class="math display">\[
+p(\theta \mid Y) \propto \overbrace{\theta^y (1 - \theta)^{N-y}}^{\text{binomial-likelihood}} \: \overbrace{ \theta^{\alpha-1}(1-\theta)^{\beta-1}}^{\text{beta.prior}}
+\]</span></p>
+<p>整理后：</p>
+<p><span class="math display">\[
+p(\theta \mid Y) \propto \theta^{\alpha-1+y}(1-\theta)^{\beta-1+N-y}
+\]</span></p>
+<p>后验分布依然是有效分布，需要添加归一化常数来保证pdf的积分为1。由于上述公式看起来是Beta分布公式里的一部分，因此容易得到后验分布为：</p>
+<p><span class="math display">\[
+p(\theta \mid Y) \propto \frac{\Gamma(\alpha_{post}+\beta_{post})}{\Gamma(\alpha_{post})\Gamma(\beta_{post})} \theta^{\alpha_{post}-1}(1-\theta)^{\beta_{post}-1} = \text{Beta}(\alpha_{post}, \beta_{post})
+\]</span></p>
+<p>其中<span class="math inline">\(\alpha_{post} = \alpha + y\)</span>，<span class="math inline">\(\beta_{post} = \beta + N - y\)</span></p>
+<p>因为 Beta-Binomial 模型的后验为Beta分布，所以我们可以基于后验分布继续进行推断。这意味着如果我们一次更新前一个数据点或者一次使用整个数据集，我们将得到相同的结果。<br>
+例如下面的例子：</p>
+<div class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>viridish <span class="op">=</span> [(<span class="fl">0.2823529411764706</span>, <span class="fl">0.11372549019607843</span>, <span class="fl">0.43529411764705883</span>, <span class="fl">1.0</span>),</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1450980392156863</span>, <span class="fl">0.6705882352941176</span>, <span class="fl">0.5098039215686274</span>, <span class="fl">1.0</span>),</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.6901960784313725</span>, <span class="fl">0.8666666666666667</span>, <span class="fl">0.1843137254901961</span>, <span class="fl">1.0</span>)]</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>_, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>,<span class="dv">3</span>, sharey<span class="op">=</span><span class="va">True</span>, sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>axes <span class="op">=</span> np.ravel(axes)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>n_trials <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">12</span>, <span class="dv">180</span>]</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>success <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">6</span>, <span class="dv">59</span>]</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> <span class="bu">zip</span>(n_trials, success)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>beta_params <span class="op">=</span> [(<span class="fl">0.5</span>, <span class="fl">0.5</span>), (<span class="dv">1</span>, <span class="dv">1</span>), (<span class="dv">10</span>, <span class="dv">10</span>)]</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>θ <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1500</span>)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, (N, y) <span class="kw">in</span> <span class="bu">enumerate</span>(data):</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    s_n <span class="op">=</span> (<span class="st">"s"</span> <span class="cf">if</span> (N <span class="op">&gt;</span> <span class="dv">1</span>) <span class="cf">else</span> <span class="st">""</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> jdx, (a_prior, b_prior) <span class="kw">in</span> <span class="bu">enumerate</span>(beta_params):</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        p_theta_given_y <span class="op">=</span> stats.beta.pdf(θ, a_prior <span class="op">+</span> y, b_prior <span class="op">+</span> N <span class="op">-</span> y)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>        axes[idx].plot(θ, p_theta_given_y, lw<span class="op">=</span><span class="dv">4</span>, color<span class="op">=</span>viridish[jdx])</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        axes[idx].set_yticks([])</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>        axes[idx].set_ylim(<span class="dv">0</span>, <span class="dv">12</span>)</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>        axes[idx].plot(np.divide(y, N), <span class="dv">0</span>, color<span class="op">=</span><span class="st">"k"</span>, marker<span class="op">=</span><span class="st">"o"</span>, ms<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>        axes[idx].set_title(<span class="ss">f"</span><span class="sc">{</span>N<span class="sc">:4d}</span><span class="ss"> trial</span><span class="sc">{</span>s_n<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span>y<span class="sc">:4d}</span><span class="ss"> success"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_51324/4213617618.py:22: RuntimeWarning: invalid value encountered in divide
+  axes[idx].plot(np.divide(y, N), 0, color="k", marker="o", ms=12)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-14-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>先验的期望为：</p>
+<p><span class="math display">\[
+\mathbb{E}[\theta]  = \frac{\alpha}{\alpha + \beta}
+\]</span></p>
+<p>后验的期望为：</p>
+<p><span class="math display">\[
+\mathbb{E}[\theta \mid Y]  = \frac{\alpha + y}{\alpha + \beta + N}
+\]</span></p>
+<p>从上可知，当<span class="math inline">\(n \rightarrow \infty\)</span>，期望会趋向于<span class="math inline">\(\hat \theta = \frac{y}{n}\)</span></p>
+<p>后验分布众数：</p>
+<p><span class="math display">\[
+\operatorname*{argmax}_{\theta}{[\theta \mid Y]}  = \frac{\alpha + y - 1}{\alpha + \beta + n - 2}
+\]</span></p>
+<p>后验众数常称为<strong>maximum a posterior</strong>（MAP）。</p>
+</section>
+<section id="客观先验" class="level3">
+<h3 class="anchored" data-anchor-id="客观先验">1.4.2. 客观先验</h3>
+<p>当没有先验知识时，遵循<em>principle of indifference</em>听起来是合理的。在贝叶斯统计的背景下，这一原理推动了客观先验（<strong>objective priors</strong>）的研究和使用。这些方法尽量减少对先验对分析结果的影响，即消除“主观性“。当然这并没有消除其他主观性，比如似然函数、数据选择过程、建模选择等等。</p>
+<p>客观先验的一种方法是Jeffreys’ prior (JP)。Jeffreys’ prior（JP）具有在重新参数化下不变的特性，即，以不同但数学上等价的方式写出表达式。<br>
+举例说明：Alice有一个binomial likelihood包含未知参数<span class="math inline">\(\theta\)</span>，她选择了一个先验并计算得到了后验。Bob对同个问题感兴趣但是他需要的结果是<strong>赔率</strong><span class="math inline">\(\kappa\)</span>，即<span class="math inline">\(\kappa = \frac{\theta}{1 - \theta}\)</span>。他有两种选择：基于Alice的后验结果<span class="math inline">\(\theta\)</span>计算<span class="math inline">\(\kappa\)</span>，或者对<span class="math inline">\(\kappa\)</span>选择一个先验分布来计算后验。如果使用了JPs，则无论Bob选择哪种方式，他会得到相同的结果。</p>
+<p>一维情况下：</p>
+<p><span class="math display">\[p(\theta) \propto \sqrt{I(\theta)}\]</span></p>
+<p>其中<span class="math inline">\(I(\theta)\)</span>是费希尔信息的期望：</p>
+<p><span class="math display">\[I(\theta) = - \mathbb{E_{Y}}\left[\frac{d^2}{d\theta^2} \log p(Y \mid \theta)\right]\]</span></p>
+<p>因此似然函数<span class="math inline">\(p(Y \mid \theta)\)</span>选好后，JP就已经确定。</p>
+<p>回到上述例子，对Alice来说JP为：</p>
+<p><span class="math display">\[p(\theta) \propto \theta^{-0.5} (1-\theta)^{-0.5}\]</span></p>
+<p>对Bob来说JP为：</p>
+<p><span class="math display">\[p(\kappa) \propto \kappa^{-0.5} (1 + \kappa)^{-1}\]</span></p>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>θ <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">100</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>κ <span class="op">=</span> (θ <span class="op">/</span> (<span class="dv">1</span><span class="op">-</span>θ))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>_, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>),</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                     sharex<span class="op">=</span><span class="st">'col'</span>, sharey<span class="op">=</span><span class="st">'row'</span>, constrained_layout<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>, <span class="dv">0</span>].set_title(<span class="st">"Jeffreys' prior for Alice"</span>)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>, <span class="dv">0</span>].plot(θ, θ<span class="op">**</span>(<span class="op">-</span><span class="fl">0.5</span>) <span class="op">*</span> (<span class="dv">1</span><span class="op">-</span>θ)<span class="op">**</span>(<span class="op">-</span><span class="fl">0.5</span>))</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">0</span>].set_title(<span class="st">"Jeffreys' posterior for Alice"</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">0</span>].plot(θ, θ<span class="op">**</span>(y<span class="op">-</span><span class="fl">0.5</span>) <span class="op">*</span> (<span class="dv">1</span><span class="op">-</span>θ)<span class="op">**</span>(n<span class="op">-</span>y<span class="op">-</span><span class="fl">0.5</span>))</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">0</span>].set_xlabel(<span class="st">"θ"</span>)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>, <span class="dv">1</span>].set_title(<span class="st">"Jeffreys' prior for Bob"</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>, <span class="dv">1</span>].plot(κ, κ<span class="op">**</span>(<span class="op">-</span><span class="fl">0.5</span>) <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> κ)<span class="op">**</span>(<span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].set_title(<span class="st">"Jeffreys' posterior for Bob"</span>)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].plot(κ, κ<span class="op">**</span>(y<span class="op">-</span><span class="fl">0.5</span>) <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> κ)<span class="op">**</span>(<span class="op">-</span>n<span class="op">-</span><span class="dv">1</span>))</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].set_xlim(<span class="op">-</span><span class="fl">0.5</span>, <span class="dv">10</span>)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].set_xlabel(<span class="st">"κ"</span>)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].text(<span class="op">-</span><span class="fl">4.0</span>, <span class="fl">0.030</span>, size<span class="op">=</span><span class="dv">18</span>, s<span class="op">=</span><span class="vs">r'$p(\theta \mid Y) \, \frac{d\theta}{d\kappa}$'</span>)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].annotate(<span class="st">""</span>, xy<span class="op">=</span>(<span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.025</span>), xytext<span class="op">=</span>(<span class="op">-</span><span class="fl">4.5</span>, <span class="fl">0.025</span>),</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>                  arrowprops<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">'black'</span>, shrink<span class="op">=</span><span class="fl">0.05</span>))</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].text(<span class="op">-</span><span class="fl">4.0</span>, <span class="fl">0.007</span>, size<span class="op">=</span><span class="dv">18</span>, s<span class="op">=</span> <span class="vs">r'$p(\kappa \mid Y) \, \frac{d\kappa}{d\theta}$'</span>)</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>, <span class="dv">1</span>].annotate(<span class="st">""</span>, xy<span class="op">=</span>(<span class="op">-</span><span class="fl">4.5</span>, <span class="fl">0.015</span>), xytext<span class="op">=</span>(<span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.015</span>),</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>                  arrowprops<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">'black'</span>, shrink<span class="op">=</span><span class="fl">0.05</span>),</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>                  annotation_clip<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(wspace<span class="op">=</span><span class="fl">0.4</span>, hspace<span class="op">=</span><span class="fl">0.4</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_51324/1380693406.py:2: RuntimeWarning: divide by zero encountered in divide
+  κ = (θ / (1-θ))
+/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_51324/1380693406.py:10: RuntimeWarning: divide by zero encountered in power
+  axes[0, 0].plot(θ, θ**(-0.5) * (1-θ)**(-0.5))
+/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_51324/1380693406.py:15: RuntimeWarning: divide by zero encountered in power
+  axes[0, 1].plot(κ, κ**(-0.5) * (1 + κ)**(-1))
+/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_51324/1380693406.py:17: RuntimeWarning: invalid value encountered in multiply
+  axes[1, 1].plot(κ, κ**(y-0.5) * (1 + κ)**(-n-1))</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-15-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>JP 可能是Improper prior，这意味着它的积分可能不为 1。</p>
+<p>JPs不是唯一的客观先验方法。比如另一种Bernardo reference priors通过最大化先验与后验的Kullback-Leibler divergence期望来选择。</p>
+</section>
+<section id="最大熵先验" class="level3">
+<h3 class="anchored" data-anchor-id="最大熵先验">1.4.3. 最大熵先验</h3>
+<p>证明先验选择合理性的另一种方法是选择具有最高熵的先验。<br>
+为了得到最大熵先验，我们需要在约束条件下解决最优化问题。数学上称为拉格朗日乘子法。</p>
+<div class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> entropy</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [[{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> x: np.<span class="bu">sum</span>(x) <span class="op">-</span> <span class="dv">1</span>}],</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> x: np.<span class="bu">sum</span>(x) <span class="op">-</span> <span class="dv">1</span>},</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>         {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> x: <span class="fl">1.5</span> <span class="op">-</span> np.<span class="bu">sum</span>(x <span class="op">*</span> np.arange(<span class="dv">1</span>, <span class="dv">7</span>))}],</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>        [{<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> x: np.<span class="bu">sum</span>(x) <span class="op">-</span> <span class="dv">1</span>},</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>         {<span class="st">"type"</span>: <span class="st">"eq"</span>, <span class="st">"fun"</span>: <span class="kw">lambda</span> x: np.<span class="bu">sum</span>(x[[<span class="dv">2</span>, <span class="dv">3</span>]]) <span class="op">-</span> <span class="fl">0.8</span>}]]</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>max_ent <span class="op">=</span> []</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, c <span class="kw">in</span> <span class="bu">enumerate</span>(cons):</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    val <span class="op">=</span> minimize(<span class="kw">lambda</span> x: <span class="op">-</span>entropy(x), x0<span class="op">=</span>[<span class="dv">1</span><span class="op">/</span><span class="dv">6</span>]<span class="op">*</span><span class="dv">6</span>, bounds<span class="op">=</span>[(<span class="fl">0.</span>, <span class="fl">1.</span>)] <span class="op">*</span> <span class="dv">6</span>,</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>                   constraints<span class="op">=</span>c)[<span class="st">'x'</span>]</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    max_ent.append(entropy(val))</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    plt.plot(np.arange(<span class="dv">1</span>, <span class="dv">7</span>), val, <span class="st">'o--'</span>, color<span class="op">=</span>viridish[i], lw<span class="op">=</span><span class="fl">2.5</span>)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"$t$"</span>)</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"$p(t)$"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>Text(0, 0.5, '$p(t)$')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-16-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>上图是通过最大熵得到的三种分布。紫色分布无约束，它是一个均匀分布；青色分布增加了约束条件，它的均值为1.5，得到了一个类指数分布；最后一个约束条件为已知3和4的出现概率为0.8。<br>
+可以将最大熵理解为对未知分配均等概率的过程。无约束时均匀分布；已知3和4合计出现概率时，对3和4均等分配概率，其它也均等分配概率；类指数分布虽然看起来不均匀，但是已经是此约束下最均匀的分配方式。</p>
+<div class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>ite <span class="op">=</span> <span class="dv">100_000</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>entropies <span class="op">=</span> np.zeros((<span class="dv">3</span>, ite))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx <span class="kw">in</span> <span class="bu">range</span>(ite):</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    rnds <span class="op">=</span> np.zeros(<span class="dv">6</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    total <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    x_ <span class="op">=</span> np.random.choice(np.arange(<span class="dv">1</span>, <span class="dv">7</span>), size<span class="op">=</span><span class="dv">6</span>, replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> x_[:<span class="op">-</span><span class="dv">1</span>]:</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>        rnd <span class="op">=</span> np.random.uniform(<span class="dv">0</span>, <span class="dv">1</span><span class="op">-</span>total)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>        rnds[i<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> rnd</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>        total <span class="op">=</span> rnds.<span class="bu">sum</span>()</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    rnds[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> rnds[:<span class="op">-</span><span class="dv">1</span>].<span class="bu">sum</span>()</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> entropy(rnds)</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    entropies[<span class="dv">0</span>, idx] <span class="op">=</span> H</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">abs</span>(<span class="fl">1.5</span> <span class="op">-</span> np.<span class="bu">sum</span>(rnds <span class="op">*</span> x_)) <span class="op">&lt;</span> <span class="fl">0.01</span>:</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>        entropies[<span class="dv">1</span>, idx] <span class="op">=</span> H</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    prob_34 <span class="op">=</span> <span class="bu">sum</span>(rnds[np.argwhere((x_ <span class="op">==</span> <span class="dv">3</span>) <span class="op">|</span> (x_ <span class="op">==</span> <span class="dv">4</span>)).ravel()])</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">abs</span>(<span class="fl">0.8</span> <span class="op">-</span> prob_34) <span class="op">&lt;</span> <span class="fl">0.01</span>:</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>        entropies[<span class="dv">2</span>, idx] <span class="op">=</span> H</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">4</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>, constrained_layout<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    az.plot_kde(entropies[i][np.nonzero(entropies[i])], ax<span class="op">=</span>ax[i], plot_kwargs<span class="op">=</span>{<span class="st">"color"</span>:viridish[i], <span class="st">"lw"</span>:<span class="dv">4</span>})</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    ax[i].axvline(max_ent[i], <span class="dv">0</span>, <span class="dv">1</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    ax[i].set_yticks([])</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    ax[i].set_xlabel(<span class="st">"entropy"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-18-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>上图是同一份样本下三个分布的熵。看起来没有一个随机生成的分布的熵大于具有最大熵的分布。</p>
+<p>一些约束下的最大熵分布：</p>
+<ul>
+<li>无约束：均匀分布</li>
+<li>范围 <span class="math inline">\([0, \infty)\)</span>，均值为正：指数分布</li>
+<li>范围 <span class="math inline">\((-\infty, \infty)\)</span>，且约束条件为均值绝对偏差（即所有观察值与均值的绝对差的平均值）为定值：拉普拉斯分布（也被称为双指数分布）</li>
+<li>范围 <span class="math inline">\((-\infty, \infty)\)</span>，已知均值和方差：正态分布</li>
+<li>范围 <span class="math inline">\([-\pi, \pi]\)</span>，已知均值和方差：Von Mises</li>
+<li>只有两种无序的结果和一个常数均值：二项分布，或者如果我们有稀有事件，则使用泊松分布（泊松分布可以被视为二项分布的一个特殊情况）</li>
+</ul>
+</section>
+<section id="弱信息先验和正则化先验" class="level3">
+<h3 class="anchored" data-anchor-id="弱信息先验和正则化先验">1.4.4. 弱信息先验和正则化先验</h3>
+<p>上面使用通用程序生成模糊的、无信息的先验，旨在不将太多信息放入我们的分析中。这些生成先验的过程还提供了一种“以某种方式”自动生成先验的方法。<br>
+在本书中我们不会过多依赖这些先验。先验启发（与其他建模决策一样）应该依赖于上下文，这意味着特定问题的细节甚至给定科学领域的特质可以影响我们对先验的选择。</p>
+<p>弱信息先验的构成通常不像 JP 或 MaxEnt 那样在数学上得到明确的定义。它们更加注重实证和模型驱动，是通过领域专业知识和模型本身组合定义的。</p>
+<div class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">500</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>params <span class="op">=</span> [(<span class="fl">0.5</span>, <span class="fl">0.5</span>), (<span class="dv">1</span>, <span class="dv">1</span>), (<span class="dv">3</span>,<span class="dv">3</span>), (<span class="dv">100</span>, <span class="dv">25</span>)]</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [<span class="st">"Jeffreys"</span>, <span class="st">"MaxEnt"</span>, <span class="st">"Weakly  Informative"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Informative"</span>]</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (α, β), label, c <span class="kw">in</span> <span class="bu">zip</span>(params, labels, (<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">2</span>)):</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    pdf <span class="op">=</span> stats.beta.pdf(x, α, β)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    ax.plot(x, pdf, label<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">"</span>, c<span class="op">=</span><span class="ss">f"C</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span>, lw<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    ax.<span class="bu">set</span>(yticks<span class="op">=</span>[], xlabel<span class="op">=</span><span class="st">"θ"</span>, title<span class="op">=</span><span class="st">"Priors"</span>)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-19-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>上图是对Beta-Binomial例子的四种先验。前两种是JP和MaxEnt；第三种是弱信息先验，偏好于0.5但是不确定性还是很高；最后一个是信息丰富的先验，主要围绕0.8附近。如果我们从理论、先前的实验、观察数据等中获得了高质量的信息，那么使用信息先验是一个有效的选择，但是“非凡的主张需要非凡的证据”.</p>
+<p>由于弱信息先验可以将后验分布保持在一定的合理范围内，因此它们也称为正则化先验。正则化是一种添加信息的过程，目的是解决不适定问题或减少过度拟合的机会，而先验提供了执行正则化的原则方法。在本书中通常会使用弱信息先验。</p>
+</section>
+<section id="使用先验预测分布来评估先验" class="level3">
+<h3 class="anchored" data-anchor-id="使用先验预测分布来评估先验">1.4.5. 使用先验预测分布来评估先验</h3>
+<p>先验预测分布是个方便的工具，从观测值思考比从模型参数思考更容易。计算先前的预测可以帮助我们确保我们的模型已正确编写，并且能够在我们的概率编程语言中运行，甚至可以帮助我们调试我们的模型。</p>
+</section>
+</section>
+<section id="练习" class="level2">
+<h2 class="anchored" data-anchor-id="练习">1.5. 练习</h2>
+<p>待完善</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
