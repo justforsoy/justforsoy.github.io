@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2022-04-03">
+<meta name="dcterms.date" content="2021-01-16">
 
-<title>Rock’s blog - 流量分配与决策优化</title>
+<title>Rock’s blog - ab实验与Delta方法</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -104,10 +104,10 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">流量分配与决策优化</h1>
+      <h1 class="title">ab实验与Delta方法</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">AB</div>
-                <div class="quarto-category">实验设计</div>
+                <div class="quarto-category">假设检验</div>
                 <div class="quarto-category">旧文迁移</div>
               </div>
                   </div>
@@ -120,7 +120,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">April 3, 2022</p>
+        <p class="date">January 16, 2021</p>
       </div>
     </div>
     
@@ -138,129 +138,58 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>以下内容重在描述解决的问题、大概思路和可能收益，详细数学和细节参考引用论文。</p>
 <section id="背景" class="level1">
-<h1>1. 背景</h1>
-<p>AB实验来自于来自科学又夹杂着玄学，下面是其中最常见的两个玄学。</p>
-<section id="发布决策问题" class="level2">
-<h2 class="anchored" data-anchor-id="发布决策问题">1.1. 发布决策问题</h2>
-<p>AB实验是否显著依赖假设检验，假设检验会有某种阈值来决定是否显著，比如P值小于0.05。<br>
-但是为什么P值是0.05？这一标准是否是普适的？是否对不同行业不同公司有更优的标准？</p>
+<h1>背景</h1>
+<p>互联网实验一般使用基于正态分布模型的检验方法，但是在ab实验中我们可能遇到这样的情况：</p>
+<p>1.实验结果分析，实验组均值比对照组均值提升了10%，相对提升的置信区间是多少呢？ 2.实验组用户合计点击率为26%，对照组未25%，置信度与置信区间如何计算？</p>
+<p>在场景1中，实验组均值、对照组均值是分别服从正态分布的，但是它们的比值会服从正态分布么？标准差怎么计算？<br>
+而场景2中，平均浏览数、平均点击数是服从正态分布的，但平均点击率等于平均点击除以平均浏览。我们又陷入了正态分布随机变量除以正态分布随机变量的问题！</p>
+<p><strong><a href="https://en.wikipedia.org/wiki/Delta_method">Delta method</a>可以帮助我们解决这类问题</strong>。</p>
 </section>
-<section id="流量分配问题" class="level2">
-<h2 class="anchored" data-anchor-id="流量分配问题">1.2. 流量分配问题</h2>
-<p>对大规模实验平台来说，流量始终是一种稀缺资源。如何为实验选择合适的流量？</p>
-<p>常规答案是进行power分析，实验者根据自己选择的最小观测的效果（MDE）结合实验运行时长、样本方差评估出需要多少用户参与实验。</p>
-<p>但这也只是把原问题转换为了另一个形式，实验者应该如何选择自己的MDE？不同场景下是否有科学的MDE选择指南？</p>
+<section id="delta-method是什么" class="level1">
+<h1>Delta method是什么</h1>
+<p>Delta method说的是当一个随机变量服从正态分布时，经过可导的函数变化后仍然概率趋向正态分布，并且提供了期望、方差的计算公式。</p>
+<blockquote class="blockquote">
+<p>单变量下：<br>
+如 <span class="math inline">\(\sqrt{n}[X - \theta] \overset{\nu }{\rightarrow} N(0, \sigma^2)\)</span>，且函数g(x)可导，<br>
+则<span class="math inline">\(\sqrt{n}[g(X) - g(\theta)] \overset{\nu }{\rightarrow} N(0, \sigma^2 * [g’(\theta)]^2)\)</span></p>
+</blockquote>
+<blockquote class="blockquote">
+<p>多变量下：<br>
+如 <span class="math inline">\(\sqrt{n}[B - \beta] \overset{\nu }{\rightarrow} N(0, \Sigma)\)</span>，且函数g(x)可导，<br>
+则<span class="math inline">\(\sqrt{n}[h(B) - h(\theta)] \overset{\nu }{\rightarrow} N(0, \Delta h(B)^T * \Sigma * \Delta h(B))\)</span>。<br>
+其中<span class="math inline">\(\Sigma\)</span>是多元正态分布的协方差矩阵，<span class="math inline">\(\Delta h\)</span>为<span class="math inline">\(h\)</span>函数的梯度向量。</p>
+</blockquote>
 </section>
+<section id="delta-method的直观理解" class="level1">
+<h1>Delta method的直观理解</h1>
+<p>以下为单变量下的个人理解，不等于严格证明。<br>
+泰勒公式：<br>
+<span class="math inline">\(f(x) = f(a) + \frac{f'(a) }{1!}(x -a)+\frac{f''(a) }{2!}(x -a)^2+...\)</span><br>
+根据泰勒公式：<br>
+<span class="math inline">\(g(X) \approx g(\theta) + g'(\theta)(X - \theta)\)</span><br>
+则：<br>
+<span class="math inline">\(g(X) - g(\theta) \approx g'(\theta)(X - \theta) \overset{\nu }{\rightarrow} N(0, \sigma^2 * [g’(\theta)]^2)\)</span><br>
+由于<span class="math inline">\(g'(\theta)(X - \theta)\)</span>服从正态分布，左边也近似服从相同的正态分布，且有接近的均值与方差。</p>
 </section>
-<section id="研究模型" class="level1">
-<h1>2. 研究模型</h1>
-<section id="场景建模" class="level2">
-<h2 class="anchored" data-anchor-id="场景建模">2.1. 场景建模</h2>
-<p>此处使用分层模型。<br>
-公司会产生很多创意：i = 1, 2,…,I，每个创意质量对应随机变量<span class="math inline">\(\Delta_i\)</span>，此处质量指创意全量后提升率；<br>
-这些创意的质量独立同分布，来自质量分布G；<br>
-公司发布一个创意的成本为c；<br>
-对每个创意质量公司通过AB实验进行评估，实验估计提升率为随机变量<span class="math inline">\(\hat{\Delta}_i \sim N(\Delta_i, \sigma^2/n_i)\)</span>；<br>
-两个随机变量<span class="math inline">\(\Delta_i\)</span>和<span class="math inline">\(\hat{\Delta}_i\)</span>的值分为别<span class="math inline">\(\delta_i\)</span>和<span class="math inline">\(\hat{\delta}_i\)</span>。</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="1.webp" class="img-fluid figure-img"></p>
-<figcaption class="figure-caption">分层模型示意</figcaption>
-</figure>
-</div>
+<section id="为什么可以解决ab的问题" class="level1">
+<h1>为什么可以解决AB的问题</h1>
+<p>场景1与场景2都是两个正态分布随机变量做除法运算的问题，设一个为Xn，一个为Yn，则(Xn, Yn)服从二元正态分布：<br>
+$ (X_n, Y_n) N((_x，_y), )$</p>
+<p>我们对Xn,Yn的操作等于函数<span class="math inline">\(h((x, y)) = y/x\)</span> ，根据Delta方法：<br>
+<span class="math inline">\(\frac{Yn}{Xn} \overset{\nu }{\rightarrow} N(\frac{ E[Yn] }{ E[Xn] }, \Delta h( (X_n, Y_n))^T * \Sigma * \Delta h( (X_n, Y_n)))\)</span></p>
+<p>其中<span class="math inline">\(\Delta h((x, y)) = [-\frac{ y}{x^2}, \frac{1}{x}]^T\)</span>，<span class="math inline">\(\Sigma = \begin{bmatrix} {\sigma(X_n)^2 }&amp;{cov(X_n, Y_n)}\\ {cov(X_n, Y_n)}&amp;{\sigma(Y_n)^2}\\ \end{bmatrix}\)</span></p>
 </section>
-<section id="收益估计" class="level2">
-<h2 class="anchored" data-anchor-id="收益估计">2.2. 收益估计</h2>
-<p>根据实验效果和创意质量分布，通过贝叶斯方法可以计算创意质量的条件期望值<span class="math inline">\(E[\Delta_i|\hat{\Delta}_i=\hat{\delta}_i,n_i,\sigma^2,G]\)</span>，记为P(_i, n_i)，它的表达式是创意i的质量函数。</p>
+<section id="联系背景问题" class="level1">
+<h1>联系背景问题</h1>
+<p>于是我们可以对两个问题的解决方案：<br>
+场景1：<span class="math inline">\(X_n\)</span>对照组均值，<span class="math inline">\(Y_n\)</span>为实验组均值，使用样本均值、样本方差做期望、方差的点估计；<br>
+场景2：<span class="math inline">\(X_n\)</span>为平均用户页面浏览次数，<span class="math inline">\(Y_n\)</span>为平均用户页面点击次数，同样使用样本均值、样本方差做期望、方差的点估计。</p>
 </section>
-</section>
-<section id="发布最佳策略" class="level1">
-<h1>3. 发布最佳策略</h1>
-<section id="结论" class="level2">
-<h2 class="anchored" data-anchor-id="结论">3.1. 结论</h2>
-<p>当P(_i, n_i)大于发布成本c时，就对其进行发布。</p>
-</section>
-<section id="解释" class="level2">
-<h2 class="anchored" data-anchor-id="解释">3.2. 解释</h2>
-<p>质量分布与观测值结合，可以实验评估出创意的条件期望质量。<br>
-计算过程采用贝叶斯方法，已经考虑了质量分布有观测质量分布的波动性，并且可以证明此估计值优于单出基于实验观测值的估计。</p>
-</section>
-<section id="微软的研究" class="level2">
-<h2 class="anchored" data-anchor-id="微软的研究">3.3. 微软的研究</h2>
-<p><img src="2.webp" class="img-fluid"><br>
-上图示例中微软按实验有两千万用户参与绘制不同的后验效果。<br>
-其中黑色曲线来自微软2019根据历史实验估计得出。它对应的质量分布为自由度为1.3的t分布，期望值为-0.09%，属于肥尾分布；其它是模拟不同质量分布的效果，属于细尾分布。<br>
-此研究为微软提供了以下发现：</p>
-<ol type="1">
-<li>微软创意的质量分布为肥尾分布，依据实验效果不同，它会对后验质量产生不同的影响：
-<ol type="a">
-<li>对实验效果越弱的创意，使后验质量估计值越趋向0，因为它们更大概率来自运气；</li>
-<li>对实验效果越强的创意，对后验影响估计值影响越少，因为靠运气得到的概率很低。</li>
-</ol></li>
-<li>实验后的后验质量估计可直接通过贝叶斯方式计算，基于后验质量决策有以下影响：
-<ol type="a">
-<li>基于以上实验条件，可计算出创意发布的p值阈值： 如果发布成本为零，创意应该被发布的p值阈值为32%； 如果发布成本为质量指标的0.01，创意应该被发布的p值阈值为0.85%； 如果发布成本为质量指标的0.05，创意应该被发布的p值阈值为0.015%；</li>
-<li>根据微软对实验的的回测，基于最优发布策略可提升核心指标收益在5%级别，提升结果是显著的；</li>
-<li>回测发现2%的历史实验提供了74.5%的收益，这是一个极端版的二八定律。</li>
-</ol></li>
-</ol>
-</section>
-</section>
-<section id="最佳实验策略" class="level1">
-<h1>4. 最佳实验策略</h1>
-<section id="结论-1" class="level2">
-<h2 class="anchored" data-anchor-id="结论-1">4.1. 结论</h2>
-<p>如果质量分布肥尾，应该对所有创意都进行实验（小流量多数量）；<br>
-如果质量分布细尾，应该将所有资源用于运行单个实验（大流量少数量）。</p>
-</section>
-<section id="解释-1" class="level2">
-<h2 class="anchored" data-anchor-id="解释-1">4.2. 解释</h2>
-<p>假设创意质量分布期望为正向，基于4的最优发布策略，可以计算得到的投入用户进行实验的平均收益提升，称为生产函数：</p>
-<p><span class="math display">\[f_i(n_i)\equiv \mathbb{E}[P(\hat{\Delta}_i)^+]-\mathbb{E}[\Delta_i]^+\]</span></p>
-<p>由于总流量是确定的，需要分配给不同的创意（此处不考虑分层架构或者认为发生在特定流量层下），则实验流量分配转化为总成本固定下的最优化问题。</p>
-<p>生产函数的形状与质量分布是否肥尾有关，以质量分布为t分布建模：<br>
-<img src="3.webp" class="img-fluid"></p>
-<ol type="1">
-<li>如自由度小于3，质量分布为肥尾，生产函数为凹函数；</li>
-<li>如自由度大于3，质量分布为细尾，生产函数为凸函数。</li>
-</ol>
-<p>如果共N个用户平均分配个I个创意进行实验（每个实验n个用户），产生的整体收益为：</p>
-<p><span class="math display">\[Y = I \cdot f(\frac{N}{I}) = I \cdot f(n)\]</span></p>
-<p>根据生产函数形状可得到以上结论。</p>
-</section>
-</section>
-<section id="faq" class="level1">
-<h1>5. FAQ</h1>
-<section id="质量分布如何得到" class="level2">
-<h2 class="anchored" data-anchor-id="质量分布如何得到">5.1. 质量分布如何得到？</h2>
-<p>以上推导都基于质量分布G，而现实中它是未知的，可以通过历史实验进行评估，比如使用最大似然估计法、Lindsey’s Method等，此处不做展开。</p>
-</section>
-<section id="以上结论是否有前置要求" class="level2">
-<h2 class="anchored" data-anchor-id="以上结论是否有前置要求">5.2. 以上结论是否有前置要求？</h2>
-<p>在以上研究中，假设公司创意数量不是瓶颈，且创意质量不会随数量的增加而下降。</p>
-</section>
-</section>
-<section id="附录依赖的统计知识" class="level1">
-<h1>附录：依赖的统计知识</h1>
-<section id="分层模型hierarchical-model" class="level2">
-<h2 class="anchored" data-anchor-id="分层模型hierarchical-model">分层模型（hierarchical model ）</h2>
-<p>此模型观测值分布的参数也是随机产生的，参数值来自另一个分布（套娃模式）。 一个现实的例子： 随机从学校抽取一个学生，让这个学生做一份试卷，最后试卷的评分。 <img src="4.webp" class="img-fluid"> 上图为例子的一种建模： <span class="math inline">\(\theta \sim N(\mu,\tau^2)\)</span>，代表不同学生知识掌握程度的建模，此处分布的两个参数是已知的； <span class="math inline">\(Y \sim N(\theta, \sigma^2)\)</span>，代表被抽取学生考试得分。 ## 肥尾分布（Fat-tailed distribution） 相对正态分布或指数分布来说中间更细尾巴更粗的分布。<br>
-著名的肥尾分布是幂律分布、帕累托分布，伴随着它们出现的名词是“二八定律”、“黑天鹅”等。<br>
-<img src="5.webp" class="img-fluid"><br>
-一个正态分布与肥尾分布对比的例子：<br>
-正态分布：正负三个标准差可以覆盖99.7%的概率，正负四个标准差以外的事件几乎是不存在的；<br>
-肥尾分布：4%的事件发生在八个标准差之外。</p>
-</section>
-</section>
-<section id="参考文献" class="level1">
-<h1>参考文献</h1>
-<ul>
-<li>Azevedo, Eduardo M., Alex Deng, José Luis Montiel Olea, and Glen E. Weyl, “Empirical Bayes Estimation of Treatment Effects with Many A/B Tests: An Overview.,” AEA Papers and Proceedings, May 2019, (109), 43–47.<br>
-</li>
-<li>Azevedo, Eduardo, Alex Deng, José Luis Montiel Olea, Justin Rao, and Glen E. Weyl. “A/B Testing with Fat Tails.” Journal of Political Economy, 128 (12) : 4614-4672, 2020.</li>
-</ul>
+<section id="总结" class="level1">
+<h1>总结</h1>
+<p>Delta方法对实验分析至关重要，已经几乎成为所有AB实验平台的一部分，主要用来解决随机化单位与分析单位不同的问题。<br>
+Delta方法还可以扩展到更高维度，如微软的CUPED论文中通过四元正态分布的Delta方法解决比例型指标的CUPED计算难点。</p>
 
 
 </section>
