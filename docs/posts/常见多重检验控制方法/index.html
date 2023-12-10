@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2020-08-20">
+<meta name="dcterms.date" content="2020-09-15">
 
-<title>Rock’s blog - A/B实验设计 —— 偷看问题</title>
+<title>Rock’s blog - 多重检验控制策略：FWER/FDR/FCR</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -61,6 +61,8 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -102,10 +104,11 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">A/B实验设计 —— 偷看问题</h1>
+      <h1 class="title">多重检验控制策略：FWER/FDR/FCR</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">AB</div>
-                <div class="quarto-category">实验设计</div>
+                <div class="quarto-category">多重检验</div>
+                <div class="quarto-category">假设检验</div>
                 <div class="quarto-category">旧文迁移</div>
               </div>
                   </div>
@@ -118,7 +121,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 20, 2020</p>
+        <p class="date">September 15, 2020</p>
       </div>
     </div>
     
@@ -136,79 +139,86 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>偷看是ab测试中最常遇到的问题，本文将说明影响，分析用户为什么偷看，探讨如何应对。</p>
-<section id="背景" class="level1">
-<h1>背景</h1>
-<p>大部分ab测试系统使用固定水平检验。 实验设计阶段，需要预设结束条件：<br>
-1. 检验过程与假设相符。<br>
-例如研究AB群体年收入是否不同，实验就不应该在运行半年时结束。比如A人群高月薪低年终奖，B人群低月薪高年终奖，半年结果离最终结果相去甚远；<br>
-2. 样本量预定。<br>
-根据预设假阳性假阴性水平、最小观测变化，算出需要多少样本。在未达到预设样本量之前，不应该结束。</p>
-<p>提前、延后停止实验，都会导致实验结果不可信。<br>
-<img src="1.webp" class="img-fluid"></p>
+<section id="符号定义" class="level1">
+<h1>符号定义</h1>
+<p><img src="1.webp" class="img-fluid"></p>
+<ul>
+<li>m：总检验假设数</li>
+<li>m0：零假设正确的数量，我们无法得知</li>
+<li>m - m0：备择假设正确的数量</li>
+<li>V：假阳性结论数量</li>
+<li>S：真阳性数量</li>
+<li>T：假阴性数量</li>
+<li>U：真阴性数量</li>
+<li>R = V + S：拒绝零假设数量</li>
+</ul>
+<p>在m个假设检验中，m0个零假设为真，R是观察到的显著情况的随机变量，S、T、U、V都是不可观测的随机变量。</p>
 </section>
-<section id="偷看对实验影响" class="level1">
-<h1>偷看对实验影响</h1>
-<p>只是“看”，不对实验进行任何干预，扔按预定结束条件为准，偷看不会影响实验结论的可靠性。</p>
-<p>但是很多情况下我们无法抵抗诱惑，当实验似乎很明显时，我们总会干预实验。于是实验流程发生了改变，从而更容易显著（假阳性上升）。实验的过程中充满随机，偷看容易陷入无意义的分析。 <img src="2.webp" class="img-fluid"></p>
-<p>让我们看下图，一个真实的例子。 <img src="3.webp" class="img-fluid"> 图中纵坐标代表对照组好于实验组的P值。看起来曲线纵坐标大致都位于50%以上，甚至有超过95%阈值的时刻。可以说明B方案优于A方案么？<br>
-然而这个例子只是单纯的“AA”实验，AB方案没有任何不同，曲线只是随机波动。<br>
-如果我们不看过程，只看结果，终点并不能说明一个方案显著优于另一个。</p>
+<section id="fwerfamily-wise-error-rate" class="level1">
+<h1>FWER(Family-wise error rate)</h1>
+<p>代表一系列检验中，至少存在一个假阳性的概率： <span class="math display">\[FWER = P_r(V &gt;= 1)\]</span></p>
+<section id="控制过程" class="level2">
+<h2 class="anchored" data-anchor-id="控制过程">控制过程</h2>
+<p>无论检验间是否独立的，<span class="math inline">\(\alpha \leq m * \alpha_{sub}\)</span>都成立。<br>
+利用这个不等式，可以通过<a href="https://en.wikipedia.org/wiki/Bonferroni_correction">Bonferroni correction</a>、<a href="https://en.wikipedia.org/wiki/Holm–Bonferroni_method">Holm–Bonferroni method</a>来对FWER进行控制。</p>
 </section>
-<section id="为什么要偷看" class="level1">
-<h1>为什么要偷看</h1>
-<section id="a.-我们有偷看的需求" class="level2">
-<h2 class="anchored" data-anchor-id="a.-我们有偷看的需求">a. 我们有偷看的需求</h2>
+<section id="缺点" class="level2">
+<h2 class="anchored" data-anchor-id="缺点">缺点</h2>
+<p>由于FWER限制过于严格，会导致power相对比较低，容易错失正确的决策机会。<br>
+例如当两个比较是完全相关，多次比较并不会增加假阳性水平，但是矫正后却增加了假阴性。</p>
+</section>
+</section>
+<section id="fdrfalse-discovery-rate" class="level1">
+<h1>FDR(False discovery rate)</h1>
+<p>控制显著中的假阳性错误的比例期望： <span class="math display">\[Q = V / R\]</span> <span class="math display">\[FDR = Q_E = E[Q] = E[V/R|R&gt;0]*P(R &gt; 0)\]</span></p>
+<section id="控制过程-1" class="level2">
+<h2 class="anchored" data-anchor-id="控制过程-1">控制过程</h2>
+<p>最常见的是BH过程。</p>
+<section id="benjaminihochberg-procedurebh-step-up-procedure" class="level3">
+<h3 class="anchored" data-anchor-id="benjaminihochberg-procedurebh-step-up-procedure">Benjamini–Hochberg procedure(BH step-up procedure)</h3>
 <ol type="1">
-<li>及时止损，尽早结束失败（有害）的实验；<br>
-</li>
-<li>扩大胜利成果，尽早发现成功的实验。</li>
+<li>将多重比较的P值排序，找到满足<span class="math inline">\(P_{(k)} \leq \frac{k}{m} {\alpha}\)</span> 的最大的<span class="math inline">\(k\)</span>；</li>
+<li>拒绝1 ~ k对应的原假设。</li>
+</ol>
+<p>检验间独立或者正相关情况下，HB过程控制结果满足： <span class="math display">\[E(Q) \leq \frac{m_0}{m}\alpha \leq \alpha \]</span></p>
+<p>如何理解？<br>
+<img src="2.webp" class="img-fluid"></p>
+<ol type="1">
+<li>设共有<span class="math inline">\(M\)</span>个假设，<span class="math inline">\(M_0\)</span>个零假设为真，它们的P值为均匀分布，显著水平为<span class="math inline">\(h\)</span>，则期望的假阳性数量为<span class="math inline">\(h * M_0\)</span>;</li>
+<li>红线的斜率为<span class="math inline">\(\alpha / M\)</span>，红线下方最大的P值对应的序号为<span class="math inline">\(L\)</span>；</li>
+<li>拒绝零假设中，期望的假阳性数为<span class="math inline">\(h * M_0 = M_0\frac{\alpha * L}{M}\)</span>，因此: $FDR = / M $</li>
+</ol>
+<p><strong>HB过程在每次比较独立或者正相关时是有效的</strong>。</p>
+</section>
+<section id="benjaminiyekutieli-procedure" class="level3">
+<h3 class="anchored" data-anchor-id="benjaminiyekutieli-procedure">Benjamini–Yekutieli procedure</h3>
+<p>此过程在任意情况下，都能控制假阳性。方式为在BH过程中，引入参数c，找到最大<span class="math inline">\(k\)</span>满足<span class="math inline">\(P_{(k)} \le \frac{k}{m * {c(m)}}\alpha\)</span>。 - 如果检验间独立或者正相关，<span class="math inline">\(c(m) = 1\)</span>； - 其他情况，<span class="math inline">\(c(m) = \sum _{i=1}^{m}\frac{1}{i}\)</span>。</p>
+</section>
+</section>
+<section id="缺点-1" class="level2">
+<h2 class="anchored" data-anchor-id="缺点-1">缺点</h2>
+<p>相对于FWER，有较高的假阳性率。</p>
+</section>
+</section>
+<section id="fcrfalse-coverage-rate" class="level1">
+<h1>FCR(False coverage rate)</h1>
+<p>错误覆盖率。FWER、FDR用于控制P值，FCR用于控制置信区间。</p>
+<section id="控制过程-2" class="level2">
+<h2 class="anchored" data-anchor-id="控制过程-2">控制过程</h2>
+<section id="bh过程对应的置信区间修正" class="level3">
+<h3 class="anchored" data-anchor-id="bh过程对应的置信区间修正">BH过程对应的置信区间修正</h3>
+<ol type="1">
+<li>将多重比较的P值排序，找到满足<span class="math inline">\(P_{(k)} \leq \frac{k}{m} {\alpha}\)</span> 的最大的<span class="math inline">\(k\)</span>；</li>
+<li>拒绝1 ~ k对应的原假设；</li>
+<li>为每个比较中的参数，构建 <span class="math inline">\(1 - \frac{k}{m} {\alpha}\)</span> 水平的置信区间。</li>
 </ol>
 </section>
-<section id="b.-存在允许偷看的客观条件" class="level2">
-<h2 class="anchored" data-anchor-id="b.-存在允许偷看的客观条件">b. 存在允许偷看的客观条件</h2>
-<p>固定水平检验产生在大约100年前。我们来看下当年与现代的对比。</p>
-<p>100年前：<br>
-- 数据成本高、收集缓慢<br>
-著名的统计学家费希尔，使用假设检验对农业进行研究。作物的生长周期是很难改变的，无法预知结果…数据的采集、计算依赖人力。<br>
-- 对操作者要求高<br>
-实验者是经过训练的专家。</p>
-<p>现在：<br>
-- 数据及时、廉价 科技降低了数据获取的成本，可以研究更精细的事物。互联网业采集、分析用户行为已经越来越成熟。 - 人人都可以是操作者 在成熟ab测试平台上，实验者可以轻松进行实验，也更容易在实验分析中犯错。</p>
-</section>
-<section id="c.-实验平台模板不适合" class="level2">
-<h2 class="anchored" data-anchor-id="c.-实验平台模板不适合">c.&nbsp;实验平台模板不适合</h2>
-<p>实验平台提供了固定的模板，以及在此模板下的终止条件，常见为限定实验周期、分析单位等，并以此得到结束条件。<br>
-固化的模板不能通用于所有的实验，因此用户自己判断是否停止也不足为奇。<br>
-平台需要增强实验个性化的能力。</p>
-</section>
-</section>
-<section id="如何避免" class="level1">
-<h1>如何避免？</h1>
-<section id="不偷看" class="level2">
-<h2 class="anchored" data-anchor-id="不偷看">不偷看</h2>
-<p>这是最简单可靠的方案，但是经常很困难。参考以下场景：</p>
-<ol type="1">
-<li><p>大佬：B方案显著正面了，上线了吧<br>
-小弟：不行，我们还需要再等三天</p></li>
-<li><p>大佬：B方案负面显著了，快回滚<br>
-小弟：还需要等三天……</p></li>
-<li><p>大佬：这个方案竟然不显著？在跑几天！<br>
-小弟：不行，我们已经达到停止条件了</p></li>
-</ol>
-</section>
-<section id="非固定水平检验" class="level2">
-<h2 class="anchored" data-anchor-id="非固定水平检验">非固定水平检验</h2>
-<p>比如<a href="https://en.wikipedia.org/wiki/Sequential_probability_ratio_test">贯序检验</a>系列方法，他们一般掌握成本更高，过程更复杂。由于结束条件改变了，并不一定会比固定水平检验更快结束。 <a href="http://pages.optimizely.com/rs/optimizely/images/stats_engine_technical_paper.pdf">Optimizely</a>采用了这种方案，过程中用户可以偷看，每次平台提供可靠的P值与置信区间，整个过程后假阳性依然控制在预定水平。</p>
-</section>
-<section id="使用非检验方法" class="level2">
-<h2 class="anchored" data-anchor-id="使用非检验方法">使用非检验方法</h2>
-<p>有时我们不需要解释，只是希望得到最好的组合，这种问题为<a href="https://en.wikipedia.org/wiki/Multi-armed_bandit">multi-armed bandit problem</a>，已经有很多相关的研究。</p>
 </section>
 </section>
 <section id="总结" class="level1">
 <h1>总结</h1>
-<p>偷看的需求是可以理解的，很多情况下甚至是合理的，但要确保使用的工具、方法允许这样做。如果实验平台方法算法不支持偷看，就应该克制自己提前干扰实验的冲动，否则无法得到可靠的结论。</p>
+<p>需要根据不同情况，选择适合自己的标准与方法。<br>
+目的明确，决策指标明确，测试干预是否有效，也许FWER来进行控制比较合适；探索性实验，指标很多的情况下，可能FDR会更适合。</p>
 
 
 </section>
