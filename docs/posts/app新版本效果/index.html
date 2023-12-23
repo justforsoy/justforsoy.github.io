@@ -224,20 +224,30 @@ ul.task-list li input[type="checkbox"] {
 <li>对于所有变量，确保采用者和非采用者群体的共同支持；</li>
 <li>选择10个用于执行精准匹配的变量；</li>
 <li>用于精确匹配的协变量被分桶以减少它们的基数；</li>
-<li>利用endogenous switching model 对匹配的样本中的升级用户、非升级用户分别进行加权线性回归，训练得到两个模型。在将全部匹配用户带入两个模型，两个模型的输出带入反事实框架。最终结果估计： <span class="math inline">\(DRE = \frac{1}{\sum^n_{i=1}w_i} (\sum^m_{i=1}w_i({y_i - \hat{y_i}^{0}}) + \sum^n_{i=m+1}w_i({ \hat{y_i}^{1} - y_i}) )\)</span> 其中<span class="math inline">\(w_i\)</span>权重来自匹配阶段，不是一般性1~m代表升级用户。</li>
+<li>利用endogenous switching model 对匹配的样本中的升级用户、非升级用户分别进行加权线性回归，训练得到两个模型。在将全部匹配用户带入两个模型，两个模型的输出带入反事实框架。最终结果估计：<br>
+<span class="math inline">\(DRE = \frac{1}{\sum^n_{i=1}w_i} (\sum^m_{i=1}w_i({y_i - \hat{y_i}^{0}}) + \sum^n_{i=m+1}w_i({ \hat{y_i}^{1} - y_i}) )\)</span> 其中<span class="math inline">\(w_i\)</span>权重来自匹配阶段，不是一般性1~m代表升级用户。</li>
 </ol>
 </blockquote>
-<p><img src="5.webp" class="img-fluid" alt="Bias of the doubly robust with matching model. Both are for Android 20% roll out."> 结果看起来很棒，在第一天也只有很小的偏差。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="5.webp" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Bias of the doubly robust with matching model. Both are for Android 20% roll out.</figcaption>
+</figure>
+</div>
+<p>结果看起来很棒，在第一天也只有很小的偏差。</p>
 </section>
 </section>
 <section id="新奇效应" class="level2">
 <h2 class="anchored" data-anchor-id="新奇效应">3. 新奇效应</h2>
-<p>大的变更会有强的新奇效应，用户开始阶段会进行很多探索。 需要判断两个问题：1.是否有新奇效应；2.新奇效应持续多久？ 标准ab实验中，可以观测随着效果随着时间的推移是否变弱，以此来判断。在准实验方法中，结合上文相关方法，也可以进行类似的判断。</p>
+<p>大的变更会有强的新奇效应，用户开始阶段会进行很多探索。<br>
+需要判断两个问题：1.是否有新奇效应；2.新奇效应持续多久？<br>
+标准ab实验中，可以观测随着效果随着时间的推移是否变弱，以此来判断。在准实验方法中，结合上文相关方法，也可以进行类似的判断。</p>
 </section>
 </section>
 <section id="后记" class="level1">
 <h1>后记</h1>
-<p>在量化分析、数据决策上国外领先的，Netflix的实验平台在18年就对准实验进行了一些支持。<img src="6.webp" class="img-fluid" alt="Netflix实验平台架构"> 对因果推断来说，随机实验总是第一选择，但有时随机成本过高或者根本不可能。准实验方式是流行病学、经济学等领域常常用到的方法，它不失为不能A/B实验时的一种很好补充。</p>
+<p>在量化分析、数据决策上国外领先的，Netflix的实验平台在18年就对准实验进行了一些支持。<img src="6.webp" class="img-fluid" alt="Netflix实验平台架构"><br>
+对因果推断来说，随机实验总是第一选择，但有时随机成本过高或者根本不可能。准实验方式是流行病学、经济学等领域常常用到的方法，它不失为不能A/B实验时的一种很好补充。</p>
 
 
 </section>
