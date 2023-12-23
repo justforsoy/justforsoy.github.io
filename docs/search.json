@@ -112,291 +112,312 @@
     "text": "先验概率与V的选取\n我们并不知道历史实验中，哪些\\(\\delta_i\\)属于\\(H0\\)哪些属于\\(H1\\)。\n如何根据历史实验求解先验？这种依赖不可观察的隐性变量的概率模型，可以使用最大期望算法：\n\n\\(\\frac{P(H1)}{P(H0)} * \\frac{P(\\Delta|H1)}{P(\\Delta|H0)} = \\frac{p}{1 - p} * \\frac{\\phi (\\delta_i; 0, 1/N_{Ei} + V^2)}{\\phi (\\delta_i; 0, 1/N_{Ei})}\\) 求得\\(P_i = P(H1|\\delta_i;p,V)\\)\n\n将\\(p\\)设置为1中得到的\\(P_i\\)的均值\n\n\\(V^2 =\\frac{\\sum{var(\\delta_i) * P_i}}{\\sum{P_i}} - \\frac{\\sum{1 / N_{Ei} * P_i}}{\\sum{P_i}} = \\frac{\\sum{\\delta_i^2 * P_i}}{\\sum{P_i}} - \\frac{\\sum{1 / N_{Ei} * P_i}}{\\sum{P_i}}\\)\n\n重复上述步骤直到\\(p\\)与\\(V\\)收敛，作为它们的最大似然估计。"
   },
   {
-    "objectID": "posts/实验设计_如何选择样本量/index.html",
-    "href": "posts/实验设计_如何选择样本量/index.html",
-    "title": "A/B实验设计 —— 样本量计算",
+    "objectID": "posts/BMCP_11/index.html",
+    "href": "posts/BMCP_11/index.html",
+    "title": "【Bayesian Modeling and Computation in Python】11.相关主题",
     "section": "",
-    "text": "本文介绍样本量对实验效果的影响，以及如何正确选择样本量。仅作为实验设计者可跳过最后数学推导过程，直接使用工具运算。"
+    "text": "这一章是前面章节的补充内容，我准备根据阅读进展持续更新原文链接。"
   },
   {
-    "objectID": "posts/实验设计_如何选择样本量/index.html#实验角度样本量越多越好",
-    "href": "posts/实验设计_如何选择样本量/index.html#实验角度样本量越多越好",
-    "title": "A/B实验设计 —— 样本量计算",
-    "section": "实验角度，样本量越多越好",
-    "text": "实验角度，样本量越多越好\n样本数量变多，实验则有了更多的“证据”，实验的“可靠性”也就越强。"
+    "objectID": "posts/BMCP_11/index.html#概率",
+    "href": "posts/BMCP_11/index.html#概率",
+    "title": "【Bayesian Modeling and Computation in Python】11.相关主题",
+    "section": "11.1 概率",
+    "text": "11.1 概率\n一个骰子的例子：\n\nimport arviz as az\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport pandas as pd\nimport pymc as pm\nfrom scipy import stats\n\nfrom scipy.special import binom, betaln\n\naz.style.use(\"arviz-grayscale\")\nplt.rcParams['figure.dpi'] = 300\n\nnp.random.seed(14067)\n\n\ndef die():\n    outcomes = [1, 2, 3, 4, 5, 6]\n    return np.random.choice(outcomes)\n\n如果我们怀疑骰子不是均匀的。我们应该如何计算概率？科学的方法是收集数据并计算。\n\ndef experiment(N=10):\n    sample = [die() for i in range(N)]\n\n    for i in range(1, 7):\n        print(f\"{i}: {sample.count(i)/N:.2g}\")\n\nexperiment()\n\n1: 0\n2: 0\n3: 0.3\n4: 0\n5: 0.2\n6: 0.5\n\n\n当 N = 10 时，几乎每次结果都不相同；但是当 N 非常大比如10000时，频率就会趋于相等，我们也会认为骰子是均匀的。\n这两个观察结果并不局限于骰子和机会游戏。如果我们每天称体重，我们会得到不同的数值，因为我们的体重与我们吃的食物的量、我们喝的水、我们上厕所的次数、体重秤的精度、我们穿的衣服和体重有关。因此单次测量可能无法代表我们的体重。\n统计学基本上是研究如何处理实际问题中的不确定性的领域，概率论是统计学的理论支柱之一。概率论帮助我们将讨论形式化，就像我们刚刚进行的讨论一样，并将其扩展到骰子之外。这样我们就可以更好地提出和回答与预期结果相关的问题，例如当我们增加实验数量时会发生什么，什么事件比另一个事件有更高的机会等等。\n\n11.1.1. 概率\n概率是一种数学工具，使我们能够以原则性的方式量化不确定性。与其他数学对象和理论一样，它们可以完全从纯数学角度得到证明。为了思考概率，我们可以用数学集合来思考。 样本空间 \\(\\mathcal{X}\\) 是上面实验的结果集合。任意事件 \\(A\\)都是 \\(\\mathcal{X}\\) 的子集。对上面的骰子来说： \\[\\mathcal{X} = \\{1,2,3,4,5,6\\}\\]\n我们可以定义 \\(\\mathcal{X}\\) 的任意事件子集，比如偶数 \\(A = \\{2,4,6\\}\\) ，用数学表示为 \\(P(A)\\) 或 \\(P(A=)\\{2,4,6\\}\\)。\\(P\\) 是一个函数根据事件和概率空间返回一个0到1的数字。\n正如我们刚才看到的，概率有一个明确的数学定义。对于不同的思想流派，我们如何解释概率是不同的。作为贝叶斯学派，我们倾向于将概率解释为不确定性程度。例如，对于公平骰子，掷骰子时得到奇数的概率为 0.5 ，这意味着我们有一半把握会得到一个奇数。或者我们可以将这个数字解释为如果我们无限次掷骰子，一半的时间我们会得到奇数，一半的时间我们会得到偶数。这是频率论的解释，也是思考概率的有用方式。如果您不想无限次地掷骰子，您可以多次掷骰子，并说您大约会获得一半的几率。最后，我们注意到，对于一个公平的骰子，我们期望得到任何单个数字的概率为\\(\\frac{1}{6}\\)，但对于非公平骰子，此概率可能有所不同。结果的等概率只是一个特例。\n如果概率代表不确定性，那很自然可以提问火星的质量为 \\(6.39 \\times 10^{23}\\)kg 的概率，某处在某天下雨的概率等问题。我们说概率的这种定义是认知性的，因为它不是关于现实世界（无论是什么）的属性，而是关于我们对该世界的知识的属性。我们收集数据并分析它，因为我们认为我们可以根据外部信息更新我们的内部知识状态。\n我们必须意识到包含所有数学概念的柏拉图式思想世界与现实世界不同，比如骰子其实有可能卡在中间的可能，在统计建模中我们不断地在这两个世界之间来回切换。\n\n\n11.1.2. 条件概率\n有 \\(A\\) 和 \\(B\\) 两个概率事件且 \\(P(B) &gt; 0\\)，\\(P(A,B)\\) 是 \\(A\\) 和 \\(B\\) 同时发生的概率，也写作 \\(P(A \\cap B)\\)。\n\\(A\\) 在 \\(B\\) 发生的条件下的概率为： \\[P(A \\mid B) = \\frac{P(A, B)}{P(B)}\\]\n条件概率可以理解为样本空间的缩减。如下图所示，\\(A\\) 和 \\(B\\) 都是样本空间 \\(\\mathcal {x}\\) 里的事件，但是 \\(B\\) 发生后样本空间变化为： \n条件概率的概念是统计学的核心，也是思考我们应该如何根据新数据更新我们对事件的了解的核心。涉及某些假设或模型的所有概率都是有条件的。\n\n\n1.1.3. 概率分布\n我们更感兴趣的是找出骰子所有数字的概率列表而不是事件发生的频率。一旦知道这个就可以计算其他量，比如等于或者大于 5 的概率。这个列表称为概率分布。\n理论概率分布有精确的数学公式。概率分布有自己的分类，类型成员由一个或多个参数定义。\n以下是 Beta 分布的例子，通过两个参数可以控制分布平缓或者集中，但是参数约束为必须都为正数： \n\n\n11.1.4. 离散型随机变量和分布\n随机变量是将样本空间映射到实数的函数。比如如果投掷两次均匀的骰子，我们可以得到概率分布:\n\n当一个随机变量 \\(X\\) 的值是有限的 \\(a_1, a_2, ..., a_n\\) 或者 无限但是满足 \\(\\sum_j P(X = a_j) = 1\\)，则成为离散型随机变量。\n其概率分布称为概率质量函数 Probability Mass Function (PMF) 。\\(X\\) 的 PMF 就是 \\(P(X = x)\\ for\\ x \\in \\mathbb{R}\\) 的函数。我们也可以使用累积分布函数 cumulative distribution function (CDF) 定义离散随机变量 。\n\n11.1.4.1. 离散均匀分布 Discrete Uniform Distribution\n该分布将相等的概率分配给从区间 a 到 b 的有限连续整数集。其PMF为： \\[P(X = x) = {\\frac {1}{b - a + 1}} = \\frac{1}{n}\\]\n其中 \\(x\\) 属于区间 \\([a, b]\\)，\\(n = b - a + 1\\) 为区间内整数的个数。\n\n\n11.1.4.2. 二项分布 Binomial Distribution\n伯努利实验得结果只能为 0 或 1 。如果执行 n 次独立的伯努利实验，每一次得到 1 的概率相等为 \\(p\\) ，则其累计得到 1 的次数记为随机变量 \\(X\\)。则 \\(X\\) 服从概率为 \\(p\\) 的 n 重二项分布，记为 \\(X \\sim Bin(n, p)\\)。其 PMF 为： \\[P(X = x) = \\frac{n!}{x!(n-x)!}p^x(1-p)^{n-x}\\]\n当 \\(n = 1\\) 时，二项分布又称为伯努利分布 Bernoulli distribution 。\n\n\n11.1.4.3. 泊松分布 Poisson Distribution\n该分布用于描述单位时间（或者单位空间）内随机事件发生的次数。其 PMF 为： \\[P(X = x)  = \\frac{\\mu^{x} e^{-\\mu}}{x!}, x = 0, 1, 2, \\dots\\]\n其中 \\(\\mu\\) 为单位时间（或者单位空间）内随机事件发生的次数的期望值。\n泊松分布的均值和方差相等，即 \\(\\mu = \\sigma^2\\)。当 \\(\\mu\\) 较大时，泊松分布近似于正态分布。\n当伯努利分布的 \\(n\\) 较大，\\(p\\) 较小时，其近似于泊松分布： \\(\\text{Pois}(\\mu=np) \\approx \\text{Bin}(n, p)\\)。因此泊松分布也被称为小数定律或稀有事件定律。\n\n\n\n11.1.5. 连续型随机变量和分布\n另一种随机变量是连续型随机变量，其值可以是区间内的任意实数，但是每个数值对应的概率为 0。\n连续性随机变量的概率分布称为概率密度函数 Probability Density Function (PDF)，它可以大于1。为了得到概率，我们必须对 PDF 进行积分： \\[P(a \\leq X \\leq b) = \\int_a^b pdf(x)dx\\]\n但是注意当我们仅比较 \\(x_1\\) 和 \\(x_2\\) 哪个更可能得到时，我们可以比较\\(\\frac{pdf(x_1)}{pdf(x_2)}\\)。\n离散和连续随机分布，CDF 和 PDF 的关系如下： \n\n11.1.5.1. 均匀分布 Uniform Distribution\n该分布将相等的概率分配给从区间 a 到 b 的连续实数集。其 PDF 为： \\[p(x \\mid a,b)=\\begin{cases} \\frac{1}{b-a} & if a \\le x \\le b \\\\ 0 &  \\text{otherwise} \\end{cases}\\]\n当 \\(a = 0\\) 且 \\(b=1\\) 时成为标准均匀分布。 \n\n\n11.1.5.2. 正态分布 Gaussian or Normal Distribution\n这也许是最知名的分布，因为一方面由于中心极限定律，另一方面是因为数据计算性质良好。\n正态分布有 \\(\\mu\\) 和 \\(\\sigma\\) 两个参数定义，其 PDF 为： \\[ p (x \\mid \\mu, \\sigma) = \\frac {1} {\\sigma \\sqrt {2 \\pi}} e^{-\\frac {(x -\\mu)^2} {2 \\sigma^2}}\\]\n当 \\(\\mu = 0\\) 且 \\(\\sigma = 1\\) 时称为标准正态分布。 \n\n\n11.1.5.3. 学生t分布 Student’s t-distribution\n从历史上看，这种分布用于在样本量较小时估计正态分布总体的平均值。pdf为： \\[p (x \\mid \\nu, \\mu, \\sigma) = \\frac {\\Gamma (\\frac {\\nu + 1} {2})} {\\Gamma (\\frac{\\nu} {2}) \\sqrt {\\pi \\nu} \\sigma} \\left (1+ \\frac{1}{\\nu} \\left (\\frac {x- \\mu} {\\sigma} \\right)^2 \\right)^{-\\frac{\\nu + 1}{2}}\\]\n其中 \\(\\gamma\\) 为伽玛函数，\\(\\nu\\) 为自由度。当 \\(\\nu\\) 趋向于无穷时，学生t分布趋向于正态分布。\n当 \\(\\nu = 1\\) 时，学生t分布退化为柯西分布。它与高斯分布相似，但尾部下降非常缓慢，以至于该分布没有均值和方差。也就是说如果数据来自柯西分布，则平均值的分散度很大，并且这种分散不会随着样本量的增加而减小。出现这种奇怪行为的原因是，像柯西这样的分布由分布的尾部行为主导，这与高斯分布等相反。\n\n\n\n11.1.5.4. 贝塔分布 Beta Distribution\nBeta 分布定义在区间 [0, 1] 内。它可用于对限制在有限区间内的随机变量的行为进行建模，例如对比例或百分比进行建模。 \\[p (x \\mid \\alpha, \\beta) = \\frac {\\Gamma (\\alpha + \\beta)} {\\Gamma(\\alpha) \\Gamma (\\beta)} \\, x^{\\alpha-1} (1 -x)^{\\beta-1}\\]\n当 \\(\\alpha = 1\\) 且 \\(\\beta = 1\\) 时，Beta分布退化为均匀分布。 \n\n\n\n11.1.6. 联合分布、条件分布、边缘分布\n联合分布是多个随机变量的概率分布。联合分布使我们能够描述同一实验中产生的多个随机变量的行为。\n联合 PMF 为： \\[p_{X,Y}(x, y) = P(X = x, Y = y)\\]\n满足： \\[\\sum_x \\sum_y P(X=x, Y=y) = 1\\]\n类似的 CDF 为： \\[F_{X,Y}(x, y) = P(X \\le x, Y \\le y)\\]\n当已知一个变量值是多少时，我们可以计算另一个变量的条件分布。\n基于联合分布计算边缘分布： \\[P(X=x) = \\sum_y P(X=x, Y=y)\\]\n\n对连续型用积分计算： \\[pdf_X(x) = \\int pdf_{X,Y} (x, y)dy\\]\n\n\n\n11.1.7. 概率积分变换 Probability Integral Transform (PIT)\n如果已知随机变量 \\(X\\) 和它的 CDF 函数 \\(F_Z\\)，我们可以定义随机变量 \\(Y\\) ：\\[ Y = F_X(X)\\]\nY的CDF定义为：\\[F_Y(y) = P(Y \\leq y)\\] 则：\\[F_Y(y) = P(F_X(X) \\leq y)\\] 则：\\[F_Y(y) = F_X (F^{-1}_X (y))\\] 最后我们得到：\\[F_Y(y) = y\\]\n\nxs = (np.linspace(0, 20, 200), np.linspace(0, 1, 200), np.linspace(-4, 4, 200))\ndists = (stats.expon(scale=5), stats.beta(0.5, 0.5), stats.norm(0, 1))\n\n\n_, ax = plt.subplots(3, 3)\n\nfor idx, (dist, x) in enumerate(zip(dists, xs)):\n    draws = dist.rvs(100000)\n    data = dist.cdf(draws)\n    # PDF original distribution\n    ax[idx, 0].plot(x, dist.pdf(x))\n    # Empirical CDF\n    ax[idx, 1].plot(np.sort(data), np.linspace(0, 1, len(data)))\n    # Kernel Density Estimation\n    az.plot_kde(data, ax=ax[idx, 2])\n\n\n\n\n\n\n11.1.8. 期望类 Expectations\n期望是总结随机分布质量中心的数值。对于离散型随机变量，期望为：\\[\\mathbb{E}(X) = \\sum_x x P(X = x)\\]\n统计上还经常要评估离散程度。常用方差来表示，它同样是一种期望：\\[\\mathbb{V}(X) = \\mathbb{E}(X - \\mathbb{E}X)^2 = \\mathbb{E}(X^2 ) - (\\mathbb{E}X)^2\\]\n期望的几个性质： \\[\\mathbb{E}(cX) = c\\mathbb{E}(X)\\]\n其中 c 为常数。 \\[\\mathbb{E}(X + Y) = \\mathbb{E}(X) + \\mathbb{E}(Y)\\]\n无论 X 和 Y 是否独立。\n我们定义 \\(X\\) 的 n 阶距为 \\(\\mathbb{E}(X^n)\\)，其中 \\(n\\) 为正整数。 \\(X\\) 的期望值是一阶距，方差是二阶距。三阶距是偏度，期望为 \\(\\mu\\) 和标准差为 \\(\\sigma\\) 随机变量 \\(X\\) 的三阶距为： \\[\\text{skew}(X) = \\mathbb{E}\\left(\\frac{X -\\mu}{\\sigma}\\right)^3\\]\n将偏斜计算为标准化量（即减去平均值并除以标准差）的原因是为了使偏斜独立于 \\(X\\)。\n举例：Beta(2,2) 偏度为0，代表分布是对称的；Beta(2,5) 偏度大于0，；Beta(5,2) 偏度小于0。\n\nxs = (np.linspace(0, 1, 200), np.linspace(0, 1, 200), np.linspace(0, 1, 200))\ndists = (stats.beta(2,2), stats.beta(2, 5), stats.beta(5, 2))\n\n\n_, ax = plt.subplots(1, 3, figsize = (12, 4))\n\nfor idx, (dist, x) in enumerate(zip(dists, xs)):\n    draws = dist.rvs(100000)\n    data = dist.cdf(draws)\n    ax[idx].plot(x, dist.pdf(x))\n\n\n\n\n四阶距是峰度 kurtosis，描述尾部的行为： \\[\\text{Kurtosis}(X) = \\mathbb{E}\\left(\\frac{X -\\mu}{\\sigma}\\right)^4 - 3 \\]\n公式中减3的是为了让高斯分布的峰度为0，因此公式表达的是本分布的峰度与高斯分布的峰度的差异。\n\n\n11.1.9. 转换\n将随便变量 \\(X\\) 带入函数 \\(g\\)，得到新的随机变量 \\(Y = g(X)\\)。如果我们知道 \\(X\\) 的分布函数，如何求出 \\(Y\\) 的分布呢？\n最简单的方法是从 \\(X\\) 抽样转换并绘制分布图。还有其它方法，其中之一是变量变换方法 change of variables。\n如果 \\(X\\) 是连续型随机变量，而 \\(g\\) 是单调函数，那么 \\(Y\\) 的 PDF 为：\\[p_Y(y) = p_X(x) \\left| \\frac{dx}{dy} \\right|\\]\n推导如下： \\[\n\\begin{split}\n   F_Y(y) =& P(Y \\le y) \\\\\n          =& P(g(X) \\le y) \\\\\n          =& P(X \\le g^{-1}(y)) \\\\\n          =& F_X(g^{-1}(y)) \\\\\n          =& F_X(x) \\\\\n\\end{split}\n\\]\n然后应用链式法则： \\[p_Y(y) = p_X(x) \\frac{dx}{dy}\\]\n多元随机变量也类似，省略。\n\n\n11.1.10. 极限\n大数定律和中心极限定律是最知名的两条定律。\n\n11.1.10.1. 大数定律 Law of Large Numbers (LLN)\n大数定律告诉我们，随着样本数量的增加，独立同分布随机变量的样本均值收敛到随机变量的期望值。\n注意：这对于某些分布（例如柯西分布（没有均值或有限方差））而言不成立。\n\n\n11.1.10.2. 中心极限定律 Central Limit Theorem (CLT)\n中心极限定理告诉我们，随着样本数量的增加，独立同分布随机变量的样本均值的分布收敛到正态分布。 \\[\\bar X_n \\dot \\sim \\mathcal{N} \\left (\\mu, \\frac{\\sigma^2} {n} \\right)\\]\n满足中心极限定理，必须满足以下假设：\n\n这些值是独立采样的\n每个值都来自相同的分布\n分布的平均值和标准差必须是有限的\n\n注意：标准1和2可以放宽一些，我们仍然会得到近似高斯分布，但无法摆脱标准3。对于没有定义均值或方差的分布（例如柯西分布），该定理不适用。柯西分布的样本均值仍然服从柯西分布。\n\n\n\n11.1.11. 马尔科夫链 Markov Chains\n马尔科夫链是一种随机过程，未来状态仅取决于当前状态：\\[P(X_{n+1} = j \\mid X_n = i, X_{n-1} = i_{n-1} , \\dots, X_0 = i_0) = P(X_{n+1} = j \\mid X_n = i)\\]\n马尔可夫链可视化的一种有效的方法是想象你或某个物体在空间中移动。如果空间有限，这个类比就更容易理解。\n例如像跳棋一样移动方板上的棋子或访问不同城市的销售人员。这种情况下可以提出以下问题：访问一个州（棋盘上的特定方块、城市等）的可能性有多大？如果我们不断从一个州转移到另一个州，从长远来看我们将在每个州花费多少时间？\n以下是四个马尔科夫链的例子： \n研究马尔科夫链的一种便捷方法是收集每一步的转移概率并将其组合成转移矩阵。对于上面的a例子转移矩阵为： \\[\\begin{bmatrix}\n0.9 & 0.1 \\\\\n0.8 & 0.2\n\\end{bmatrix}\\]\n而b例子转移矩阵为： \\[\\begin{bmatrix}\n0 & 0 & 1 & 0 & 0 & 0 & 0 \\\\\n1 & 0 & 0 & 1 & 0 & 0 & 0 \\\\\n2 & 0 & 0 & 0 & 1 & 0 & 0 \\\\\n3 & 0 & 0 & 0 & 0 & 1 & 0 \\\\\n4 & 0 & 0 & 0 & 0 & 0 & 1 \\\\\n5 & 1 & 0 & 0 & 0 & 0 & 0 \\\\\n\\end{bmatrix}\\]\n矩阵的第 i 行第 j 列的元素是从状态 i 转移到状态 j 的概率。\n在研究马尔可夫链时，我们有理由定义单个状态的属性以及整个链的属性。例如，如果一个链反复返回到一个状态，我们称该状态为常返状态。相反，一个瞬态状态是链最终会永远离开的状态，例如在上图的例子(d)，除了0或N的所有状态都是瞬态的。此外，我们也可以称一个链为不可约的，如果它可以在有限步骤内从任何状态到达任何其他状态。例如例子(c)，它不是不可约的，因为状态1、2和3与状态A和B是断开的。\n理解马尔可夫链的长期行为是有意义的。前面提到的常返和瞬态的概念对于理解这种长期运行行为非常重要。如果我们有一个包含瞬态和常返状态的链，该链可能会在瞬态状态中花费时间，但最终会在常返状态中花费所有的时间。我们可以自然地提问，链将在每个状态中停留多长时间。答案是通过找到链的稳态分布 stationary distribution 。\n对有限状态空间的马尔可夫链，稳态分布 \\(s\\) 满足 \\(sT = s\\)。也就是对本分布来说，不受状态转移矩阵 \\(T\\) 的变换影响。\n有趣的是在一定条件下，马尔可夫链的稳态分布是唯一的。这些条件是：链必须是不可约的和正常的。\n比如上图例子中，(d) 的稳定分布不唯一，分别是 \\(s_0=(1, 0, \\dots , 0)\\) 和 \\(s_N=(0, 0, \\dots , 1)\\)，它代表了赌徒A或B输光了所有的钱；而 (b) 的稳定分布唯一，\\(s=(1/6, 1/6, 1/6, 1/6, 1/6, 1/6)\\)\n如果概率质量函数满足可逆性条件（也称为详细平衡），即对所有的i和j都有 \\(s_i t_{ij} = s_j t_{ji}\\)，可以保证 \\(s\\) 这是马尔可夫链转移矩阵 \\(T = t_{ij}\\) 的稳态分布。这样的马尔可夫链被称为可逆的。在推理方法一节中，我们将使用这个属性来说明为什么Metropolis-Hastings能够保证在渐进意义上有效。\n马尔科夫链满足中心极限定律，但是要除以有效样本量 effective sample size (ESS)。"
   },
   {
-    "objectID": "posts/实验设计_如何选择样本量/index.html#业务角度样本量越少越好",
-    "href": "posts/实验设计_如何选择样本量/index.html#业务角度样本量越少越好",
-    "title": "A/B实验设计 —— 样本量计算",
-    "section": "业务角度，样本量越少越好",
-    "text": "业务角度，样本量越少越好\n样本量应该越少越好，因为：\n\n试错成本大。假设我们拿50%用的户来跑实验，但不幸的是，1周后结果表明实验组的总收入下降了20%。算下来，你的实验在一周内给整个公司带来了10%的损失。这个试错成本未免高了一些…\n其它风险增加。移动端例子，假设B方案崩溃率增长，1%流量我们可以从容处理，50%流量会对业务造成严重影响，甚至事故定责。\n流量有限。流量总数是确定的，同类型的实验不能重叠，实验流量更小，就可以同时运行更多的实验。"
+    "objectID": "posts/BMCP_11/index.html#熵-entropy",
+    "href": "posts/BMCP_11/index.html#熵-entropy",
+    "title": "【Bayesian Modeling and Computation in Python】11.相关主题",
+    "section": "11.2. 熵 Entropy",
+    "text": "11.2. 熵 Entropy\n在维也纳的Zentralfriedhof，我们可以找到路德维希·玻尔兹曼的墓碑。他的墓碑上刻着 \\(S = k \\log W\\)，这是一种美妙的方式，表明热力学第二定律是概率定律的结果。玻尔兹曼通过这个等式为现代物理学的一个支柱 —— 统计力学的发展做出了贡献。统计力学描述了如温度这样的宏观观测如何与微观的分子世界相关。想象一下一杯水，我们的感官感知到的基本上是杯子里大量水分子的平均行为。水分子排列数量会与温度相关。随着我们降低温度，可能的排列会越来越少，直到仅有找一种。此时温度为达到了0开尔文，这是宇宙中可能的最低温度！如果我们增加问题，我们会发现分子有越来越多的排列方式。\n\n当温度为0开尔文时，水分子的排列方式只能有一种，状态是确定性的；当温度越来越高时，水分子的排列可能越来越多，状态越来越不确定。由此，我们可以将熵视为不确定性的衡量方式。\n熵的概念不仅适用于分子。它还可以应用于像素的排列、文本中的字符、音符、袜子、酵母面包中的气泡等等。熵如此灵活的原因是它量化了对象的排列， 这一底层分布的属性。分布的熵越大，该分布的信息量就越少。“42”比“42±5”更确定，而后者比“任意实数”更确定。熵可以将这些定性观察转化为定量数字。\n熵的概念适用于连续分布和离散分布，但使用离散状态更容易思考它，我们将在本节的其余部分看到一些示例。但请记住，相同的概念适用于连续情况。\n对有 \\(n\\) 种可能得分布 \\(p\\) 来说，熵的定义是： \\[H(p) = - \\mathbb{E}[\\log{p}] = -\\sum_{i}^n p_i \\log{p_i}\\]\n这只是 \\(S = k \\log W\\) 的另一种写法。使用 \\(H\\) 替换掉 \\(S\\) 并且设置 \\(k = 1\\)，而玻尔兹曼的 \\(W\\) 是所有可能不同结果的总数： \\[W = \\frac{N!}{n_1!n_2! \\cdots n_t!}\\]\n可以理解为投掷一个 \\(t\\) 面的骰子 \\(N\\) 次。当 \\(N\\) 特别大时，可以用斯特林近似 \\(x! \\approx (\\frac{x}{e})^x\\)。 \\[W =  \\frac{N^N}{n_1^{n_1} n_2^{n_2} \\cdots n_t^{n_t}} e^{(n_1 n_2 \\cdots n_t-N)}\\]\n由于 \\(p_i = \\frac{n_i}{N}\\) \\[W = \\frac{1}{p_1^{n_1} p_2^{n_2} \\cdots p_t^{n_t}}\\]\n最终转换为 \\[\\log W = -\\sum_{i}^n p_i \\log{p_i}\\]\n下面用python演示如何计算熵\n\nx = range(0, 26)\nq_pmf = stats.binom(10, 0.75).pmf(x)\nqu_pmf = stats.randint(0, np.max(np.nonzero(q_pmf))+1).pmf(x)\nr_pmf = (q_pmf + np.roll(q_pmf, 12)) / 2\nru_pmf = stats.randint(0, np.max(np.nonzero(r_pmf))+1).pmf(x)\ns_pmf = (q_pmf + np.roll(q_pmf, 15)) / 2\nsu_pmf = (qu_pmf + np.roll(qu_pmf, 15)) / 2\n\n_, ax = plt.subplots(3, 2, figsize=(12, 5), sharex=True, sharey=True,\n                     constrained_layout=True)\nax = np.ravel(ax)\n\nzipped = zip([q_pmf, qu_pmf, r_pmf, ru_pmf, s_pmf, su_pmf],\n             [\"q\", \"qu\", \"r\", \"ru\", \"s\", \"su\"])\nfor idx, (dist, label) in enumerate(zipped):\n    ax[idx].vlines(x, 0, dist, label=f\"H = {stats.entropy(dist):.2f}\")\n    ax[idx].set_title(label)\n    ax[idx].legend(loc=1, handlelength=0)\n\n\n\n\n以上是 6 个分布及对应熵。\n\n最集中向中心的且离散度最小的是 \\(q\\) ， 它的熵最小；\n\\(qu\\) 同样有11种可能但是均匀分布，熵比前者要大，且11种可能得分布中没有比均匀分布更大熵的分布；\n\\(r\\) 是 \\(qu\\) 继续加工出来的，比 \\(qu\\) 变换过来的，有更多种取值可能，分布更离散，熵也更大；\n\\(ru\\) 与 \\(r\\) 取值空间相同的均分分布，熵继续增加；\n\\(s\\) 与 \\(r\\) 类似，但是两峰间距离更远，熵与 \\(r\\) 相同；\n\\(su\\) 是 \\(qu\\) 加工的，它虽然更离散但是取值可能性比 \\(qu\\) 少，熵小于 \\(qu\\)"
   },
   {
-    "objectID": "posts/实验设计_如何选择样本量/index.html#参数解释",
-    "href": "posts/实验设计_如何选择样本量/index.html#参数解释",
-    "title": "A/B实验设计 —— 样本量计算",
-    "section": "参数解释",
-    "text": "参数解释\n\nBaseline conversion rate：填入实验前估测到的转化率，可以通过旧数据统计作为估算。\nMinimum Detectable Effect：填入希望观测到的最小效果。填入实验的预期。\nStatistical power：1 - 假阴性概率。实验效果真实有效时，能被正确发现的概率。\nSignificance level：假阳性概率。实验实际没有效果时，被错误发现的概率。"
+    "objectID": "posts/BMCP_11/index.html#kl散度-kullback-leibler-divergence",
+    "href": "posts/BMCP_11/index.html#kl散度-kullback-leibler-divergence",
+    "title": "【Bayesian Modeling and Computation in Python】11.相关主题",
+    "section": "11.3. KL散度 Kullback-Leibler Divergence",
+    "text": "11.3. KL散度 Kullback-Leibler Divergence\n在统计中常常用一个分布 \\(q\\) 去代表另一个分布 \\(p\\)，比如 \\(p\\) 未知但是可以用 \\(q\\) 近似，后者 \\(p\\) 比较难计算时。此时产生一个问题，\\(q\\) 代替 \\(p\\) 损失了多少信息，或者说引入了多少额外的不确定性。\n根据熵的定义，我们可以通过计算 \\(log(p)\\) 和 \\(log(q)\\) 的差异来衡量。这被称为 KL散度： \\[\\mathbb{KL}(p \\parallel q) = \\mathbb{E}_p[\\log{p}-\\log{q}]\\]\n\\(\\mathbb{KL}(p \\parallel q)\\) 给出了 \\(q\\) 代替 \\(p\\) 时的对数概率平均差异。因为事件实际是以 \\(p\\) 的概率发生的，所以对离散分布来说： \\[\\mathbb{KL}(p \\parallel q) = \\sum_{i}^n p_i (\\log{p_i} - \\log{q_i})\\]\n使用对数计算的性质，可以转为更常见的表示方法： \\[\\mathbb{KL}(p \\parallel q)  = \\sum_{i}^n p_i \\log{\\frac{p_i}{q_i}}\\]\n也可以转为： \\[\\mathbb{KL}(p \\parallel q) = - \\sum_{i}^n p_i (\\log{q_i} - \\log{p_i})\\]\n将其展开可以得到： \\[\\mathbb{KL}(p \\parallel q) =  \\overbrace{-\\sum_{i}^n p_i \\log{q_i}}^{H(p, q)} -  \\overbrace{\\left(-\\sum_{i}^n p_i \\log{p_i}\\right)}^{H(p)}\\]\n其中 \\(H(p)\\) 代表 \\(p\\) 分布的熵，\\(H(p, q) = - \\mathbb{E}_p[\\log{q}]\\) 有点像计算 \\(q\\) 的熵但是每种可能出现的概率是 \\(p\\)。\n由上可以得到： \\[H(p, q) = H(p) + D_\\text{KL}(p \\parallel q)\\]\n这表明 KL 散度可以有效地解释为 \\(q\\) 代替 \\(p\\) 增加的熵。\n为了更加指标，我们将计算 KL 散度的一些值并绘制它们，继续使用熵一节中的例子：\n\ndists = [q_pmf, qu_pmf, r_pmf, ru_pmf, s_pmf, su_pmf]\nnames = [\"q\", \"qu\", \"r\", \"ru\", \"s\", \"su\"]\n\nfig, ax = plt.subplots()\nKL_matrix = np.zeros((6, 6))\nfor i, dist_i in enumerate(dists):\n    for j, dist_j in enumerate(dists):\n        KL_matrix[i, j] = stats.entropy(dist_i, dist_j)\n\nax.set_xticks(np.arange(len(names)))\nax.set_yticks(np.arange(len(names)))\nax.set_xticklabels(names)\nax.set_yticklabels(names)\nplt.set_cmap(\"viridis\")\ncmap = plt.cm.get_cmap()\ncmap.set_bad('w', 0.3)\nim = ax.imshow(KL_matrix)\nfig.colorbar(im, extend=\"max\");\n\n/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_95623/3045023848.py:15: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed two minor releases later. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap(obj)`` instead.\n  cmap = plt.cm.get_cmap()\n\n\n\n\n\n首先上图不是对称的，因为 \\(\\mathbb{KL}(p \\parallel q)\\) 并不一定与 \\(\\mathbb{KL}(q \\parallel p)\\) 相等；其次有一些空白区域，它们代表无穷大。KL 散度的定义使用中有以下约定： \\[0 \\log \\frac{0}{0} = 0, \\quad\n0 \\log \\frac{0}{q(\\boldsymbol{x})} = 0, \\quad\np(\\boldsymbol{x}) \\log \\frac{p(\\boldsymbol{x})}{0} = \\infty\\]\n我们可以基于 KL 散度，在计算预期对数逐点预测密度时使用 log-score 。假设我们有 \\(k\\) 个模型 \\(\\{q_{M_1}, q_{M_2}, \\cdots q_{M_k}\\}\\)，并且假设我们知道真实的模型 \\(M_0\\)，则我们可以计算： \\[\n\\begin{split}\n        \\mathbb{KL}(p_{M_0} \\parallel q_{M_1}) =&\\; \\mathbb{E}[\\log{p_{M_0}}] - \\mathbb{E}[\\log{q_{M_1}}] \\\\\n        \\mathbb{KL}(p_{M_0} \\parallel q_{M_2}) =&\\; \\mathbb{E}[\\log{p_{M_0}}] - \\mathbb{E}[\\log{q_{M_2}}] \\\\\n        &\\cdots \\\\\n        \\mathbb{KL}(p_{M_0} \\parallel q_{M_k}) =&\\; \\mathbb{E}[\\log{p_{M_0}}] - \\mathbb{E}[\\log{q_{M_k}}]\n    \\end{split}\n\\]\n以上似乎没有用，因为显示中我们不知道 \\(M_0\\)。但是由于所有比较中的 \\(p_{M_0}\\) 都是相同的，所以基于KL散度构建一个排名等同于基于 log-score 构建一个排名。这是一个技巧，它意味着我们可以通过比较 log-score 来间接比较KL散度，即使我们可能无法直接计算KL散度。这在模型选择或比较中是非常有用的，因为 log-score 通常比KL散度更容易计算。"
   },
   {
-    "objectID": "posts/实验设计_如何选择样本量/index.html#单尾假设检验",
-    "href": "posts/实验设计_如何选择样本量/index.html#单尾假设检验",
-    "title": "A/B实验设计 —— 样本量计算",
-    "section": "单尾假设检验",
-    "text": "单尾假设检验\n\n定义θ = μ2 - μ1，图中对应假设可转换为： 原假设：θ = 0，此时对应红色曲线 备择假设：θ &gt; 0，此时对应绿色曲线\nμ1：方案A的期望值，不可改变。 μ2：方案B的期望值，不可改变。 $ x$：方案A的均值，会随机波动。 $ y$：方案B的均值，会随机波动。\n$ = ( &gt; C | = ) $ ，红色曲线下，红色面积占比。 $ = ( &lt;= C | &gt; ) $ 。 $ power = ( &gt; C | &gt; ) $ ，绿色曲线下，绿色面积占比。 MDE：根据期望效果取的值，会参与样本量计算 μ2 - μ1 &gt;= mde时，power大于等于预设值，实验容易显著。 μ2 - μ1 &lt; mde时，power小于预设，实验不容易显著。\n在$ &gt; C \\(中，C为预设常量，\\) x\\(、\\) y\\(通过实验获取无法控制，唯一可以改变的是\\)SD( y - x))$，样本量增大 -&gt; $ SD( y - x)) $减少 -&gt; 实验显著概率升高。\n计算过程： \\({SD( \\bar y - \\bar x)} = MDE / [ \\phi^{-1} (\\alpha) + \\phi^{-1} (power )]\\) ,\nx、y样本量同为n，标准差同为$$时， \\({SD( \\bar y - \\bar x)} = \\sqrt{2\\sigma ^{2}/ n}\\),\n易得\\(n = 2\\sigma ^{2} [ \\phi^{-1} (1- \\alpha) + \\phi^{-1} (power )]^{2}/MDE^{2}\\)"
-  },
-  {
-    "objectID": "posts/实验设计_如何选择样本量/index.html#双尾假设检验",
-    "href": "posts/实验设计_如何选择样本量/index.html#双尾假设检验",
-    "title": "A/B实验设计 —— 样本量计算",
-    "section": "双尾假设检验",
-    "text": "双尾假设检验\n定义θ = μ2 - μ1，双尾情况下对应假设： 原假设：θ = 0； 备择假设：θ ≠ 0 ，等价于 θ &gt; 0 or θ &lt; 0。\n双尾假设检验一般是对称的，在此情况下有： 1. $= ( &gt; C1 | = ) + ( &lt; C2 | = ) $ 2. $( &gt; C1 | = ) = ( &lt; C2 | = ) $\n正态分布的概率密度函数特点为左右对称(钟形曲线)，由此可知： $ C1 &gt; 0, C2 &lt; 0, |C1| = |C2| $\n可以理解为一个α水平的双尾假设检验，等于两个α/2水平的单尾假设检验。 将α/2带入单尾计算公式，得到双尾检验需要的样本量为： \\(n = 2\\sigma ^{2} [ \\phi^{-1} (1 - \\alpha/2) + \\phi^{-1} (power )]^{2}/MDE^{2}\\)"
-  },
-  {
-    "objectID": "posts/delta方法/index.html",
-    "href": "posts/delta方法/index.html",
-    "title": "ab实验与Delta方法",
+    "objectID": "posts/sqr/index.html",
+    "href": "posts/sqr/index.html",
+    "title": "SQR：平衡实验速度、质量和风险的框架",
     "section": "",
-    "text": "背景\n互联网实验一般使用基于正态分布模型的检验方法，但是在ab实验中我们可能遇到这样的情况：\n1.实验结果分析，实验组均值比对照组均值提升了10%，相对提升的置信区间是多少呢？ 2.实验组用户合计点击率为26%，对照组未25%，置信度与置信区间如何计算？\n在场景1中，实验组均值、对照组均值是分别服从正态分布的，但是它们的比值会服从正态分布么？标准差怎么计算？\n而场景2中，平均浏览数、平均点击数是服从正态分布的，但平均点击率等于平均点击除以平均浏览。我们又陷入了正态分布随机变量除以正态分布随机变量的问题！\nDelta method可以帮助我们解决这类问题。\n\n\nDelta method是什么\nDelta method说的是当一个随机变量服从正态分布时，经过可导的函数变化后仍然概率趋向正态分布，并且提供了期望、方差的计算公式。\n\n单变量下：\n如 \\(\\sqrt{n}[X - \\theta] \\overset{\\nu }{\\rightarrow} N(0, \\sigma^2)\\)，且函数g(x)可导，\n则\\(\\sqrt{n}[g(X) - g(\\theta)] \\overset{\\nu }{\\rightarrow} N(0, \\sigma^2 * [g’(\\theta)]^2)\\)\n\n\n多变量下：\n如 \\(\\sqrt{n}[B - \\beta] \\overset{\\nu }{\\rightarrow} N(0, \\Sigma)\\)，且函数g(x)可导，\n则\\(\\sqrt{n}[h(B) - h(\\theta)] \\overset{\\nu }{\\rightarrow} N(0, \\Delta h(B)^T * \\Sigma * \\Delta h(B))\\)。\n其中\\(\\Sigma\\)是多元正态分布的协方差矩阵，\\(\\Delta h\\)为\\(h\\)函数的梯度向量。\n\n\n\nDelta method的直观理解\n以下为单变量下的个人理解，不等于严格证明。\n泰勒公式：\n\\(f(x) = f(a) + \\frac{f'(a) }{1!}(x -a)+\\frac{f''(a) }{2!}(x -a)^2+...\\)\n根据泰勒公式：\n\\(g(X) \\approx g(\\theta) + g'(\\theta)(X - \\theta)\\)\n则：\n\\(g(X) - g(\\theta) \\approx g'(\\theta)(X - \\theta) \\overset{\\nu }{\\rightarrow} N(0, \\sigma^2 * [g’(\\theta)]^2)\\)\n由于\\(g'(\\theta)(X - \\theta)\\)服从正态分布，左边也近似服从相同的正态分布，且有接近的均值与方差。\n\n\n为什么可以解决AB的问题\n场景1与场景2都是两个正态分布随机变量做除法运算的问题，设一个为Xn，一个为Yn，则(Xn, Yn)服从二元正态分布：\n$ (X_n, Y_n) N((_x，_y), )$\n我们对Xn,Yn的操作等于函数\\(h((x, y)) = y/x\\) ，根据Delta方法：\n\\(\\frac{Yn}{Xn} \\overset{\\nu }{\\rightarrow} N(\\frac{ E[Yn] }{ E[Xn] }, \\Delta h( (X_n, Y_n))^T * \\Sigma * \\Delta h( (X_n, Y_n)))\\)\n其中\\(\\Delta h((x, y)) = [-\\frac{ y}{x^2}, \\frac{1}{x}]^T\\)，\\(\\Sigma = \\begin{bmatrix} {\\sigma(X_n)^2 }&{cov(X_n, Y_n)}\\\\ {cov(X_n, Y_n)}&{\\sigma(Y_n)^2}\\\\ \\end{bmatrix}\\)\n\n\n联系背景问题\n于是我们可以对两个问题的解决方案：\n场景1：\\(X_n\\)对照组均值，\\(Y_n\\)为实验组均值，使用样本均值、样本方差做期望、方差的点估计；\n场景2：\\(X_n\\)为平均用户页面浏览次数，\\(Y_n\\)为平均用户页面点击次数，同样使用样本均值、样本方差做期望、方差的点估计。\n\n\n总结\nDelta方法对实验分析至关重要，已经几乎成为所有AB实验平台的一部分，主要用来解决随机化单位与分析单位不同的问题。\nDelta方法还可以扩展到更高维度，如微软的CUPED论文中通过四元正态分布的Delta方法解决比例型指标的CUPED计算难点。"
+    "text": "为了加速实验迭代，需要兼顾：速度、质量、风险，Linkin提出了SQR框架：SQR: Balancing Speed, Qality and Risk in Online Experiments。"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html",
-    "href": "posts/实验设计_偷看问题/index.html",
-    "title": "A/B实验设计 —— 偷看问题",
+    "objectID": "posts/sqr/index.html#关于实验放量的三个误区",
+    "href": "posts/sqr/index.html#关于实验放量的三个误区",
+    "title": "SQR：平衡实验速度、质量和风险的框架",
+    "section": "1.1. 关于实验放量的三个误区",
+    "text": "1.1. 关于实验放量的三个误区\n\n误区#1：让实验一直跑直到显著\n\n多重检验导致的假阳性问题；\n样本量随时间增加速度越来越慢。 \n\n\n\n误区#2: 小流量实验的消耗很低\n长期的小流量实验消耗很大：\n\n机会消耗：让创新变少变慢\n平台消耗：运行实验数更多\n商业消耗：命中用户长期处于较差体验导致流失\n\n\n\n误区#3：10%流量就够了\n许多实验都是面向用户子集，而且付费相关的指标需要更大量的用户"
+  },
+  {
+    "objectID": "posts/sqr/index.html#sqr原则",
+    "href": "posts/sqr/index.html#sqr原则",
+    "title": "SQR：平衡实验速度、质量和风险的框架",
+    "section": "2.2. SQR原则",
+    "text": "2.2. SQR原则\n做实验的原因：定量测量、减少风险、学习用户\nMaximun Power Ramp(MPR)：最大power的放量\n\n\n原则#1：风险可接受，尽快放量到MPR\n风险影响因素：\n\n先验信念\n采样数据结果\n转换率：实验影响的用户比率\n\n\n\n原则#2：MPR阶段等待足够的时间\n至少一周，存在burn-in效果时更久\n\n\n原则#3：post-MPR阶段尽快结束\n\n\n原则#4：仅在研究目标明确下才进行长期观察实验"
+  },
+  {
+    "objectID": "posts/sqr/index.html#mpr前放量",
+    "href": "posts/sqr/index.html#mpr前放量",
+    "title": "SQR：平衡实验速度、质量和风险的框架",
+    "section": "2.1. MPR前放量",
+    "text": "2.1. MPR前放量\n在风险可承受之内，尽快放量到MPR阶段。\n\n2.1.1. 风险和可承受风险\n将流量放至q的风险为(其实就是treatment对大盘影响的估计)：\n\\[R(q) = |\\delta| * g(r) * h(q)\\]\n其中： \\[\\delta = \\frac{treatment mean - control mean}{control mean}\\]\n是影响效果， \\[g(r) = \\begin{cases}\n& r, r &gt;= r_0 \\\\\n& r_0, r &lt; r_0\n\\end{cases}\\]\n是左截断的触发率， \\[h(r) = \\begin{cases}\n& q, q &gt;= q_0 \\\\\n& q_0, q &lt; q_0\n\\end{cases}\n\\]\n是左截断的放量比。\n如果满足： \\[R(q) &lt;= \\tau\\]\n就认为风险是可承受的。\n关于\\(\\tau\\)的选择，不同指标选择不同（todo）\n\n\n2.1.2. 假设检验\n\\(Q = \\{q_1, q_2, ...\\}\\)为可能的放量比，在linkedIn一般{1%, 5%, 10%, 25%, 50%}。\n假设模板： \\[H_0^q : R(q) &lt;= \\tau \\\\\nH_0^q : R(q) &gt; \\tau\\]\n\n\n2.1.3. 贯序检验\n使用Generalized Sequential Probability Ratio Test (GSPRT)，任意时刻t的检验统计量： \\[L_t(H_k^q) = \\frac{\\sup_{H^q_k}\\pi_kf_{k}^{t}(X^t)}{\\sum_{j=0}^1\\sup_{H^q_j}\\pi_jf_{j}^{t}(X^t)}, k=0,1\\]\n其中\\(f_{k}^{t}\\)是似然函数，\\(X^t = (X^t_1,X^t_2,...)\\)是t时刻用户级别的指标值，\\(\\pi_k\\)是\\(H_k\\)的先验概率。\n在GSPRT下，\\(H^q_k\\)被接受的条件为： \\[L_t(H^q_k) &gt; \\frac{1}{1 + A_k}\\]\n由于后验概率\\(L_t(H^q_0) + L_t(H^q_1) = 1\\)，所以要选择\\(0 &lt; A_k &lt; 1\\)以保证最多有一个假设被接受。\n\n基于大数定理和终极极限定理，组间均值差\\(\\Delta\\)的分布近似正态，方程转化为（此处方法用的是贝叶斯）： \\[L_t(H_k^q) = \\frac{\\sup_{H^q_k}\\pi_kexp(-\\frac{(\\Delta - \\delta)^2}{2s^2})}{\\sum_{j=0}^1\\sup_{H^q_j}\\pi_jexp(-\\frac{(\\Delta - \\delta)^2}{2s^2})}\\] 其中\\(s^2\\)是\\(\\Delta\\)的方差，\\(\\delta\\)来自假设模板。\n\\(H_0\\)对应的\\(A_0\\)越高，越容易接受原假设，产生二类错误；\n\\(H_1\\)对应的\\(A_1\\)越高，越容易拒绝原假设，产生一类错误。\nlinkedIn的选择：\\(A_0 = 0.2, A_1 = 0.1\\)。\n最终流程：\n1). 如果任意环节q，\\(L_t(H^q_1) &gt; \\frac{1}{1 + A_1}\\)，拒绝原假设，不能继续放量； 2). 如果某些环节，\\(L_t(H^q_0) &gt; \\frac{1}{1 + A_0}\\)，接受原假设，放量到其中最大q阶段； 3). 其他情况，继续观察到t+1，根据\\(L_(t+1)\\)进行决策； 4). 如果直到\\(t = 7\\)都没满足条件，建议放量。\n\n\n2.1.4. 多个指标情况\n通过控制FDR来矫正多重检验问题，通过类似Benjamini-Hochberg方差来处理\\(L_t(H_1^q)\\)：\n1). 将M个指标结果\\(L_t^{(1)}(H_1^q),\\ L_t^{(2)}(H_1^q),\\ L_t^{(3)}(H_1^q)...\\)进行降序排列； 2). 按顺序进行比较： \\[L_t^{(m)}(H_1^q) &gt; \\frac{1}{1 + \\frac{mA_1}{M}}\\]\n至少一个指标满足条件时，接受\\(H_1^q\\)。\n所以放量条件为：\n1). \\(H_1^q\\)未被接受； 2). 主要指标都接受\\(H_0^q\\)。"
+  },
+  {
+    "objectID": "posts/sqr/index.html#mpr阶段的放量",
+    "href": "posts/sqr/index.html#mpr阶段的放量",
+    "title": "SQR：平衡实验速度、质量和风险的框架",
+    "section": "2.2. MPR阶段的放量",
+    "text": "2.2. MPR阶段的放量\nMPR之前主要关注规避风险，MPR阶段关注速度和决策质量。\n\n2.2.1. MPR时长\n至少一周的时间\n\n\n2.2.2. 指标的影响\n重要的指标：任意指标p小于0.05，就需要仔细研究；\n其他指标：显著性为0.1，并控制错误发现率，如果负向显著就不建议放量到100%。\n\n\n2.2.3. 其他发现的警告\n如果有其他发现，比如burn-in效应、inconsistent results、heterogeneous treatment效应等。这些应该被自动计算，并给出更好、更全面的推荐方案。"
+  },
+  {
+    "objectID": "posts/sqr/index.html#评估",
+    "href": "posts/sqr/index.html#评估",
+    "title": "SQR：平衡实验速度、质量和风险的框架",
+    "section": "2.3. 评估",
+    "text": "2.3. 评估\n分两方面评估：\n\n一致性 理想情况下，t阶段放量结论，在t+1阶段依然符合；\n速度 理想情况下，用更少的阶段、合计更短的时间，到达MPR。\n\nLinkedIn收集了484个去年在MPR阶段满一周的实验。由于他们的放量各异，采用了50%流量阶段进行模拟，pre-MPR前取\\(q\\in \\{1\\%,5\\%,10\\%,25\\%\\}\\)。\n\n\n\n5% ramp Day=1 vs Day-7\n\n\n全阶段的模拟："
+  },
+  {
+    "objectID": "posts/BMCP_2/index.html",
+    "href": "posts/BMCP_2/index.html",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
     "section": "",
-    "text": "偷看是ab测试中最常遇到的问题，本文将说明影响，分析用户为什么偷看，探讨如何应对。"
+    "text": "上一章中贝叶斯推断是关于基于数据和先验知识，通过贝叶斯公式计算后验概率，从而得到后验分布的过程。但是现实中远没有这么简单，成功的贝叶斯分析还有很多其它挑战。\n本章将讨论其中的一些，包括检验模型假设、诊断推理结果和模型比较原文链接。"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html#a.-我们有偷看的需求",
-    "href": "posts/实验设计_偷看问题/index.html#a.-我们有偷看的需求",
-    "title": "A/B实验设计 —— 偷看问题",
-    "section": "a. 我们有偷看的需求",
-    "text": "a. 我们有偷看的需求\n\n及时止损，尽早结束失败（有害）的实验；\n\n扩大胜利成果，尽早发现成功的实验。"
+    "objectID": "posts/BMCP_2/index.html#推断之前和之后都有要做的事情",
+    "href": "posts/BMCP_2/index.html#推断之前和之后都有要做的事情",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "section": "2.1. 推断之前和之后都有要做的事情！",
+    "text": "2.1. 推断之前和之后都有要做的事情！\n除推断外，一次成功的贝叶斯建模的工作列举：\n\n通过数值方法诊断推断结果质量；\n模型批判，评价模型假设和模型预测结果；\n模型比较，选择模型或者模型混合；\n为特定受众准备结果。\n\n以上工作统称为贝叶斯模型探索分析（Exploratory Analysis of Bayesian Models）。"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html#b.-存在允许偷看的客观条件",
-    "href": "posts/实验设计_偷看问题/index.html#b.-存在允许偷看的客观条件",
-    "title": "A/B实验设计 —— 偷看问题",
-    "section": "b. 存在允许偷看的客观条件",
-    "text": "b. 存在允许偷看的客观条件\n固定水平检验产生在大约100年前。我们来看下当年与现代的对比。\n100年前：\n- 数据成本高、收集缓慢\n著名的统计学家费希尔，使用假设检验对农业进行研究。作物的生长周期是很难改变的，无法预知结果…数据的采集、计算依赖人力。\n- 对操作者要求高\n实验者是经过训练的专家。\n现在：\n- 数据及时、廉价 科技降低了数据获取的成本，可以研究更精细的事物。互联网业采集、分析用户行为已经越来越成熟。 - 人人都可以是操作者 在成熟ab测试平台上，实验者可以轻松进行实验，也更容易在实验分析中犯错。"
+    "objectID": "posts/BMCP_2/index.html#理解你的假设",
+    "href": "posts/BMCP_2/index.html#理解你的假设",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "section": "2.2. 理解你的假设",
+    "text": "2.2. 理解你的假设\n选择先验的一个问题是很难理解它们在模型计算中的效果。基于先验分布预测是一种理解假设的好方法。通过仅从先验预测分布抽样得到观察数据，我们完成从参数空间到观测空间的转换（参数分布 -&gt; 参数 -&gt; 先验预测分布 -&gt; 观测值）。 这被称为prior predictive checks。\n举一个对足球建模的例子，我们感兴趣的是点球得分率。\n\n模型假设期望射门角度\\(\\alpha\\)服从正态分布，进球概率模型为： \\[p\\left(|\\alpha| &lt; \\tan^{-1}\\left(\\frac{L}{x}\\right)\\right) = 2\\Phi\\left(\\frac{\\tan^{-1}\\left(\\frac{L}{x}\\right)}{\\sigma}\\right) - 1\n\\]\n上述公式表达的是，足球射出角度\\(\\alpha\\)在±\\(\\tan^{-1}\\left(\\frac{L}{x}\\right)\\)的概率（这样才能进球），其中\\(L\\)是球门二分之一宽度，\\(x\\)是球门中心到球员的距离。球员会尽量踢直线，但是有各种因素影响导致波动从而有标准差\\(\\sigma\\)\n上述公式中唯一未知的参数是\\(\\sigma\\)，我们可以选择它的先验来建模，例如服从Half-normal分布。则以上模型为：\n\\[\\sigma \\sim \\mathcal{HN}(\\sigma_{\\sigma})\\]\n\\[\\text{p\\_goal} = 2\\Phi\\left(\\frac{\\tan^{-1}\\left(\\frac{L}{x}\\right)}{\\sigma}\\right) - 1\\]\n\\[Y \\sim \\text{Bin}(n=1, p=\\text{p\\_goal})\\]\n我们很难直接抉择\\(\\sigma_{\\sigma}\\)怎么选择，但是我们可以通过先验预测分布来理解它的影响。\n\n%matplotlib inline\nimport arviz as az\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport pymc as pm\nfrom scipy import stats\nfrom pytensor import tensor as tt\nimport pandas as pd\n\n\naz.style.use(\"arviz-grayscale\")\nplt.rcParams['figure.dpi'] = 300\nnp.random.seed(5201)\n\n\nhalf_length = 3.66  # meters\npenalty_point = 11  # meters\ndef Phi(x):\n    \"\"\"Calculates the standard normal cumulative distribution function.\"\"\"\n    return 0.5 + 0.5 * tt.erf(x / tt.sqrt(2.0))\n\nppss = []\nsigmas_deg = [5, 20, 60]\nsigmas_rad = np.deg2rad(sigmas_deg)\nfor sigma in sigmas_rad:\n    with pm.Model() as model:\n        σ = pm.HalfNormal(\"σ\", sigma)\n        α = pm.Normal(\"α\", 0, σ)\n        p_goal = pm.Deterministic(\"p_goal\", 2 * Phi(tt.arctan(half_length / penalty_point) / σ) - 1)\n        pps = pm.sample_prior_predictive(250)\n        ppss.append(pps)\n\nSampling: [α, σ]\nSampling: [α, σ]\nSampling: [α, σ]\n\n\n\nfig, axes = plt.subplots(1, 3, subplot_kw=dict(projection=\"polar\"), figsize=(10, 4))\n\nmax_angle = np.arctan(half_length/penalty_point)\n\nfor sigma, pps, ax in zip(sigmas_deg, ppss, axes):\n    cutoff = pps.prior.data_vars.get(\"p_goal\")[0] &gt; 0.1\n    cax = ax.scatter(pps.prior.data_vars.get(\"α\")[0][cutoff], np.ones_like(pps.prior.data_vars.get(\"α\")[0][cutoff]), c=pps.prior.data_vars.get(\"p_goal\")[0][cutoff],\n               marker=\".\", cmap=\"viridis_r\", vmin=0.1)\n    ax.fill_between(np.linspace(-max_angle, max_angle, 100), 0, 1.01, alpha=0.25)\n    ax.set_yticks([])\n    ax.set_title(f\"$\\sigma = \\mathcal{{HN}}({sigma})$\")\n    ax.plot(0,0, 'o')\nfig.colorbar(cax, extend=\"min\", ticks=[1, 0.5, 0.1], shrink=0.7, aspect=40)\n\n&lt;matplotlib.colorbar.Colorbar at 0x17b8dc090&gt;\n\n\n\n\n\n对\\(\\sigma_\\sigma\\) 分别取5,20,60的三个先验分布向后采样得到上述结果。\n灰色区域表示「射门期望能进球」范围（对应\\(\\alpha\\)，没有风、摩擦等干扰因素），颜色表示进球概率（对应p_goal，实际收干扰后的概率）。可以发现即使射的在灰色范围内，也不能100%进球。而对60来说，某些射向相反方向也有可能进球，这个分布可能不太好。\n此时我们可以做更多选择：我们可以重新思考模型结构引入更多几何知识；或者我们可以使用先验来减少nonsensical的结果，或直接拟合看数据信息是否足够让后验结果合理。\n下面的示例为一个逻辑回归模型，它包含一些二元变量，每个变量回归系数的先验为\\(\\mathcal{N}(0, 1)\\)。\n\nfrom scipy.special import expit\nfig, axes = plt.subplots(1, 3, figsize=(10, 4), sharex=True,  sharey=True)\naxes = np.ravel(axes)\n\nfor dim, ax in zip([2, 5, 20], axes):\n    β = np.random.normal(0, 1, size=(10000, dim))\n    X = np.random.binomial(n=1, p=0.75, size=(dim, 500))\n    az.plot_kde(expit(β @ X).mean(1), ax=ax)\n    ax.set_title(f\"{dim} predictors\")\n    ax.set_xticks([0, 0.5, 1])\n    ax.set_yticks([0, 1, 2])\n\nfig.text(0.34, -0.075, size=18, s=\"mean of the simulated data\")\n\nText(0.34, -0.075, 'mean of the simulated data')\n\n\n\n\n\n可以发现随着predictors的增加先验预测结果分布更偏向于产生极值。 因此我们可能需要一些更强的正则化先验（比如拉普拉斯分布）以保持模型远离极值。\n上述的两个例子都表明先验不能孤立地理解，我们需要将它们放在特定模型的背景下。"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html#c.-实验平台模板不适合",
-    "href": "posts/实验设计_偷看问题/index.html#c.-实验平台模板不适合",
-    "title": "A/B实验设计 —— 偷看问题",
-    "section": "c. 实验平台模板不适合",
-    "text": "c. 实验平台模板不适合\n实验平台提供了固定的模板，以及在此模板下的终止条件，常见为限定实验周期、分析单位等，并以此得到结束条件。\n固化的模板不能通用于所有的实验，因此用户自己判断是否停止也不足为奇。\n平台需要增强实验个性化的能力。"
+    "objectID": "posts/BMCP_2/index.html#理解你的预测",
+    "href": "posts/BMCP_2/index.html#理解你的预测",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "section": "2.3. 理解你的预测",
+    "text": "2.3. 理解你的预测\n我们可以通过posterior predictive checks来理解模型预测的效果。基本思想是后验预测分布抽样应该与观测数据类似。\n下图是一个binomial model的例子。\n\nY = stats.bernoulli(0.7).rvs(100)\nwith pm.Model() as model:\n    θ = pm.Beta(\"θ\", 1, 1)\n    y_obs = pm.Binomial(\"y_obs\",n=1, p=θ, observed=Y)\n    trace_b = pm.sample(1000)\n\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [θ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 18 seconds.\n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\npred_dist = pm.sample_posterior_predictive(trace_b, model=model).posterior_predictive.y_obs.values[0]\n\nSampling: [y_obs]\n\n\n\n\n\n\n\n    \n      \n      0.12% [5/4000 00:00&lt;00:09]\n    \n    \n\n\n\n_, ax = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)\n\naz.plot_dist(pred_dist.sum(1),\n             hist_kwargs={\"color\":\"C2\"}, ax=ax[0])\nax[0].axvline(Y.sum(), color=\"C4\", lw=2.5);\nax[0].axvline(pred_dist.sum(1).mean(), color=\"k\", ls=\"--\")\nax[0].set_yticks([])\nax[0].set_xlabel(\"number of success\")\n\npps_ = pred_dist.mean(1)\nax[1].plot((np.zeros_like(pps_), np.ones_like(pps_)), (1-pps_, pps_), 'C1', alpha=0.01)\n\nax[1].plot((0, 1), (1-Y.mean(), Y.mean()), 'C4', lw=2.5)\nax[1].plot((0, 1), (1-pps_.mean(), pps_.mean()), 'k--')\nax[1].set_xticks((0,1))\nax[1].set_xlabel(\"observed values\")\nax[1].set_ylabel(\"probability\")\n\nText(0, 0.5, 'probability')\n\n\n\n\n\n左图可以比较观测成功数据（蓝色）和后验预测的成功数值分布。右边是另一种概率方式的呈现。上图可知我们后验模型在平均值方面的预测很好。\n后验预测还可以数值进行测试。一种计算方法是：\\[p_{B} = p(T_{sim} \\leq T_{obs} \\mid \\tilde Y)\\]\n其中\\(p_{B}\\)是Bayesian p-value：仿真生成的统计量\\(T_{sim}\\)小于等于观测统计量\\(T_{obs}\\)的概率。统计量\\(T\\)可以是任意指标。在上面的例子中，\\(T_{obs}\\)是成功率（均值）并且比较后验预测结果分布的成功率\\(T_{sim}\\)。当 \\(p_{B} = 0.5\\) 时 \\(T_{sim}\\) 一半大于观测结果一半小于观测结果，这是拟合良好的预期结果。\n以下是Bayesian p-value的绘制，注意 az.plot_bpv(idata, kind=\"p_value\") 新版本绘制有误\n\nidata = az.from_dict(posterior_predictive={\"y\":pred_dist.reshape(2, 500, 100)}, observed_data={\"y\":Y})\n\n\n_, ax = plt.subplots(1, 2, figsize=(10, 4))\naz.plot_bpv(idata, kind=\"p_value\", ax=ax[0])\nax[0].legend([f\"bpv={(Y.mean() &gt; pred_dist.mean(1)).mean():.2f}\"], handlelength=0)\naz.plot_bpv(idata, kind=\"u_value\", ax=ax[1])\nax[1].set_yticks([])\nax[1].set_xticks([0., 0.5, 1.])\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n\n\n\n\n\n以上是 Beta-Binomial model 的后验预测分布。左图显示有误待修复，右图中白色代表理想情况，黑线是预测值比例的KDE。\n\n_, ax = plt.subplots(1, 2, figsize=(10, 4))\naz.plot_bpv(idata, kind=\"t_stat\", t_stat=\"mean\", ax=ax[0])\nax[0].set_title(\"mean\")\naz.plot_bpv(idata, kind=\"t_stat\", t_stat=\"std\", ax=ax[1])\nax[1].set_title(\"standard deviation\")\nax[1].set_xticks([0.32, 0.41, 0.5])\n\n\n\n\n有很多 \\(T\\) 统计量可以被选择。上图中左边为均值，右边为标准差。\n下图有4个例子来帮助我们建立直觉。下图的蓝色线是同一份观测数据来自正态分布，并且有四个后验样本。\n\nn_obs = 500\nsamples = 2000\ny_obs = np.random.normal(0, 1, size=n_obs)\n\nidata1 = az.from_dict(posterior_predictive={\"y\":np.random.normal(0.5, 1, size=(1, samples, n_obs))},\n                      observed_data={\"y\":y_obs})\n\nidata2 = az.from_dict(posterior_predictive={\"y\":np.random.normal(0, 2, size=(1, samples, n_obs))},\n                      observed_data={\"y\":y_obs})\n\nidata3 = az.from_dict(posterior_predictive={\"y\":np.random.normal(0, 0.5, size=(1, samples,n_obs))},\n                      observed_data={\"y\":y_obs})\n\nidata4 = az.from_dict(posterior_predictive={\"y\":np.concatenate(\n                                                [np.random.normal(-0.25, 1, size=(1, samples//2, n_obs)),\n                                                 np.random.normal(0.25, 1, size=(1, samples//2, n_obs))]\n                                                                )},\n                      observed_data={\"y\":y_obs})\n\nidatas = [idata1,\n          idata2,\n          idata3,\n          idata4,\n]\n\n\n_, axes = plt.subplots(len(idatas), 3, figsize=(10, 10), sharex=\"col\")\n\nfor idata, ax in zip(idatas, axes):\n    az.plot_ppc(idata, ax=ax[0], color=\"C1\", alpha=0.01, mean=False, legend=False)\n    az.plot_kde(idata.observed_data[\"y\"].values, ax=ax[0], plot_kwargs={\"color\":\"C4\", \"zorder\":3})\n    ax[0].set_xlabel(\"\")\n    az.plot_bpv(idata, kind=\"p_value\", ax=ax[1])\n    az.plot_bpv(idata, kind=\"u_value\", ax=ax[2])\n    ax[2].set_yticks([])\n    ax[2].set_xticks([0., 0.5, 1.])\n    for ax_ in ax:\n        ax_.set_title(\"\")\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/ppcplot.py:241: FutureWarning: color has been deprecated in favor of colors\n  warnings.warn(\"color has been deprecated in favor of colors\", FutureWarning)\n\n\n\n\n\n以上四个分布：\n\n第一行的预测偏右\n\n第二行的预测结果更离散\n第三行的预测结果更集中\n第四行的预测结果来自高斯混合分布"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html#不偷看",
-    "href": "posts/实验设计_偷看问题/index.html#不偷看",
-    "title": "A/B实验设计 —— 偷看问题",
-    "section": "不偷看",
-    "text": "不偷看\n这是最简单可靠的方案，但是经常很困难。参考以下场景：\n\n大佬：B方案显著正面了，上线了吧\n小弟：不行，我们还需要再等三天\n大佬：B方案负面显著了，快回滚\n小弟：还需要等三天……\n大佬：这个方案竟然不显著？在跑几天！\n小弟：不行，我们已经达到停止条件了"
+    "objectID": "posts/BMCP_2/index.html#数值诊断",
+    "href": "posts/BMCP_2/index.html#数值诊断",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "section": "2.4. 数值诊断",
+    "text": "2.4. 数值诊断\n在本节中，我们将讨论马尔可夫链蒙特卡罗方法的最常见和最有用的诊断工具。\n为了演示我们创建人造的后验：\n第一个是good_chains来自 \\(\\Beta(2, 5)\\) ；\n第二个是 bad_chains0 代表不良的后验，通过对good_chains排序及增加小的高斯噪音产生：\n\n值之间不独立，相反它们是高度自相关的；\n两组抽样不是一个分部，因为经历 reshape 和 重排序后，拆分为两部分。\n\n第三个是 bad_chains1 基于 good_chains 并随机在一些位置上插入一些来自同一分布的样本。这种场景很常见，代表一个采样器在一些参数空间表现很好，但是有一些区域很难采样到\n\ngood_chains = stats.beta.rvs(2, 5,size=(2, 2000))\nbad_chains0 = np.random.normal(np.sort(good_chains, axis=None), 0.05,\n                               size=4000).reshape(2, -1)\n\nbad_chains1 = good_chains.copy()\nfor i in np.random.randint(1900, size=4):\n    bad_chains1[i%2:,i:i+100] = np.random.beta(i, 950, size=100)\n\nchains = {\"good_chains\":good_chains,\n          \"bad_chains0\":bad_chains0,\n          \"bad_chains1\":bad_chains1}\n\n\n2.4.1. Effective Sample Size\n当使用 MCMC 方法时，我们需要足够的样本来估计后验分布。样本量是否充足不能直接由抽样次数觉得，因为 MCMC 有自相关性，所以其中包含的信息量会少于iid抽样结果。\nEffective Sample Size (ESS) 可以被理解为考虑了自相关性后换算为iid抽样的样本量。\n\naz.ess(chains).data_vars\n\nData variables:\n    good_chains  float64 3.845e+03\n    bad_chains0  float64 2.443\n    bad_chains1  float64 597.0\n\n\n我们真实抽样次数为4000次，good_chains 与此结果很接近，bad_chains1 少了很多，bad_chains0 则更少。\n以上ess的算法为bulk即中心区域，可以切换为tail或quantile等。\n可视化可以更好的理解ESS在参数空间上的变化。可以用 az.plot_ess(., kind=\"quantiles\") 或者 az.plot_ess(., kind=\"local\")\n\n_, axes = plt.subplots(2, 3, sharey=True, sharex=True)\naz.plot_ess(chains, kind=\"local\", ax=axes[0]);\naz.plot_ess(chains, kind=\"quantile\", ax=axes[1]);\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n\n\n\n\n\n一般认为 ESS 值要大于400，否则评估结果基本是不靠谱的。\n\n\n2.4.2. Potential Scale Reduction Factor \\(\\hat{R}\\)\n在一般条件下有理论可证明，无论马尔科夫蒙特卡洛方法的起点为哪里都会得到相同的结果。然而这是在无限抽样的情况下，现实中我们只能有限抽样因此需要校验其收敛性。 一种校验方法是从不同起点执行多个 MCMC 链看几个链是否相似。\\(\\hat{R}\\) 就是这种诊断方法的结果。\n\\(\\hat{R}\\) 被解释为 MCMC 有限抽样造成的方差高估，因此成为 “potential scale reduction factor(PSRF)” 。 \\(\\hat{R} = 1\\) 意味着增加样本量不会再降低结果的方差。然而在实践中，最好将其视为一种诊断工具，而不要过度解释它。\n\n计算方法\n假设有 k 个链，每个链有 n 个样本，感兴趣的量为 \\(\\phi\\)，其在目标分布下有期望 \\(\\mu\\) 和 方差 \\(\\sigma ^ 2\\)。\n记 \\(\\phi_{jt}\\) 为链 j 的第 t 个样本 \\(\\phi\\) 的值，那么混合样本中，\\(\\mu\\) 的无偏估计为 \\(\\mu = \\bar{\\phi}\\) 。链之间的方差 B/n 和链内的方差 W 分别为： \\[B/n = \\frac{1}{k-1} \\sum_{j = 1}^{k}(\\bar{\\phi_j} - \\bar{\\phi})^2 \\] \\[W = \\frac{1}{k(n-1)}\\sum_{j = 1}^{k}\\sum_{t=1}^{n}(\\phi_{jt} - \\bar{\\phi}_j) ^ 2\\] 从而可以通过 B 和 W 加权估计 \\(\\sigma ^ 2\\)： \\[\\hat{\\sigma}_{+} ^ 2 = \\frac{n - 1}{n}W + \\frac{B}{n}\\] 如果初始值是从目标分布中抽取的，\\(\\hat{\\sigma}_+^2\\)就是\\(\\sigma\\)的无偏估计。但是如过渡分散则会高估。考虑估计量\\(\\hat{\\mu}\\)的抽样波动，方差的估计值为\\(\\hat{V} = \\hat{\\sigma}^2_+ + \\frac{B}{kn}\\)\n比较混合和链内的推断可以通过： \\[R = \\frac{\\hat{V}}{\\sigma ^ 2}\\] 称 \\(\\sqrt{R}\\) 为 scale reduction factor(SRF) ，其估计值 potential scale reduction factor(PSRF) 为 \\[\\hat{R} = \\frac{\\hat{V}}{W}\\]\n\n理论上 \\(\\hat{R}\\) 应该为1，但是实际中会有一些误差。一般认为 \\(\\hat{R} &lt; 1.1\\) 时可以认为收敛。\n\naz.rhat(chains).data_vars\n\nData variables:\n    good_chains  float64 1.0\n    bad_chains0  float64 2.392\n    bad_chains1  float64 1.023\n\n\n以上结果说明 good_chains 收敛很好，bad_chains0 收敛很差，bad_chains1 稍微好一些但是仍然不符合标准。\n\n\n2.4.3. 蒙特卡洛标准误\n由于通过有限样本的 MCMC 来逼近后验，这引入了额外的不确定性。我们通过 Monte Carlo standard error (MCSE) 来评估引入的不确定性大小。\n如果我们评估参数的值精确度要到小数点后两位，则需要 MCSE 低于小数点后两位。\n当然 MCSE 仅在 ESS 足够高且 \\(\\hat{R}\\) 足够小时才有意义。\n\naz.mcse(chains).data_vars\n\nData variables:\n    good_chains  float64 0.002561\n    bad_chains0  float64 0.107\n    bad_chains1  float64 0.00688\n\n\n与 ESS 一样，MCSE 在参数空间中变化，可能需要在不同区间（比如分位点）评估。我们可以进行可视化：\n\naz.plot_mcse(chains);\n\n\n\n\nESS ，\\(\\hat{R}\\) 和 MCSE 可以通过 az.summary(.) 一起计算：\n\naz.summary(chains, kind=\"diagnostics\")\n\n\n\n\n\n\n\n\nmcse_mean\nmcse_sd\ness_bulk\ness_tail\nr_hat\n\n\n\n\ngood_chains\n0.003\n0.002\n3845.0\n3883.0\n1.00\n\n\nbad_chains0\n0.107\n0.087\n2.0\n11.0\n2.39\n\n\nbad_chains1\n0.007\n0.005\n597.0\n1268.0\n1.02\n\n\n\n\n\n\n\n\n\n2.4.4. Trace Plots\nTrace Plots 可能是最常用的分析方法。从中我们可以观察到不同 chains 是否收敛到相似分布。\n\naz.plot_trace(chains);\n\n\n\n\n\n\n2.4.5. Autocorrelation Plots\n自相关性是导致 MCMC 结果信息量不足的主要原因。我们可以通过自相关图来观察自相关性。\n\naz.plot_autocorr(chains, combined=True);\n\n\n\n\n\n\n2.4.6. Rank Plots\nRank Plots是另一种常见诊断方法。它先将所有链混合排序，在分别绘制各个链的rank分布。如果所有链都是从同一分布中抽取的，那么rank分布应该是相似的，并且为均匀分布。\n\naz.plot_rank(chains, kind=\"bars\");\n\n\n\n\n\naz.plot_rank(chains, kind=\"vlines\");\n\n\n\n\nRank Plots 可能比 Trace Plots 更敏感。可以将它们一起绘制\n\naz.plot_trace(chains, kind=\"rank_bars\");\n\n\n\n\n\naz.plot_trace(chains, kind=\"rank_vlines\");\n\n\n\n\n\n\n2.4.7. Divergences（散度）\n以上都是基于 MCMC 生成的样本进行诊断。另一种诊断方法是监控抽样过程。\n其中一个典型的例子是 Hamiltonian Monte Carlo (HMC) 中的Divergences，它是一种强大且敏感的方法，可以作为前面方法的补充。\n以下是一个示例\n\nmodel_0：\\(\\theta_2\\) 服从 \\([-\\theta_1, \\theta_1]\\)的均匀分布，而 \\(\\theta_1\\) 来自一个正态分布\nmodel_1：\\(\\theta_2\\) 服从 \\([-\\theta_1, \\theta_1]\\)的均匀分布，而 \\(\\theta_1\\) 来自一个半正态分布\nmodel_2：\\(\\theta_2\\) 服从 \\([-\\theta_1, \\theta_1]\\)的均匀分布，而 \\(\\theta_1\\) 来自一个正态分布\n\n\nwith pm.Model() as model_0:\n    theta_1 = pm.Normal(\"theta_1\", 0, 1, initval=0.1)\n    theta_2 = pm.Uniform(\"theta_2\", -theta_1, theta_1)\n    idata_0 = pm.sample(return_inferencedata=True)\n\nwith pm.Model() as model_1:\n    theta_1 = pm.HalfNormal(\"theta_1\",1 / (2/np.pi)**0.5)\n    theta_2 = pm.Uniform(\"theta_2\", -theta_1, theta_1)\n    idata_1 = pm.sample(return_inferencedata=True)\n\nwith pm.Model() as model_1bis:\n    theta_1 = pm.HalfNormal(\"theta_1\",1 / (2/np.pi)**0.5)\n    theta_2 = pm.Uniform(\"theta_2\", -theta_1, theta_1)\n    idata_1bis = pm.sample(return_inferencedata=True, target_accept=0.95)\n\nidatas = [idata_0, idata_1, idata_1bis]\n\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [theta_1, theta_2]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 20 seconds.\nThere were 2202 divergences after tuning. Increase `target_accept` or reparameterize.\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [theta_1, theta_2]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 19 seconds.\nThere were 20 divergences after tuning. Increase `target_accept` or reparameterize.\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [theta_1, theta_2]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 19 seconds.\n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:02&lt;00:00 Sampling 4 chains, 2,202 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 20 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:02&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\nfig, axes = plt.subplots(6, 2, figsize=(10, 10))\n\naxes = axes.reshape(3, 2, 2)\nfor idata, ax, color in zip(idatas, axes, [\"0.95\", \"1\", \"0.95\"]):\n    az.plot_trace(idata, kind=\"rank_vlines\", axes=ax);\n    [ax_.set_facecolor(color) for ax_ in ax.ravel()]\nfig.text(0.45, 1, s=\"model 0\", fontsize=16)\nfig.text(0.45, 0.67, s=\"model 1\", fontsize=16)\nfig.text(0.45, 0.33, s=\"model 1bis\", fontsize=16)\n\nText(0.45, 0.33, 'model 1bis')\n\n\n\n\n\n以上在KDEs图中可以看到底部的黑线，每个黑线代表一次divergence，说明抽样中产生了问题。\n\nmodel_0：有很多divergence，这是因为我们先验选择了正态分布，会出现 \\(-\\theta_1 &gt; \\theta_1\\) 的情况；\nmodel_1：divergence少了很多，因为我们先验选择了半正态分布，不会出现 \\(-\\theta_1 &gt; \\theta_1\\) 的情况；\nmodel_2：基于model_1，将 target_accept 从默认的0.8改为0.95，消除了所有divergence。\n\n我们也可以用散点图来观察divergence：\n\n_, axes = plt.subplots(1, 3, figsize=(12, 5), sharex=True, sharey=True)\n\nfor idata, ax, model in zip(idatas, axes, [\"model 0\", \"model 1\", \"model 1bis\"]):\n    az.plot_pair(idata, divergences=True, scatter_kwargs={\"color\":\"C1\"}, divergences_kwargs={\"color\":\"C4\"}, ax=ax)\n    ax.set_xlabel(\"\")\n    ax.set_ylabel(\"\")\n    ax.set_title(model)\naxes[0].set_ylabel('θ2', rotation=0, labelpad=15)\naxes[1].set_xlabel('θ1', labelpad=10)\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n\n\nText(0.5, 0, 'θ1')\n\n\n\n\n\n\n\n2.4.8. 采样器参数和其他诊断信息\n大部分抽样方法都有影响效果的超参数，比如有时增大 target_accept 可以消除 divergence。还有其他参数可以调整，比如有些模型更复杂需要更多的跌打，可以增加 tune 去增大 ESS 和减少 \\(\\hat{R}\\)。也可以增加采样次数，但是一般效果不大。重新参数化、改进模型结构、提供更多信息的先验，甚至更改模型通常会更有效。"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html#非固定水平检验",
-    "href": "posts/实验设计_偷看问题/index.html#非固定水平检验",
-    "title": "A/B实验设计 —— 偷看问题",
-    "section": "非固定水平检验",
-    "text": "非固定水平检验\n比如贯序检验系列方法，他们一般掌握成本更高，过程更复杂。由于结束条件改变了，并不一定会比固定水平检验更快结束。 Optimizely采用了这种方案，过程中用户可以偷看，每次平台提供可靠的P值与置信区间，整个过程后假阳性依然控制在预定水平。"
+    "objectID": "posts/BMCP_2/index.html#模型比较",
+    "href": "posts/BMCP_2/index.html#模型比较",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "section": "2.5. 模型比较",
+    "text": "2.5. 模型比较\n建模时不能过于简单从而丢失信息，也不能过于复杂从而过拟合。\n一种有用的解决方案是计算泛化误差，也称为样本外预测准确性。这是指模型在新数据上的表现。 \\[\\text{ELPD} = \\sum_{i=1}^{n} \\int p_t(\\tilde y_i) \\; \\log p(\\tilde y_i \\mid y_i) \\; d\\tilde y_i\\]\n上述公式被称为 expected log pointwise predictive density (ELPD)。其中 \\(p_t(\\tilde y_i)\\) 是真实分布，\\(p(\\tilde y_i \\mid y_i)\\) 是模型预测的后验分布。\n现实生活中无法知道 \\(p_t(\\tilde y_i)\\) ，因此 ELPD 无法直接计算，可以通过下面公式代替： \\[\\sum_{i=1}^{n} \\log \\int \\ p(y_i \\mid \\boldsymbol{\\theta}) \\; p(\\boldsymbol{\\theta} \\mid y) d\\boldsymbol{\\theta}\\]\n\n2.5.1. Cross-validation and LOO\nLeave-one-out cross-validation (LOO-CV) 是交叉验证的一种特别方法，每次只留一个数据点作为测试集，其余作为训练集。 \\[\\text{ELPD}_\\text{LOO-CV} = \\sum_{i=1}^{n} \\log\n    \\int \\ p(y_i \\mid \\boldsymbol{\\theta}) \\; p(\\boldsymbol{\\theta} \\mid y_{-i}) d\\boldsymbol{\\theta}\n\\]\n以上直接计算消耗很大，好在可以用 Pareto smoothed importance sampling leave-one-out cross validation (PSIS-LOO-CV) 近似，后面会称为 LOO 。以下是示例：\n\ny_obs =  np.random.normal(0, 1, size=100)\nidatas_cmp = {}\n\nwith pm.Model() as mA:\n    σ = pm.HalfNormal(\"σ\", 1)\n    y = pm.SkewNormal(\"y\", 0, σ, observed=y_obs)\n    loglik = pm.Deterministic('log_likelihood', pm.logp(y, y_obs))\n    idataA = pm.sample(return_inferencedata=True)\n    idataA.add_groups({\"posterior_predictive\": {\"y\":pm.sample_posterior_predictive(idataA).posterior_predictive.y.values}})\n    idataA.add_groups({\"log_likelihood\": {\"y\":idataA.posterior.log_likelihood}})\n    idatas_cmp[\"mA\"] = idataA\n\nwith pm.Model() as mB:\n    σ = pm.HalfNormal(\"σ\", 1)\n    y = pm.Normal(\"y\", 0, σ, observed=y_obs)\n    loglik = pm.Deterministic('log_likelihood', pm.logp(y, y_obs))\n    idataB = pm.sample(return_inferencedata=True)\n    idataB.add_groups({\"posterior_predictive\": {\"y\":pm.sample_posterior_predictive(idataB).posterior_predictive.y.values}})\n    idataB.add_groups({\"log_likelihood\": {\"y\":idataB.posterior.log_likelihood}})\n    idatas_cmp[\"mB\"] = idataB\n\nwith pm.Model() as mC:\n    μ = pm.Normal(\"μ\", 0, 1)\n    σ = pm.HalfNormal(\"σ\", 1)\n    y = pm.Normal(\"y\", μ, σ, observed=y_obs)\n    loglik = pm.Deterministic('log_likelihood', pm.logp(y, y_obs))\n    idataC = pm.sample(return_inferencedata=True)\n    idataC.add_groups({\"posterior_predictive\": {\"y\":pm.sample_posterior_predictive(idataC).posterior_predictive.y.values}})\n    idataC.add_groups({\"log_likelihood\": {\"y\":idataC.posterior.log_likelihood}})\n    idatas_cmp[\"mC\"] = idataC\n\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [σ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 20 seconds.\nThere were 29 divergences after tuning. Increase `target_accept` or reparameterize.\nSampling: [y]\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [σ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 19 seconds.\nSampling: [y]\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [μ, σ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 21 seconds.\nSampling: [y]\n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 29 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [4000/4000 00:00&lt;00:00]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [4000/4000 00:00&lt;00:00]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [4000/4000 00:00&lt;00:00]\n    \n    \n\n\n\ncmp = az.compare(idatas_cmp)\ncmp.round(2)\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.\n  warnings.warn(\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:307: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'True' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.\n  df_comp.loc[val] = (\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:307: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'log' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.\n  df_comp.loc[val] = (\n\n\n\n\n\n\n\n\n\nrank\nelpd_loo\np_loo\nelpd_diff\nweight\nse\ndse\nwarning\nscale\n\n\n\n\nmA\n0\n-140.80\n0.31\n0.00\n0.84\n6.50\n0.00\nTrue\nlog\n\n\nmB\n1\n-141.02\n0.89\n0.21\n0.16\n6.82\n0.80\nFalse\nlog\n\n\nmC\n2\n-142.10\n1.95\n1.30\n0.00\n6.84\n0.97\nFalse\nlog\n\n\n\n\n\n\n\n注意：PyMC更换新版本后计算结果与原文不一致，而且mA出现warning。以上模型中mB最好，但是给出的列表中mA最好（本应最差），这是因为mA的计算有问题。\n以上列含义：\n\nrank：对比排名；\nelpd_loo：ELPD值；\np_loo：惩罚项的值。我们可以粗略地认为这个值是估计的有效参数数量（但不要太认真）。该值可能低于具有更多结构（如分层模型）的模型中参数的实际数量，或者当模型具有非常弱的预测能力并且可能指示严重的模型错误指定时，该值可能远高于实际数量；\nelpd_diff：与最佳模型的ELPD差值；\nweight：分配给每个模型的权重。这些权重可以粗略地解释为给定数据的每个模型（在比较模型中）的概率；\nse：ELPD的标准误；\ndse：ELPD差值的标准误；\nwarning：如果为 True 则这是一个警告，表明 LOO 近似可能不可靠；\nscale：报告值的计算方式，默认为对数刻度。\n\n\n\n2.5.2. Expected Log Predictive Density\n上述是全局比较，因此将模型和数据简化为单个数字。但LOO是逐点的总和，因此也可以通过az.plot_elpd(.)进行局部比较。\n\n\n2.5.3. Pareto Shape Parameter\n以上通过 \\(\\text{ELPD}_\\text{LOO-CV}\\) 来逼近 LOO 。以上计算中 $$ 会有问题， 特别是 \\(\\hat \\kappa &gt; 0.7\\)时（mA）。\n这种情况下的建议为：\n\n使用匹配矩法。通过一些额外的计算，可以转换从后验分布得出的 MCMC，以获得更可靠的重要性采样估计；\n对有问题的观察结果执行精确的留一交叉验证或使用 k 折交叉验证；\n使用对异常观察更稳健的模型。\n\n当以上问题发生时会在得到warning，可以可视化检查 $$\n\n_, axes = plt.subplots(1, 3, figsize=(12, 4), sharey=True)\nfor idx, (model, ax) in enumerate(zip((\"mA\", \"mB\", \"mC\"), axes)):\n    loo_ = az.loo(idatas_cmp[model], pointwise=True)\n    az.plot_khat(loo_, ax=ax, threshold=0.09, show_hlines=True, hlines_kwargs={\"hlines\":0.09, \"ls\":\"--\"})\n    ax.set_title(model)\n    if idx:\n        axes[idx].set_ylabel(\"\")\n    if not idx % 2:\n        axes[idx].set_xlabel(\"\")\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.\n  warnings.warn(\n\n\n\n\n\n\n\n2.5.4. \\(\\hat {\\kappa}\\) 很大时 p_loo 的含义\np_loo 可以宽松地解释为模型中参数的估计有效数量。当 \\(\\hat {\\kappa}\\) 很大时，它还可以提供额外信息。具体可参考原文。\n\n\n2.5.5. LOO-PIT\nLOO除了声明一个模型比另一个模型更好之外，还可以用于其他目的。我们可以通过比较模型来更好地理解它们。随着模型复杂性的增加，仅仅通过查看其数学定义或我们用来实现它的代码来理解它就变得更加困难。因此，使用 LOO 或其他工具（如后验预测检查）比较模型可以帮助我们更好地理解它们。\n对 posterior predictive checks（后验预测检查）的一个批评是我们使用数据两次，一次是为了拟合模型，一次是为了批评它。 LOO-PIT 为这个问题提供了答案。\n\n_, axes = plt.subplots(1, 3, figsize=(12, 4), sharey=True)\nfor model, ax in zip((\"mA\", \"mB\", \"mC\"), axes):\n    az.plot_loo_pit(idatas_cmp[model], y=\"y\", legend=False, use_hdi=True, ax=ax)\n    ax.set_title(model)\n    ax.set_xticks([0, 0.5, 1])\n    ax.set_yticks([0, 1, 2])\n\n\n\n\n\n\n2.5.6. Model Averaging\n像我们关于参数不确定性的贝叶斯学派一样。如果我们不能绝对确定模型就是模型（通常我们不能），那么我们应该在分析时考虑到这种不确定性。考虑模型不确定性的一种方法是对所有考虑的模型进行加权平均，为似乎能更好地解释或预测数据的模型赋予更多权重。\n贝叶斯模型加权的一种方法是通过其 marginal likelihoods ，这称为 Bayesian Model Averaging 贝叶斯模型平均。虽然这在理论上很有吸引力，但在实践中却存在问题。另一种方法是使用 LOO 的值来估计每个模型的权重： \\[w_i = \\frac {e^{-\\Delta_i }} {\\sum_j^k e^{-\\Delta_j }}\\]\n其中 $_i $ 是当前与最优模型的 LOO 之差。这种方法称为 pseudo Bayesian model averaging 伪贝叶斯模型平均。\n模型平均的另一个选择是叠加预测分布。主要思想是将多个模型组合在一个元模型中，从而最小化元模型和真实生成模型之间的差异。当使用对数评分规则时，这相当于计算： \\[\\max_{w} \\frac{1}{n} \\sum_{i=1}^{n}log\\sum_{j=1}^{k} w_j p(y_i \\mid y_{-i}, M_j)\\]\n其中 n 是样本个数，k 是模型个数。为了有解约束 \\(w_j \\geq 0\\) 而且 \\(\\sum_{j=1}^{k} w_j = 1\\) 。 \\(p(y_i \\mid y_{-i}, M_j)\\) 是第 j 个模型的 leave-one-out 预测分布。"
   },
   {
-    "objectID": "posts/实验设计_偷看问题/index.html#使用非检验方法",
-    "href": "posts/实验设计_偷看问题/index.html#使用非检验方法",
-    "title": "A/B实验设计 —— 偷看问题",
-    "section": "使用非检验方法",
-    "text": "使用非检验方法\n有时我们不需要解释，只是希望得到最好的组合，这种问题为multi-armed bandit problem，已经有很多相关的研究。"
+    "objectID": "posts/BMCP_2/index.html#练习",
+    "href": "posts/BMCP_2/index.html#练习",
+    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "section": "2.6. 练习",
+    "text": "2.6. 练习\n待完善"
   },
   {
-    "objectID": "posts/cuped/index.html",
-    "href": "posts/cuped/index.html",
-    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
+    "objectID": "posts/贝叶斯和多臂老虎机/index.html",
+    "href": "posts/贝叶斯和多臂老虎机/index.html",
+    "title": "贝叶斯和多臂老虎机",
     "section": "",
-    "text": "CUPED（Controlled-experiment Using Pre-Experiment Data）是一种通过联系实验前数据，让方差变小的方法。"
+    "text": "多臂老虎机是一个在探索(exploration)和开发(exploitation)过程中寻找最高收益的问题。此类“实验”能力几乎已经成为了优秀实验平台的标配。\n本篇是阅读《A modern Bayesian look at the multi-armed bandit》后结合个人理解的学习总结。它总结了基于贝叶斯的随机概率匹配法和其它相关方法。"
   },
   {
-    "objectID": "posts/cuped/index.html#思路",
-    "href": "posts/cuped/index.html#思路",
-    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
-    "section": "1. 思路",
-    "text": "1. 思路\n构建\\(\\Delta^*\\)，满足：\n\n\\(\\Delta^*\\)与\\(\\Delta\\)一样，是\\(E(Y_t - Y_c)\\)的无偏估计；\n\n\\(\\Delta^*\\)相对\\(\\Delta\\)，方差更小。\n\n使用\\(\\Delta^*\\)来评估实验效果，效果相似，方差变小。"
-  },
-  {
-    "objectID": "posts/cuped/index.html#原理",
-    "href": "posts/cuped/index.html#原理",
-    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
-    "section": "2. 原理",
-    "text": "2. 原理\n如果有另一随机变量\\(X\\)，并且已知\\(E(X)\\)。则有互相独立的二维随机变量\\((X_i, Y_i)\\)，定义：\n\\[\\hat{ Y }_{ cu } = \\bar{ Y } - \\theta \\bar{ X } + \\theta E(X)\\]\n由于$E( E(X) - { X } ) = 0 \\(，所以\\)_{cu} \\(是\\)E(Y)$的无偏估计，则\n\\[ var( \\hat{Y}_{cu} ) =   var(Y - \\theta X) / n = \\frac {1} {n} (var(Y) + \\theta^2 var(X) - 2\\theta cov(X,Y))\\]\n当\\(\\theta = cov(X,Y) / var(X)\\)时，$var(_{cu}) $的值最小（最小二乘法），此时：\n\\[var (\\hat{Y}_{cu}) = \\frac {1}{n}(var(Y)  - cov(X,Y)^{2}/var(X)) = \\frac{var(Y)}{n} (1 - \\frac { cov(X,Y)^{2}}{var(X)var(Y)}) = var ( \\bar{ Y } ) (1 - \\rho ^{2} ) \\leq var( \\bar { Y })\\]\n\\(X\\)与\\(Y\\)的相关系数越大，得到的方差越小。"
-  },
-  {
-    "objectID": "posts/cuped/index.html#扩展到ab",
-    "href": "posts/cuped/index.html#扩展到ab",
-    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
-    "section": "3. 扩展到A/B",
-    "text": "3. 扩展到A/B\n如果选择的\\(X\\)不会被实验干扰，则$ E( X ^ {t} ) - E( X ^ {c} ) = 0\\(， 实验组、对照组在零假设下还有**相同的\\)$**，得：\n\\[\\Delta_{cv} = \\hat {Y}_{cu} ^{t} - \\hat{Y}_{cu}^{c}  = ( \\bar {Y}_{cu} ^{t} - \\bar {Y}_{cu}^{c} ) - \\theta(\\bar{X}_{cu}^{t} - \\bar {X}_{cu}^{c})  + \\theta (E( X ^ {t}  -  X ^ {c} ) ) = \\Delta - \\theta \\Delta _ { x } \\]\n得到 \\[var(\\Delta_{cv}) = var(\\Delta)(1-\\rho ^2)\\]"
-  },
-  {
-    "objectID": "posts/cuped/index.html#选择协变量x",
-    "href": "posts/cuped/index.html#选择协变量x",
-    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
-    "section": "1. 选择协变量(X)",
-    "text": "1. 选择协变量(X)\n选择相关系数更大的协变量，效果更好。微软的建议：\n\n选择实验运行之前的指标数据最好；\n实验之前指标数据的时间粒度越长，效果越好；\n实验运行周期并不是越长越好。\n\n实验前数据并不是X得唯一选择，只要是不会被实验干预影响的变量，都可以选择。比如用户加入实验的日期。"
-  },
-  {
-    "objectID": "posts/cuped/index.html#实验前数据缺失yi对应的xi不存在",
-    "href": "posts/cuped/index.html#实验前数据缺失yi对应的xi不存在",
-    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
-    "section": "2. 实验前数据缺失(\\(Yi\\)对应的\\(Xi\\)不存在)",
-    "text": "2. 实验前数据缺失(\\(Yi\\)对应的\\(Xi\\)不存在)\n新用户或太久没回归的用户，可能没有旧的记录。可以对缺失的数据，补为适当的值。"
-  },
-  {
-    "objectID": "posts/破产问题和简单序贯检验/index.html",
-    "href": "posts/破产问题和简单序贯检验/index.html",
-    "title": "赌徒破产和序贯检验",
+    "objectID": "posts/贝叶斯和多臂老虎机/index.html#背景",
+    "href": "posts/贝叶斯和多臂老虎机/index.html#背景",
+    "title": "贝叶斯和多臂老虎机",
     "section": "",
-    "text": "本文是对Simple Sequential A/B Testing的解读。 该方法归属序贯检测类，可以用于伯努利分布场景，随着抽样持续进行，判断接受零假设或备择假设（关于序贯检测）。"
+    "text": "多臂老虎机是一个在探索(exploration)和开发(exploitation)过程中寻找最高收益的问题。此类“实验”能力几乎已经成为了优秀实验平台的标配。\n本篇是阅读《A modern Bayesian look at the multi-armed bandit》后结合个人理解的学习总结。它总结了基于贝叶斯的随机概率匹配法和其它相关方法。"
   },
   {
-    "objectID": "posts/破产问题和简单序贯检验/index.html#概率计算",
-    "href": "posts/破产问题和简单序贯检验/index.html#概率计算",
-    "title": "赌徒破产和序贯检验",
-    "section": "概率计算",
-    "text": "概率计算\n使用\\(R_{n,d}\\)来表示赌徒起始d元在第n轮输光的概率。 总局：n，输：(n + d) / 2，胜：(n - d) / 2。\n\n赌场可以借钱给赌徒的情况，此时为简单的排列组合关系。\n&gt;\\(R_{n,d} = \\binom{n}{(n + d)/ 2} * 2^{-n}\\)\n赌场不肯借钱给赌徒情况。\n&gt; \\(R_{n,d} = \\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^{-n}\\)\n\n这是简单序贯检测的基础，将在下面推导。"
+    "objectID": "posts/贝叶斯和多臂老虎机/index.html#随机概率匹配rpm",
+    "href": "posts/贝叶斯和多臂老虎机/index.html#随机概率匹配rpm",
+    "title": "贝叶斯和多臂老虎机",
+    "section": "1. 随机概率匹配（RPM）",
+    "text": "1. 随机概率匹配（RPM）\n定义\\(Y_t = (y_1, ..., y_t)\\)代表t时为止的奖励序列，\\(a_t\\)代表t时选择的臂，t时刻奖励\\(y_t \\sim f_{a_t}(y|\\theta)\\)，\\(\\theta\\)是一个未知向量。\n\\(y_t \\in (0, 1)\\)情况下两种例子：\n1. 伯努利老虎机，\\(\\theta = (\\theta_1, ...,\\theta_k)\\)，\\(f_{a_t}(y|\\theta)\\)参数为\\(\\theta_a\\)\n2. fractional factorial bandit（本文不关注）\n定义\\(\\mu_a(\\theta) = E(y_t | \\theta, a_t = a)\\)是\\(f_{a}(y|\\theta)\\)的期望值，最佳策略应该一直选择\\(\\mu_a(\\theta)\\)最大的臂。\n在伯努利分布下，\\(\\theta_a = \\mu_a(\\theta)\\)。\n定义\\(p(\\theta)\\)是\\(\\theta\\)的先验概率密度，此时以$p() \\(产生\\)\\(，\\)\\(产生y，则0时刻选择a正确概率： &gt;\\)w_{a0} = Pr(_a = max{_1,… })$ （1)\n定义\\(I_a(\\theta)\\)为指示函数，\\(\\mu_a = max\\{\\mu_1,...\\mu_k\\}\\)时\\(I_a(\\theta)=1\\)：\n&gt; \\(w_{a0} = E(I_a(\\theta)) = \\int I_a(\\theta) p(\\theta) d\\theta\\) （2）\n\n\n\n一个例子，先验可以Beta分布，两臂时为二元\n\n\n如果没有关于\\(\\theta\\)的先验，则先验视为各个\\(\\mu\\)是一样的，\\(w_{a0}\\)是均匀分布。\n观测到奖励情况后，通过贝叶斯方法进行更新，\\(p(\\theta | Y_t ) = \\frac{p(Y_t|\\theta)p(\\theta)}{p(Y_t)}\\)。t时刻：\n&gt; \\(p(\\theta | Y_t ) \\propto p(\\theta)\\prod _{\\tau = 1}^t f_{a_\\tau}(y|\\theta)\\) (3)\n则此时$w_{at} = Pr(_a = max{_1,…} | Y_t ) = E(I_a() | Y_t ) $ （4）\n随机概率匹配用\\(w_{at}\\)来分配a的t+1时观测值，通过一种自然平衡探索与开发的方式。\n\n1.1 概率分配计算\n如果\\(\\theta^{(1)},...,\\theta^{(G)}\\)是来自\\(p(\\theta|Y_t)\\)的独立抽样，则基于大数定理：\n&gt;\\(w_{at} = \\lim_{g\\rightarrow \\infty }\\frac{1}{G}\\sum^G_{g=1}I_a(\\theta^g).\\) （5）\n如果\\(f_a\\)是指数族，而且\\(p(\\theta)\\)是它的共轭分布，则可以独立的抽样\\(\\theta\\)，否则可以用马可夫相关的方法进行抽样模拟。\n\\(\\theta\\)的后验抽样足够对概率匹配进行支持。\n\n\n1.2 隐式分配\n（5）可以不用显式计算，从\\(p(\\theta|Y_t)\\)模拟 \\(\\theta^{t}\\)，并选择\\(a = argmax_a\\mu_a(\\theta^t)\\)\n\n\n1.3 探索(exploration)、开发(exploitation)和不确定性\n随机概率匹配自然的包含了不确定性，下图为两臂情况下的情况：\n\n在(a)中，错误选中概率为18%；在(b)中，错误选中概率为0.8%。\n这个例子说明，随着学习的进行，探索的占比会减少。"
   },
   {
-    "objectID": "posts/破产问题和简单序贯检验/index.html#随机游走和选举定理",
-    "href": "posts/破产问题和简单序贯检验/index.html#随机游走和选举定理",
-    "title": "赌徒破产和序贯检验",
-    "section": "随机游走和选举定理",
-    "text": "随机游走和选举定理\n在此对第二种情况进行计算。\n\n取纵坐标为钱，横坐标为赌博轮次，则过程为一维随机游走。举例：\n\n\n\n此时从A出发到K，满足条件路径数（中途不与0轴接触），等于从K出发到A的路径数。场景转换为从0开始，到d结束。\n\n\n\n在满足中途不触碰0轴条件，第一步必须为正。则从J到A路径数等于从A到K路径数。\n\n如图所示，每一条从J到第一个接触横轴的点的路径，总有一条从K出发到相同点的映射路径，后续都走相同路径。因此J到A经过横轴路径数等于K到A的路径数。\n设从0出发，有p步向上，q步向下。根据3，满足不触碰横轴概率为： $ ( {p - 1} - ) / = $\n\n此公式被称为选举定理。 &gt;将\\(p + q = n, p - q = d\\)带入，原问题最终结果为\\(\\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^ {-n}\\)"
+    "objectID": "posts/贝叶斯和多臂老虎机/index.html#其它方法",
+    "href": "posts/贝叶斯和多臂老虎机/index.html#其它方法",
+    "title": "贝叶斯和多臂老虎机",
+    "section": "2. 其它方法",
+    "text": "2. 其它方法\n\n2.1 The Gittins index(基廷斯指数)\n此方法假设单臂未来的奖励会与一个几何分布有关：\\(\\sum_{t = 0} ^ {\\infty} \\gamma ^ty_t\\)，其中\\(0 \\leq \\gamma &lt; 1\\)\n基廷斯提供了一种计算各个臂价值的算法，得到的结果称为基廷斯指数。它在前提可保证时是最优方案。\n\n\n这部分的数学相关很复杂先跳过，简单了解可参考《算法之美》第二章相关部分。\n对基廷斯指数的三个问题：\n1. 不完全学习，可能最终收敛到次优解；\n2. 各臂的参数需要是固定的；\n3. 奖励减少结构必须是几何分布。\n\n\n2.2 UCB算法(Upper Confidence Bounds)\n计算每个手臂奖励均值及置信区间上限，然后选上限最高的手臂。\n值得注意的是，此上限并不是常见的置信区间算法，而且比较难计算。\n\n\n2.3 启发式策略\n\n2.3.1 平均分配\n次策略均匀的探索每个臂，直到其中一个臂奖励超过某个阈值，然后一直选择此臂。这种方法对\\(\\theta\\)探索效果很好，但是前期成本高，导致整体奖励效果较差。类似于先进行一轮随机实验评估效果，然后选择效果最好的方案。\n\n2.3.2 连胜就继续，输了就换其它\n至少好于随机选择……当最优秀的策略效果也没有特别好时，此方案会过度探索，导致效果很差。\n\n2.3.3 贪心策略\n简单的贪心策略效果很差，比较好的是deterministic probability matching做法。但是在批量更新场景，一个更新周期只能探索一种方案，所以前期会表现特别差。\n\n2.3.4 混合策略\n混合策略是贪心之外，强制进行一定比例的探索，比如Epsilon-greedy或Epsilon-decreasing。不过上两种方法的敏感度不够高，因此还可以参考Softmax learning方法。\n\n\n\n2.4 与概率匹配的对比\n概率匹配结合了2.3中的多种好处。"
   },
   {
-    "objectID": "posts/破产问题和简单序贯检验/index.html#与赌徒破产问题的关系",
-    "href": "posts/破产问题和简单序贯检验/index.html#与赌徒破产问题的关系",
-    "title": "赌徒破产和序贯检验",
-    "section": "与赌徒破产问题的关系",
-    "text": "与赌徒破产问题的关系\n均等流量的转化率型ab测试场景中，实验组、对照组随着时间推移，都会产生转化。在零假设下，下一次转化发生在实验组或对照组的概率是相等的。因此可以转换为赌徒破产问题。\n每轮次：下一次转化发生； 每轮获胜者：下一次转化所在的组； 破产的轮次n：实验组、对照组转换数之和； 赌徒初始筹码d：因为转换数积累是从零开始的，不能直接套用。可以认为赌徒初始资本为0，输到-d时破产。"
+    "objectID": "posts/贝叶斯和多臂老虎机/index.html#伯努利老虎机上使用不同策略的对比",
+    "href": "posts/贝叶斯和多臂老虎机/index.html#伯努利老虎机上使用不同策略的对比",
+    "title": "贝叶斯和多臂老虎机",
+    "section": "3. 伯努利老虎机上使用不同策略的对比",
+    "text": "3. 伯努利老虎机上使用不同策略的对比\n定义\\(\\theta = (\\theta_1, ...,\\theta_k)\\)，先验为\\(\\theta_a \\sim U(0, 1)\\)，它们之间相互独立。\n\\(Y_{at},N_{at}\\)分别代表t时刻a的累计成功次数和观测次数。\n则\\(\\theta = (\\theta_1, ...,\\theta_k)\\)的后验为：\n&gt;\\(p(\\theta|Y_t) =\\prod ^k_{a=1}Be(\\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\\) (10)\n其中\\(B_e(\\theta|\\alpha, \\beta)\\)是贝塔分布。此时最佳概率为：\n&gt; \\(w_{at} = \\int_{0}^{1}Be(\\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\\prod_{j\\neq a}Pr(\\theta_j &lt; \\theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\\theta_a\\) (11)\n验证主要关注regret，最佳选择\\(\\mu^*(\\theta) = max_a\\{\\mu_a(\\theta) \\}\\)，手臂a在t时刻的观测次数为\\(n_{at}\\)，则t时刻的regret为：\n&gt; $L_t = an{at}(^*() - _a()) $ (12)\n则T时段累计regret为\\(L = \\sum_{t= 1}^TL_t\\)。以下是一些模拟对比结果。\n\n3.1 批量更新场景\n\n3.1.1 RPM对比平均分配\n  \n从测试数据看RPM会比后者好得多。\n\n\n3.1.2 RPM对比贪心\n \n可发现在批量更新场景，两种贪心策略效果都是比RPM差的。\n\n\n\n3.2 实时更新场景\n\n平均效果来看，RPM效果最差，但是它的标准差最小，最优解命中率最高；参数为0.999的Gittins index平均效果最好，标准差较大，且最优解的命中率低于RPM。"
   },
   {
-    "objectID": "posts/破产问题和简单序贯检验/index.html#假设检验设计",
-    "href": "posts/破产问题和简单序贯检验/index.html#假设检验设计",
-    "title": "赌徒破产和序贯检验",
-    "section": "假设检验设计",
-    "text": "假设检验设计\n以下仅介绍单尾情况，双尾的扩展请参考原文。\n\n原假设\n零假设(H0)：实验组转化率等于对照组转化率（对应未破产情况）； 备择假设(H1)：实验组转化率小于对照组转换率（对应破产情况）。\n\n\n假阳性控制(alpha)\n在零假设假设下，第n轮赌徒破产概率为： \\(R_{n,d} = \\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^{-n}\\) 在N轮及N轮之前，赌徒破产概率为：\\(\\sum_{n = 1} ^{N}R_{n,d}\\) 利用此公式控制假阳性，通过控N和d的选取，可以控制假阳性水平。\n\n\n假阴性控制(beta)\n控制假阴性，需要预设期望的最小观测效果（mde，此处选相对效果）。当实际提升效果等于MDE时，假阴性概率等于预设值。 在备择假设下，当实验组提升了mde时，下一次转化发生在实验概率为\\(P_t = \\frac {1 + mde} {2 + mde}\\)，对照组概率为\\(P_c = \\frac{1}{2 + mde}\\)。 第n轮破产概率：\\(R_{n,d} = \\frac{d}{n}\\binom{n}{(n + d)/ 2} * P_c ^ {(n - d) / 2}* P_t^{(n + d) / 2}\\)。 在N轮及N轮之前，赌徒破产概率为：\\(\\sum_{n = 1} ^{N}R_{n,d}\\) 取上面的概率为功效(power)，通过次N和d的选取，可以控制假阴性水平。\n\n\n选择结束条件\n联立上述不等式，使N和d满足： &gt; \\(\\sum_{n = 1}^N \\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^{-n} &lt; \\alpha\\) \\(\\sum_{n = 1}^N \\frac{d}{n}\\binom{n}{(n + d)/ 2} * P_c^{(n - d) / 2}* P_t^{(n + d) / 2} &gt; 1 - \\beta\\)\n不等式很难直接求解，可通过计算机遍历可能的N和d，找到合适的值。\n\n\n具体流程\n\n实验开始，实验组、对照组从0开始计数；\n每有一个转化，对应的组计数+1，并进行判断；\n对照转化数 - 实验组转化数 &gt;= d，接受备择假设；\n对照转化数 + 实验组转化数 = N，接受原假设。"
+    "objectID": "posts/贝叶斯和多臂老虎机/index.html#后记",
+    "href": "posts/贝叶斯和多臂老虎机/index.html#后记",
+    "title": "贝叶斯和多臂老虎机",
+    "section": "后记",
+    "text": "后记\nRPM可以用来解决多臂老虎机问题，它基于后验抽样，易于实现、健壮性好，且在批量更新场景表现更佳。"
   },
   {
-    "objectID": "posts/破产问题和简单序贯检验/index.html#优点",
-    "href": "posts/破产问题和简单序贯检验/index.html#优点",
-    "title": "赌徒破产和序贯检验",
-    "section": "优点",
-    "text": "优点\n\n基于弱假设，易于理解和证明；\n过程易于操作；\n在低转换率时，需要样本量小于固定水平检验需要的样本量；\n不存在“偷看”问题。"
-  },
-  {
-    "objectID": "posts/破产问题和简单序贯检验/index.html#缺点",
-    "href": "posts/破产问题和简单序贯检验/index.html#缺点",
-    "title": "赌徒破产和序贯检验",
-    "section": "缺点",
-    "text": "缺点\n\n只适用于近似伯努利分布场景；\n结束条件难以直接计算，需要通过计算机遍历查找；\n在高转化率时，需求样本量大于固定水平检验需要的样本量；\n无法直接给出置信区间和P值。"
-  },
-  {
-    "objectID": "posts/实验设计_多重检验/index.html",
-    "href": "posts/实验设计_多重检验/index.html",
-    "title": "A/B实验设计 —— 多重检验",
+    "objectID": "posts/msprt/index.html",
+    "href": "posts/msprt/index.html",
+    "title": "Peeking at A/B test：mSPRT简介",
     "section": "",
-    "text": "本文介绍A/B实验中一个常见的错误——多重检验错误，它经常影响实验得到错误的结论。相关数学推导放在文末，跳过不影响理解。"
+    "text": "Optimizely通过mSPRT理论的扩展，提供了时时有效的P值与置信区间，解决了ab实验中的偷看问题。"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#错误原因",
-    "href": "posts/实验设计_多重检验/index.html#错误原因",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "错误原因",
-    "text": "错误原因\n\n假设检验通建立在统计学原理上，假设检验并不能不产生误判，而是控制误判在我们预设范围之内，称为假阳性错误（α水平，一般选在5%）\n\n每次验证都会有错误的概率，因此只要检验次数增加，遇到至少一次错误的概率也会增加。"
+    "objectID": "posts/msprt/index.html#始终有效的p",
+    "href": "posts/msprt/index.html#始终有效的p",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "2.1 始终有效的P",
+    "text": "2.1 始终有效的P\n任意时间T，满足： \\[\\forall s\\ \\epsilon\\ [0,1],\\ \\mathbb{P}_{\\theta _{0}}(p_T \\leq s) \\leq s\\]"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#案例分析",
-    "href": "posts/实验设计_多重检验/index.html#案例分析",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "案例分析",
-    "text": "案例分析\n上面的例子中，把各种颜色的糖作为不同实验组，与对照组进行对比。假设有20种糖，假阳性水平控制为5%，预期得到的显著结果为 20 * 5% = 1。我们很容易发现某种颜色糖果“似乎”与粉刺有关系，然而这是错误的。"
+    "objectID": "posts/msprt/index.html#始终有效的贯序检测",
+    "href": "posts/msprt/index.html#始终有效的贯序检测",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "2.2 始终有效的贯序检测",
+    "text": "2.2 始终有效的贯序检测\n依靠样本数据决策样本量。\n判决条件：\n\\((T(\\alpha), \\delta(\\alpha) )\\)\n\\(\\mathbb{P}_{\\theta _{0}}( \\delta(\\alpha) = 1) \\leq \\alpha\\)\n$T(),() \\(不会影响\\)$水平"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#合理的设计实验",
-    "href": "posts/实验设计_多重检验/index.html#合理的设计实验",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "1. 合理的设计实验",
-    "text": "1. 合理的设计实验\n设计实验前充分分析、调查，针对相关可能最大的因素进行实验，避免大量无用因素干扰得到错误结论。\n宗旨：尽量减少检验次数，降低犯错概率\n\n控制实验组尽可能少\n不同颜色软糖对粉刺的影响不应该有区别，因此只需要设计一组实验组。\n\n控制指标尽可能少\n我们可以同时检验软糖实验组对粉刺、喉咙痛、高血压…再夸张些，婚姻幸福度、孩子情况…检验的指标越多，得到假阳性结果的可能性同样上升（吃软糖与生女孩相关明显是荒谬的）。"
+    "objectID": "posts/msprt/index.html#置信区间",
+    "href": "posts/msprt/index.html#置信区间",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "2.3 置信区间",
+    "text": "2.3 置信区间\n对\\(\\theta = \\widetilde{\\theta}\\)来说，如果\\(p_{n}^{\\widetilde{\\theta}}\\)始终有效，$I_{n} = {: p_{n}^{} &gt; } $就是始终有效的\\(1-\\alpha\\)水平置信区间。"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#多次检验校正",
-    "href": "posts/实验设计_多重检验/index.html#多次检验校正",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "2. 多次检验校正",
-    "text": "2. 多次检验校正\n统计学领域已经发明了一些方法来对多次检验进行校正。主要思想是检验次数越多，就要对显著采用更严格的限制，但是都会导致power的损失，降低发现率。\n常用方式：Bonferroni correction、Holm–Bonferroni method。\n缺点：会导致power有所损失（特别是检验结果不独立时）。"
+    "objectID": "posts/msprt/index.html#混合贯序检验msprt",
+    "href": "posts/msprt/index.html#混合贯序检验msprt",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "3.1 混合贯序检验(mSPRT)",
+    "text": "3.1 混合贯序检验(mSPRT)\nH为$\\(上的混合分布，概率密度函数为h。计算H的似然比除以\\)_{0}$的似然比： \\[\\Lambda _{n}^{H,\\theta _{0}} = \\int _{\\Theta }\\prod_{m=1}^{n}\\frac{f_{\\theta}(X_{m})}{f_{\\theta_{0}}(X_{m})}h(\\theta)d\\theta\\]\nmSPRT判断流程：\n选择\\(\\alpha\\)，则拒绝原假设条件为\\(\\Lambda_{T}^{H,\\theta_{0}} \\ge \\alpha^{-1}\\)，此时\\(T = T^{\\alpha}\\)。\n详细原理参照文末。"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#实验后分析",
-    "href": "posts/实验设计_多重检验/index.html#实验后分析",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "3. 实验后分析",
-    "text": "3. 实验后分析\n显著不等于一定正确。实验后需要对实验进行因果分析，结果需要可合理解释（不是编故事）。如果采用了多次检验校正，还需要考虑假阴性问题。"
+    "objectID": "posts/msprt/index.html#msprt的p值与置信区间",
+    "href": "posts/msprt/index.html#msprt的p值与置信区间",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "3.2 mSPRT的P值与置信区间",
+    "text": "3.2 mSPRT的P值与置信区间\n\\(p_0 = 1;p_n=min\\{p_{n-1},1/\\Lambda _{n}^{H,\\theta _0 } \\}\\)\n$I_0 = ; I_n = I_{n-1} { : _n ^ {H, } ^{-1} } $\n如果数据自正态分布\\(N(\\theta, \\sigma^2)\\)，且混合分布\\(H = N(\\theta_0, \\tau^2)\\)，则\n\\[\\Lambda _{n}^{H,\\theta _{0}} = \\frac{\\sigma}{\\sqrt{\\sigma^2 + n\\tau^2 }} exp\\{\\frac{n^2\\tau^2(\\bar{X}_{n} - \\theta_0)^2}{2\\sigma^2(\\sigma^2 + n\\tau^2)}\\}\\]"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#符号定义",
-    "href": "posts/实验设计_多重检验/index.html#符号定义",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "符号定义",
-    "text": "符号定义\n m：总检验假设数\nm0：零假设正确的数量，我们无法得知\nm - m0：备择假设正确的数量\nV：假阳性结论数量\nS：真阳性数量\nT：假阴性数量\nU：真阴性数量\nR = V + S：拒绝零假设数量\n在m个假设检验中，m0个零假设为真，R是观察到的显著情况的随机变量，S、T、U、V都是不可观测的随机变量。"
+    "objectID": "posts/msprt/index.html#msprt扩展到ab",
+    "href": "posts/msprt/index.html#msprt扩展到ab",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "3.3 mSPRT扩展到A/B",
+    "text": "3.3 mSPRT扩展到A/B\n定义\\(Z_n = Y_n - X_n \\sim N(\\theta, 2\\sigma^2)\\)，并对其做mSPRT检测，则： \\[\\Lambda _{n}^{H,\\theta _{0}} = \\sqrt {\\frac {2\\sigma^2} {2\\sigma^2 + n \\tau^2 } } exp \\{ \\frac{n^2\\tau^2(\\bar{Y}_n - \\bar{X}_{n} - \\theta_0)^2}{4\\sigma^2(2\\sigma^2 + n\\tau^2)} \\}\\]\n对于0/1型数据，\\(\\bar{Y}_n - \\bar{X}_n\\)近似于正态分布\\(N(\\theta, V_n/n)\\)，\\(V_n = \\bar{X}_n(1-\\bar{X}_n) + \\bar{Y}_n(1- \\bar{Y}_n)\\)，则： \\[\\Lambda _{n}^{H,\\theta _{0}} = \\sqrt{\\frac{V_n}{V_n + n\\tau^2 }} exp\\{\\frac{n^2\\tau^2(\\bar{Y}_n - \\bar{X}_{n} - \\theta_0)^2}{2V_{n}(V_n + n\\tau^2)}\\}\\]"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#相关推导",
-    "href": "posts/实验设计_多重检验/index.html#相关推导",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "相关推导",
-    "text": "相关推导\n如果m次检验是独立的，则产生假阳性的概率为:\n\\(\\alpha = 1 - ( 1 - \\alpha_{sub} )^{m}\\)\n如果检验不是独立的，仍然有：\n\\(\\alpha \\leq m * \\alpha_{sub}\\)"
+    "objectID": "posts/msprt/index.html#实现细节",
+    "href": "posts/msprt/index.html#实现细节",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "3.4 实现细节",
+    "text": "3.4 实现细节\n对于一些连续性指标，比如“付费”（严重右斜）使用正态分布是不合适的，需要其它更适应这种偏斜的分布。\n由于为了保证单调性，可能导致后期\\(\\bar{Y}_n - \\bar{X}_n\\)跑出置信区间，此时Optimizely会重置显著性。这样的做法只会让p值更大、置信区间更宽，不会增加假阳性错误，但是可能增大假阴性错误。"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#bonferroni-correction",
-    "href": "posts/实验设计_多重检验/index.html#bonferroni-correction",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "Bonferroni correction",
-    "text": "Bonferroni correction\n方法：将每次检验的显著性从$ {sub}\\(调整为\\){newSub}$ = $ _{sub} / m$\n原理：根据上述不等式，则有\\(\\alpha \\leq m * \\alpha_{newSub} = \\alpha_{sub}\\) ，因此可以有效将假阳性水平控制在预设之内。\n优点：简单好理解。\n缺点：由于条件过于严格，假阴性错误率升高。"
+    "objectID": "posts/msprt/index.html#优化",
+    "href": "posts/msprt/index.html#优化",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "4.1 优化",
+    "text": "4.1 优化\n实验者不会永远等待，因此有最大等待样本量M。\n经过Optimizely验证，带M截断的mSPRT比一般的假设检验平均花费更少的样本量。"
   },
   {
-    "objectID": "posts/实验设计_多重检验/index.html#holmbonferroni-method",
-    "href": "posts/实验设计_多重检验/index.html#holmbonferroni-method",
-    "title": "A/B实验设计 —— 多重检验",
-    "section": "Holm–Bonferroni method",
-    "text": "Holm–Bonferroni method\n方法：将得到的P值从小到大排序记序号为i(1 ~ m)，从i = 1开始与 \\(\\alpha / (m - i + 1)\\)比较，小于就继续比较下一个。直到找出不符合条件的i(也可能不存在) ，i之前的全部认为显著，i及i之后的全部不显著。 原理： &gt;1. 将p值从大到小排序；\n&gt;2. 我们只需要关心P值最小的第一个零假设为真的情况：如果被拒绝，产生假阳性；否则，比较过程停止，未产生假阳性；\n&gt;3. 设第一个零假设为真的比较序号为h，则共有h - 1次正确的拒绝零假设，则：\n本次拒绝零假设条件为\\(\\alpha / (m - h + 1)\\) (a);\n\\(h - 1 \\leq m - m0\\)（正确拒绝的次数，一定小于等于备择假设为真的次数）；\n推出\\(\\frac{1}{m - h + 1} \\leq \\frac{1}{m_0}\\) (b)；\n不等式两边乘以\\(\\alpha\\)，得到(a)$ \\(。 &gt;4. 根据相关推导中结论，单次比较\\)_{sub} \\(，又\\)m_0$种等可能情况，则:\n\\(\\alpha_{_{real}} \\leq m_0 * \\alpha_{sub} \\leq \\alpha\\)\n优点：相对简单，假阴性错误率小于等于Bonferroni correction。\n缺点：假阴性依然高于预设（尤其是在检验结果相关情况下）。"
+    "objectID": "posts/msprt/index.html#混合分布的选择",
+    "href": "posts/msprt/index.html#混合分布的选择",
+    "title": "Peeking at A/B test：mSPRT简介",
+    "section": "4.2 混合分布的选择",
+    "text": "4.2 混合分布的选择\n之前选择了混合分布为\\(H = N(\\theta_0, \\tau^2)\\)。对于混合分布如何选择，没有现存的理论指导。\nOptimizely选择的先验为\\(G = N(0, \\tau_0^2)\\)，并且通过数据仿真得到\\(\\tau_0^2\\)。"
   },
   {
-    "objectID": "posts/荟萃分析简介/index.html",
-    "href": "posts/荟萃分析简介/index.html",
-    "title": "荟萃分析简介",
+    "objectID": "posts/错误的共享对照/index.html",
+    "href": "posts/错误的共享对照/index.html",
+    "title": "实验间共享对照组缺陷及对策",
     "section": "",
-    "text": "进行线上ab实验时，为了确认结果可信，用户常常会复验前一阶段的实验。此时经常遇到复验与原实验结果不完全统一，如何综合评估实验效果？荟萃分析可以解决此类问题。 本文仅简介固定效果假设下关于P值合并的部分。"
+    "text": "A/B实验目标是实现在线随机对照实验，因此需要满足「随机对照实验」的要求和前提。\n然而前支持的「对照组流量共享机制」违背了「随机对照实验」的基本要求。"
   },
   {
-    "objectID": "posts/荟萃分析简介/index.html#fishers-method",
-    "href": "posts/荟萃分析简介/index.html#fishers-method",
-    "title": "荟萃分析简介",
-    "section": "Fisher’s method",
-    "text": "Fisher’s method\n如果两次实验p值分别为p1、p2。进行在零假设时，它们独立，并服从0~1的均匀分布，则两次实验合并的p值为： \\[p = \\int_{x * y = p1 * p2, 0&lt; x,y&lt;1 }1dxdy = p1*p2(1 - log(p1 * p2))\\]\nFisher将其扩展到更一般场景，对k次实验结果进行合并后服从自由度为2k的卡方分布： \\[-2\\sum_{i = 1}^klog(p_i)  \\sim  \\chi^2(2k)\\]"
+    "objectID": "posts/错误的共享对照/index.html#什么是随机对照实验随机",
+    "href": "posts/错误的共享对照/index.html#什么是随机对照实验随机",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.什么是随机对照实验随机",
+    "text": "1.什么是随机对照实验随机\n对照试验的基本方法是，将研究对象随机分组，对不同组实施不同的干预。\n在这种严格的条件下对照效果的不同。在研究对象数量足够的情况下，这种方法可以抵消已知和未知的混杂因素对各组的影响，被公认为是评价干预措施的金标准。"
   },
   {
-    "objectID": "posts/荟萃分析简介/index.html#stouffers-methodz值合并",
-    "href": "posts/荟萃分析简介/index.html#stouffers-methodz值合并",
-    "title": "荟萃分析简介",
-    "section": "Stouffer’s method(z值合并)",
-    "text": "Stouffer’s method(z值合并)\n此处直接介绍加权的方法。\n先将\\(p_i\\)值逆计算为\\(z_i\\)，则\\(z_i \\sim N(0, 1)\\)。多个\\(zi\\)加权相加后，依然服从正态分布，则： \\[P_Z = 1 - \\Phi(\\frac{\\sum w_i Z_i}{\\sqrt{\\sum w_i ^ 2}})\\]\n为什么会有权重呢？假如每次实验重视程度不同，那么它们结果按重要性来加权是很自然的。\n如何选择权重？如果实验干预、受众相同，建议使用样本量的平方根做权重。\n\n单样本两次实验的例子：\n检验\\(\\Delta\\)是否为0，做了两次实验分别采集到\\(\\delta_1,\\delta_2\\)，样本量为\\(n_1, n2\\)，样本方差同为\\(\\sigma^2\\)，此时如果$w_1 = ,w2 = $，则可推出\n\\(\\frac{\\sum w_i Z_i}{\\sqrt{\\sum w_i ^ 2}} = (\\delta_1*n_1 + \\delta_2 * n_2) /(n_1 + n_2) / \\sqrt{\\frac{\\sigma^2}{n_1 + n_2}} = Z\\) 即两次实验结果，与将原数据汇总计算结果相同。"
+    "objectID": "posts/错误的共享对照/index.html#在线随机的一般实现",
+    "href": "posts/错误的共享对照/index.html#在线随机的一般实现",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.在线随机的一般实现",
+    "text": "2.在线随机的一般实现\n根据随机实验定义我们要保证：统一群体随机分组，分组后用户属于哪个组稳定。 一般做法：用户标识 -&gt; 拼接salt，产生新字符串 -&gt; 哈希散列为数字 -&gt; 绝对值取余编号（分桶） -&gt; 桶编号范围分组 举例：假设一个实验将用户分100个桶，0 ~ 49号桶用户为对照组，50 ~ 99号桶用户为实验组"
   },
   {
-    "objectID": "posts/alpha消耗函数法/index.html",
-    "href": "posts/alpha消耗函数法/index.html",
-    "title": "成组序贯检验 —— alpha消耗函数法",
-    "section": "",
-    "text": "背景\n进行一项某项药物临床实验时，实验关注的是药物的正面效果，但是药物也可能会有严重的副作用，如何进行监控呢？\n衡量药物是否有效通过假设检验来判断，同理容易想到也可以通过假设检验判断药物的负面作用。但是固定水平检验偷看会增加假阳性，如果提前分析会增加假阳性；如果按照正确流程在实验结束后分析，实验中的志愿者可能已经受到了严重的伤害。\n如何完成分析又不增加假阳性呢？医学上的做法叫期中分析，依赖于成组贯序分析，alpha消耗函数是其中一种。\n\n\n解决思路\n如果只是为了控制假阳性，可以将提前比较视为多次比较，使用多重检验方法进行校正。但是实验中数据相关性较强，多重校正会增大假阴性错误，并不合适。\nalpha消耗函数的思路是将假阳性错误按照某种方案分配给每次比较，每次比较消耗一定的假阳性配额，合计后刚好等于预设水平。\n\n\n消耗函数\n设实验对应时间为\\([0, T]\\)，在这期间我们会得到对应信息\\([0, I]\\)。\n观测时间为：\\(0, t_1, t_2, t_3...T\\)；\n对应信息为：\\(0, i_1, i_2, i_3...I\\)；\n信息量占比为(\\(t^*\\))：\\(0, t^*_1 = i_1/I, t^*_2 = i_2/I, t^*_3 = i_3/I, ... 1\\)；\nalpha消耗函数为\\(t^*\\)的函数需要满足:\n\\[\\alpha(0) = 0\\] \\[\\alpha(1) = \\alpha\\]\n每次消耗α为：\\(α^*_1 = \\alpha(t^*_1) - \\alpha(0), α^*_2 = \\alpha(t^*_2) - \\alpha(t^*_1),...,α^*_n = \\alpha(1) - \\alpha(t^*_{n - 1})\\)。\n根据定义可知\\(α^*_1 = \\alpha(t^*_1)\\)，且\\(\\sum \\alpha^* = \\alpha\\)，符合解决思路中的要求。\n\n\n如何联系背景问题\n假阳性是在实际无效果情况下发现显著。以下仅以单样本单尾为例，根据不等式求解每个时刻的显著边界\\(Z_c\\):\n\\[\\\\t_1:P\\{Z(t^*_1) &gt;= Z_c(t^*_1)\\}= \\alpha(t^*_1)\\]\n\\[t_2:P\\{Z(t^*_2) &gt;= Z_c(t^*_2) , Z(t^*_1) &lt; Z_c(t^*_1)\\} \\\\= P\\{Z_c(t^*_2) | Z(t^*_1) )&lt; Z_c(t^*_1)\\} * (1 -  \\alpha(t^*_1))\\\\= \\alpha(t^*_2) -  \\alpha(t^*_1)\\]\n…\n\\[t_n:P\\{Z(t^*_n) &gt;= Z_c(t^*_n) , Z(t^*_1) &lt; Z_c(t^*_1),Z(t^*_2) &lt; Z_c(t^*_2)...,Z(t^*_{n -1}) &lt; Z_c(t^*_{n -1})\\}  \\\\= P\\{Z(t^*_n) &gt;= Z_c(t^*_n) | Z(t^*_1) &lt; Z_c(t^*_1),Z(t^*_2) &lt; Z_c(t^*_2)...,Z(t^*_{n-1}) &lt; Z_c(t^*_{n-1})\\}  * (1 - \\alpha(t^*_{n -1}))\\\\= \\alpha -  \\alpha(t^*_{n-1})\\]\n若检测时大于显著边界\\({Z_c}\\)则认为显著，接受备择假设。\n\n\n如何求解\\({Z_c}\\)\n在样本中个体独立同分布的情况下，信息量\\(I\\)为预设总样本量，每次检验的信息量\\(i\\)为已完成检验的个体数量。\n求解边界并不容易，仅有第一次检测边界可以直接求出：\n\\[t_1:Z_c(t^*_1) = \\phi^{-1}(\\alpha(t^*_1))\\]\n后续边界该如何求解？\n随着实验进行，若每次检验新增抽样都比较大，则新抽样样本的均值与和都服从正态分布，累计值的变化过程服从布朗运动，可以通过伊藤积分或蒙特卡洛模拟进行求解，以下为蒙特卡洛求解的过程：\n1.随机产生N个样本，每个样本有M个标准正态分布抽样的个体，M与N都极大； 2.可直接求得边界\\(Z_c(t^*_1)\\)，对每个样本的前 \\(M * t^*_1\\)个体合计计算\\(Z\\)值，不符合条件的样本标记淘汰； 3.计算第二次的alpha控制目标\\(\\alpha(t^*_2) - \\alpha(t^*_1)\\)，对未淘汰的样本的前 \\(M * t^*_2\\)个体合计计算\\(Z\\)值，排序后取对应分位点的\\(Z\\)值近似认为\\(Z_c(t^*_2)\\)，同样将小于边界的样本标记淘汰； 4.重复上述过程，直至完成。\n通过上述过程，得到了显著边界序列\\([Z_c(t^*_1), Z_c(t^*_2), Z_c(t^*_3)... Z_c(t^*_n)]\\)，可以用作每次检测的边界。\n\n\n后记\n中文网站上关于成组贯序分析的介绍比较少，尤其时alpha消耗函数法更少，以上是阅读相关论文后的个人理解。\n本文仅介绍了最简单的情况，且没有详细介绍为何服从布朗运动，详细推导和展开请继续查阅相关英文资料。"
+    "objectID": "posts/错误的共享对照/index.html#共享对照流量",
+    "href": "posts/错误的共享对照/index.html#共享对照流量",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.共享对照流量",
+    "text": "1.共享对照流量\n设计思路比较朴素：既然对照组为基线，那么切一部分做对照，剩下的只用于实验，都与对照流量对比即可。 示例：  这样做有效利用了流量，但存在重大缺陷：持续迭代下，违背了「随机对照实验」的前提。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#共享对照缺陷",
+    "href": "posts/错误的共享对照/index.html#共享对照缺陷",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.共享对照缺陷",
+    "text": "2.共享对照缺陷\n实验持续迭代，当旧实验结束后，新实验会使用其释放的流量。由于习得性效应（残留效应）影响，此时两人群常常是不同质的。 示例： 上例的实验3结束后，实验4继承了实验3的流量做实验。「共享对照组」和「实验4」还是期望同质的人群么？ 由于释放人群表现 = 原表现 + 实验3效果 —— 除非「实验3」没任何效果才能满足！"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#人群是否同质的谜题",
+    "href": "posts/错误的共享对照/index.html#人群是否同质的谜题",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "3.人群是否同质的谜题",
+    "text": "3.人群是否同质的谜题\n为什么讨论人群是否同质？其实是为了让实验正确决策。 - 随机对照实验下：实验组对照组期望同质，误判都是波动造成，通过统计模型可控。只要标准的统计推断即可保证「误判率」和「检出率」符合预设； - 共享对照实验下：实验组对照组期望同质不能保证，这让实验从科学变成了玄学；\n\n常见问题：实验AA组与对照组不一致，人群是不是不同质，效果可信么？ - 标准随机实验下：AA组与对照组期望同质，流量越大结果波动更小。因此建议流量合并当做对照组，再计算实验结果期望最优解。 - 共享对照实验下：无法解答，AA组和对照组都可能受残留效应影响。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#二次分流实验",
+    "href": "posts/错误的共享对照/index.html#二次分流实验",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.二次分流实验",
+    "text": "1.二次分流实验\n按实验分配流量（一个人群），实验内部再二次分配（随机分流）"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#基于二次分流的共享对照",
+    "href": "posts/错误的共享对照/index.html#基于二次分流的共享对照",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.基于二次分流的共享对照",
+    "text": "2.基于二次分流的共享对照\n每次实验内部重新随机，做多实验组是合理的，此时对照组流量共享。 有共享流量分配最优解的研究《A Common Control Group - Optimising the Experiment Design to Maximise Sensitivity》"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#增加流量的本质是什么",
+    "href": "posts/错误的共享对照/index.html#增加流量的本质是什么",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "1.增加流量的本质是什么？",
+    "text": "1.增加流量的本质是什么？\n流量越大结果越可信 = 样本越大均值波动越小 = 样本越大均值方差越小 = 样本越大标准误越小\n本质上我们是在追求更小的结果波动即更小的标准误。其样本量增加的收益是边际递减的。 \\[标准误 = \\sqrt{\\frac{样本方差}{对照组样本量} + \\frac{样本方差}{实验组样本量} } \\] 影响标准误的因素：样本方差、样本量"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#增加样本量的收益",
+    "href": "posts/错误的共享对照/index.html#增加样本量的收益",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "2.增加样本量的收益",
+    "text": "2.增加样本量的收益\n通过案例估算： 假设一些用户其样本方差约35000，分配比例1:1， 标准差随样本量变化曲线为：  由上可知：其边际收益递减，大约几十万样本后就不会有特别快的下降。"
+  },
+  {
+    "objectID": "posts/错误的共享对照/index.html#降低样本方差可能是更好的方法",
+    "href": "posts/错误的共享对照/index.html#降低样本方差可能是更好的方法",
+    "title": "实验间共享对照组缺陷及对策",
+    "section": "3.降低样本方差可能是更好的方法",
+    "text": "3.降低样本方差可能是更好的方法\n控制变量法、过滤离群点等降噪方法可以降低样本方差，而且常常对一些指标来说方差很容易就可以下降50%以上 样本方差从35000降低到5000收益："
   },
   {
     "objectID": "posts/流量分配与决策优化/index.html",
@@ -490,284 +511,291 @@
     "text": "分层模型（hierarchical model ）\n此模型观测值分布的参数也是随机产生的，参数值来自另一个分布（套娃模式）。 一个现实的例子： 随机从学校抽取一个学生，让这个学生做一份试卷，最后试卷的评分。  上图为例子的一种建模： \\(\\theta \\sim N(\\mu,\\tau^2)\\)，代表不同学生知识掌握程度的建模，此处分布的两个参数是已知的； \\(Y \\sim N(\\theta, \\sigma^2)\\)，代表被抽取学生考试得分。 ## 肥尾分布（Fat-tailed distribution） 相对正态分布或指数分布来说中间更细尾巴更粗的分布。\n著名的肥尾分布是幂律分布、帕累托分布，伴随着它们出现的名词是“二八定律”、“黑天鹅”等。\n\n一个正态分布与肥尾分布对比的例子：\n正态分布：正负三个标准差可以覆盖99.7%的概率，正负四个标准差以外的事件几乎是不存在的；\n肥尾分布：4%的事件发生在八个标准差之外。"
   },
   {
-    "objectID": "posts/错误的共享对照/index.html",
-    "href": "posts/错误的共享对照/index.html",
-    "title": "实验间共享对照组缺陷及对策",
+    "objectID": "posts/alpha消耗函数法/index.html",
+    "href": "posts/alpha消耗函数法/index.html",
+    "title": "成组序贯检验 —— alpha消耗函数法",
     "section": "",
-    "text": "A/B实验目标是实现在线随机对照实验，因此需要满足「随机对照实验」的要求和前提。\n然而前支持的「对照组流量共享机制」违背了「随机对照实验」的基本要求。"
+    "text": "背景\n进行一项某项药物临床实验时，实验关注的是药物的正面效果，但是药物也可能会有严重的副作用，如何进行监控呢？\n衡量药物是否有效通过假设检验来判断，同理容易想到也可以通过假设检验判断药物的负面作用。但是固定水平检验偷看会增加假阳性，如果提前分析会增加假阳性；如果按照正确流程在实验结束后分析，实验中的志愿者可能已经受到了严重的伤害。\n如何完成分析又不增加假阳性呢？医学上的做法叫期中分析，依赖于成组贯序分析，alpha消耗函数是其中一种。\n\n\n解决思路\n如果只是为了控制假阳性，可以将提前比较视为多次比较，使用多重检验方法进行校正。但是实验中数据相关性较强，多重校正会增大假阴性错误，并不合适。\nalpha消耗函数的思路是将假阳性错误按照某种方案分配给每次比较，每次比较消耗一定的假阳性配额，合计后刚好等于预设水平。\n\n\n消耗函数\n设实验对应时间为\\([0, T]\\)，在这期间我们会得到对应信息\\([0, I]\\)。\n观测时间为：\\(0, t_1, t_2, t_3...T\\)；\n对应信息为：\\(0, i_1, i_2, i_3...I\\)；\n信息量占比为(\\(t^*\\))：\\(0, t^*_1 = i_1/I, t^*_2 = i_2/I, t^*_3 = i_3/I, ... 1\\)；\nalpha消耗函数为\\(t^*\\)的函数需要满足:\n\\[\\alpha(0) = 0\\] \\[\\alpha(1) = \\alpha\\]\n每次消耗α为：\\(α^*_1 = \\alpha(t^*_1) - \\alpha(0), α^*_2 = \\alpha(t^*_2) - \\alpha(t^*_1),...,α^*_n = \\alpha(1) - \\alpha(t^*_{n - 1})\\)。\n根据定义可知\\(α^*_1 = \\alpha(t^*_1)\\)，且\\(\\sum \\alpha^* = \\alpha\\)，符合解决思路中的要求。\n\n\n如何联系背景问题\n假阳性是在实际无效果情况下发现显著。以下仅以单样本单尾为例，根据不等式求解每个时刻的显著边界\\(Z_c\\):\n\\[\\\\t_1:P\\{Z(t^*_1) &gt;= Z_c(t^*_1)\\}= \\alpha(t^*_1)\\]\n\\[t_2:P\\{Z(t^*_2) &gt;= Z_c(t^*_2) , Z(t^*_1) &lt; Z_c(t^*_1)\\} \\\\= P\\{Z_c(t^*_2) | Z(t^*_1) )&lt; Z_c(t^*_1)\\} * (1 -  \\alpha(t^*_1))\\\\= \\alpha(t^*_2) -  \\alpha(t^*_1)\\]\n…\n\\[t_n:P\\{Z(t^*_n) &gt;= Z_c(t^*_n) , Z(t^*_1) &lt; Z_c(t^*_1),Z(t^*_2) &lt; Z_c(t^*_2)...,Z(t^*_{n -1}) &lt; Z_c(t^*_{n -1})\\}  \\\\= P\\{Z(t^*_n) &gt;= Z_c(t^*_n) | Z(t^*_1) &lt; Z_c(t^*_1),Z(t^*_2) &lt; Z_c(t^*_2)...,Z(t^*_{n-1}) &lt; Z_c(t^*_{n-1})\\}  * (1 - \\alpha(t^*_{n -1}))\\\\= \\alpha -  \\alpha(t^*_{n-1})\\]\n若检测时大于显著边界\\({Z_c}\\)则认为显著，接受备择假设。\n\n\n如何求解\\({Z_c}\\)\n在样本中个体独立同分布的情况下，信息量\\(I\\)为预设总样本量，每次检验的信息量\\(i\\)为已完成检验的个体数量。\n求解边界并不容易，仅有第一次检测边界可以直接求出：\n\\[t_1:Z_c(t^*_1) = \\phi^{-1}(\\alpha(t^*_1))\\]\n后续边界该如何求解？\n随着实验进行，若每次检验新增抽样都比较大，则新抽样样本的均值与和都服从正态分布，累计值的变化过程服从布朗运动，可以通过伊藤积分或蒙特卡洛模拟进行求解，以下为蒙特卡洛求解的过程：\n1.随机产生N个样本，每个样本有M个标准正态分布抽样的个体，M与N都极大； 2.可直接求得边界\\(Z_c(t^*_1)\\)，对每个样本的前 \\(M * t^*_1\\)个体合计计算\\(Z\\)值，不符合条件的样本标记淘汰； 3.计算第二次的alpha控制目标\\(\\alpha(t^*_2) - \\alpha(t^*_1)\\)，对未淘汰的样本的前 \\(M * t^*_2\\)个体合计计算\\(Z\\)值，排序后取对应分位点的\\(Z\\)值近似认为\\(Z_c(t^*_2)\\)，同样将小于边界的样本标记淘汰； 4.重复上述过程，直至完成。\n通过上述过程，得到了显著边界序列\\([Z_c(t^*_1), Z_c(t^*_2), Z_c(t^*_3)... Z_c(t^*_n)]\\)，可以用作每次检测的边界。\n\n\n后记\n中文网站上关于成组贯序分析的介绍比较少，尤其时alpha消耗函数法更少，以上是阅读相关论文后的个人理解。\n本文仅介绍了最简单的情况，且没有详细介绍为何服从布朗运动，详细推导和展开请继续查阅相关英文资料。"
   },
   {
-    "objectID": "posts/错误的共享对照/index.html#什么是随机对照实验随机",
-    "href": "posts/错误的共享对照/index.html#什么是随机对照实验随机",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "1.什么是随机对照实验随机",
-    "text": "1.什么是随机对照实验随机\n对照试验的基本方法是，将研究对象随机分组，对不同组实施不同的干预。\n在这种严格的条件下对照效果的不同。在研究对象数量足够的情况下，这种方法可以抵消已知和未知的混杂因素对各组的影响，被公认为是评价干预措施的金标准。"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#在线随机的一般实现",
-    "href": "posts/错误的共享对照/index.html#在线随机的一般实现",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "2.在线随机的一般实现",
-    "text": "2.在线随机的一般实现\n根据随机实验定义我们要保证：统一群体随机分组，分组后用户属于哪个组稳定。 一般做法：用户标识 -&gt; 拼接salt，产生新字符串 -&gt; 哈希散列为数字 -&gt; 绝对值取余编号（分桶） -&gt; 桶编号范围分组 举例：假设一个实验将用户分100个桶，0 ~ 49号桶用户为对照组，50 ~ 99号桶用户为实验组"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#共享对照流量",
-    "href": "posts/错误的共享对照/index.html#共享对照流量",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "1.共享对照流量",
-    "text": "1.共享对照流量\n设计思路比较朴素：既然对照组为基线，那么切一部分做对照，剩下的只用于实验，都与对照流量对比即可。 示例：  这样做有效利用了流量，但存在重大缺陷：持续迭代下，违背了「随机对照实验」的前提。"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#共享对照缺陷",
-    "href": "posts/错误的共享对照/index.html#共享对照缺陷",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "2.共享对照缺陷",
-    "text": "2.共享对照缺陷\n实验持续迭代，当旧实验结束后，新实验会使用其释放的流量。由于习得性效应（残留效应）影响，此时两人群常常是不同质的。 示例： 上例的实验3结束后，实验4继承了实验3的流量做实验。「共享对照组」和「实验4」还是期望同质的人群么？ 由于释放人群表现 = 原表现 + 实验3效果 —— 除非「实验3」没任何效果才能满足！"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#人群是否同质的谜题",
-    "href": "posts/错误的共享对照/index.html#人群是否同质的谜题",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "3.人群是否同质的谜题",
-    "text": "3.人群是否同质的谜题\n为什么讨论人群是否同质？其实是为了让实验正确决策。 - 随机对照实验下：实验组对照组期望同质，误判都是波动造成，通过统计模型可控。只要标准的统计推断即可保证「误判率」和「检出率」符合预设； - 共享对照实验下：实验组对照组期望同质不能保证，这让实验从科学变成了玄学；\n\n常见问题：实验AA组与对照组不一致，人群是不是不同质，效果可信么？ - 标准随机实验下：AA组与对照组期望同质，流量越大结果波动更小。因此建议流量合并当做对照组，再计算实验结果期望最优解。 - 共享对照实验下：无法解答，AA组和对照组都可能受残留效应影响。"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#二次分流实验",
-    "href": "posts/错误的共享对照/index.html#二次分流实验",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "1.二次分流实验",
-    "text": "1.二次分流实验\n按实验分配流量（一个人群），实验内部再二次分配（随机分流）"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#基于二次分流的共享对照",
-    "href": "posts/错误的共享对照/index.html#基于二次分流的共享对照",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "2.基于二次分流的共享对照",
-    "text": "2.基于二次分流的共享对照\n每次实验内部重新随机，做多实验组是合理的，此时对照组流量共享。 有共享流量分配最优解的研究《A Common Control Group - Optimising the Experiment Design to Maximise Sensitivity》"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#增加流量的本质是什么",
-    "href": "posts/错误的共享对照/index.html#增加流量的本质是什么",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "1.增加流量的本质是什么？",
-    "text": "1.增加流量的本质是什么？\n流量越大结果越可信 = 样本越大均值波动越小 = 样本越大均值方差越小 = 样本越大标准误越小\n本质上我们是在追求更小的结果波动即更小的标准误。其样本量增加的收益是边际递减的。 \\[标准误 = \\sqrt{\\frac{样本方差}{对照组样本量} + \\frac{样本方差}{实验组样本量} } \\] 影响标准误的因素：样本方差、样本量"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#增加样本量的收益",
-    "href": "posts/错误的共享对照/index.html#增加样本量的收益",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "2.增加样本量的收益",
-    "text": "2.增加样本量的收益\n通过案例估算： 假设一些用户其样本方差约35000，分配比例1:1， 标准差随样本量变化曲线为：  由上可知：其边际收益递减，大约几十万样本后就不会有特别快的下降。"
-  },
-  {
-    "objectID": "posts/错误的共享对照/index.html#降低样本方差可能是更好的方法",
-    "href": "posts/错误的共享对照/index.html#降低样本方差可能是更好的方法",
-    "title": "实验间共享对照组缺陷及对策",
-    "section": "3.降低样本方差可能是更好的方法",
-    "text": "3.降低样本方差可能是更好的方法\n控制变量法、过滤离群点等降噪方法可以降低样本方差，而且常常对一些指标来说方差很容易就可以下降50%以上 样本方差从35000降低到5000收益："
-  },
-  {
-    "objectID": "posts/msprt/index.html",
-    "href": "posts/msprt/index.html",
-    "title": "Peeking at A/B test：mSPRT简介",
+    "objectID": "posts/荟萃分析简介/index.html",
+    "href": "posts/荟萃分析简介/index.html",
+    "title": "荟萃分析简介",
     "section": "",
-    "text": "Optimizely通过mSPRT理论的扩展，提供了时时有效的P值与置信区间，解决了ab实验中的偷看问题。"
+    "text": "进行线上ab实验时，为了确认结果可信，用户常常会复验前一阶段的实验。此时经常遇到复验与原实验结果不完全统一，如何综合评估实验效果？荟萃分析可以解决此类问题。 本文仅简介固定效果假设下关于P值合并的部分。"
   },
   {
-    "objectID": "posts/msprt/index.html#始终有效的p",
-    "href": "posts/msprt/index.html#始终有效的p",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "2.1 始终有效的P",
-    "text": "2.1 始终有效的P\n任意时间T，满足： \\[\\forall s\\ \\epsilon\\ [0,1],\\ \\mathbb{P}_{\\theta _{0}}(p_T \\leq s) \\leq s\\]"
+    "objectID": "posts/荟萃分析简介/index.html#fishers-method",
+    "href": "posts/荟萃分析简介/index.html#fishers-method",
+    "title": "荟萃分析简介",
+    "section": "Fisher’s method",
+    "text": "Fisher’s method\n如果两次实验p值分别为p1、p2。进行在零假设时，它们独立，并服从0~1的均匀分布，则两次实验合并的p值为： \\[p = \\int_{x * y = p1 * p2, 0&lt; x,y&lt;1 }1dxdy = p1*p2(1 - log(p1 * p2))\\]\nFisher将其扩展到更一般场景，对k次实验结果进行合并后服从自由度为2k的卡方分布： \\[-2\\sum_{i = 1}^klog(p_i)  \\sim  \\chi^2(2k)\\]"
   },
   {
-    "objectID": "posts/msprt/index.html#始终有效的贯序检测",
-    "href": "posts/msprt/index.html#始终有效的贯序检测",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "2.2 始终有效的贯序检测",
-    "text": "2.2 始终有效的贯序检测\n依靠样本数据决策样本量。\n判决条件：\n\\((T(\\alpha), \\delta(\\alpha) )\\)\n\\(\\mathbb{P}_{\\theta _{0}}( \\delta(\\alpha) = 1) \\leq \\alpha\\)\n$T(),() \\(不会影响\\)$水平"
+    "objectID": "posts/荟萃分析简介/index.html#stouffers-methodz值合并",
+    "href": "posts/荟萃分析简介/index.html#stouffers-methodz值合并",
+    "title": "荟萃分析简介",
+    "section": "Stouffer’s method(z值合并)",
+    "text": "Stouffer’s method(z值合并)\n此处直接介绍加权的方法。\n先将\\(p_i\\)值逆计算为\\(z_i\\)，则\\(z_i \\sim N(0, 1)\\)。多个\\(zi\\)加权相加后，依然服从正态分布，则： \\[P_Z = 1 - \\Phi(\\frac{\\sum w_i Z_i}{\\sqrt{\\sum w_i ^ 2}})\\]\n为什么会有权重呢？假如每次实验重视程度不同，那么它们结果按重要性来加权是很自然的。\n如何选择权重？如果实验干预、受众相同，建议使用样本量的平方根做权重。\n\n单样本两次实验的例子：\n检验\\(\\Delta\\)是否为0，做了两次实验分别采集到\\(\\delta_1,\\delta_2\\)，样本量为\\(n_1, n2\\)，样本方差同为\\(\\sigma^2\\)，此时如果$w_1 = ,w2 = $，则可推出\n\\(\\frac{\\sum w_i Z_i}{\\sqrt{\\sum w_i ^ 2}} = (\\delta_1*n_1 + \\delta_2 * n_2) /(n_1 + n_2) / \\sqrt{\\frac{\\sigma^2}{n_1 + n_2}} = Z\\) 即两次实验结果，与将原数据汇总计算结果相同。"
   },
   {
-    "objectID": "posts/msprt/index.html#置信区间",
-    "href": "posts/msprt/index.html#置信区间",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "2.3 置信区间",
-    "text": "2.3 置信区间\n对\\(\\theta = \\widetilde{\\theta}\\)来说，如果\\(p_{n}^{\\widetilde{\\theta}}\\)始终有效，$I_{n} = {: p_{n}^{} &gt; } $就是始终有效的\\(1-\\alpha\\)水平置信区间。"
-  },
-  {
-    "objectID": "posts/msprt/index.html#混合贯序检验msprt",
-    "href": "posts/msprt/index.html#混合贯序检验msprt",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "3.1 混合贯序检验(mSPRT)",
-    "text": "3.1 混合贯序检验(mSPRT)\nH为$\\(上的混合分布，概率密度函数为h。计算H的似然比除以\\)_{0}$的似然比： \\[\\Lambda _{n}^{H,\\theta _{0}} = \\int _{\\Theta }\\prod_{m=1}^{n}\\frac{f_{\\theta}(X_{m})}{f_{\\theta_{0}}(X_{m})}h(\\theta)d\\theta\\]\nmSPRT判断流程：\n选择\\(\\alpha\\)，则拒绝原假设条件为\\(\\Lambda_{T}^{H,\\theta_{0}} \\ge \\alpha^{-1}\\)，此时\\(T = T^{\\alpha}\\)。\n详细原理参照文末。"
-  },
-  {
-    "objectID": "posts/msprt/index.html#msprt的p值与置信区间",
-    "href": "posts/msprt/index.html#msprt的p值与置信区间",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "3.2 mSPRT的P值与置信区间",
-    "text": "3.2 mSPRT的P值与置信区间\n\\(p_0 = 1;p_n=min\\{p_{n-1},1/\\Lambda _{n}^{H,\\theta _0 } \\}\\)\n$I_0 = ; I_n = I_{n-1} { : _n ^ {H, } ^{-1} } $\n如果数据自正态分布\\(N(\\theta, \\sigma^2)\\)，且混合分布\\(H = N(\\theta_0, \\tau^2)\\)，则\n\\[\\Lambda _{n}^{H,\\theta _{0}} = \\frac{\\sigma}{\\sqrt{\\sigma^2 + n\\tau^2 }} exp\\{\\frac{n^2\\tau^2(\\bar{X}_{n} - \\theta_0)^2}{2\\sigma^2(\\sigma^2 + n\\tau^2)}\\}\\]"
-  },
-  {
-    "objectID": "posts/msprt/index.html#msprt扩展到ab",
-    "href": "posts/msprt/index.html#msprt扩展到ab",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "3.3 mSPRT扩展到A/B",
-    "text": "3.3 mSPRT扩展到A/B\n定义\\(Z_n = Y_n - X_n \\sim N(\\theta, 2\\sigma^2)\\)，并对其做mSPRT检测，则： \\[\\Lambda _{n}^{H,\\theta _{0}} = \\sqrt {\\frac {2\\sigma^2} {2\\sigma^2 + n \\tau^2 } } exp \\{ \\frac{n^2\\tau^2(\\bar{Y}_n - \\bar{X}_{n} - \\theta_0)^2}{4\\sigma^2(2\\sigma^2 + n\\tau^2)} \\}\\]\n对于0/1型数据，\\(\\bar{Y}_n - \\bar{X}_n\\)近似于正态分布\\(N(\\theta, V_n/n)\\)，\\(V_n = \\bar{X}_n(1-\\bar{X}_n) + \\bar{Y}_n(1- \\bar{Y}_n)\\)，则： \\[\\Lambda _{n}^{H,\\theta _{0}} = \\sqrt{\\frac{V_n}{V_n + n\\tau^2 }} exp\\{\\frac{n^2\\tau^2(\\bar{Y}_n - \\bar{X}_{n} - \\theta_0)^2}{2V_{n}(V_n + n\\tau^2)}\\}\\]"
-  },
-  {
-    "objectID": "posts/msprt/index.html#实现细节",
-    "href": "posts/msprt/index.html#实现细节",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "3.4 实现细节",
-    "text": "3.4 实现细节\n对于一些连续性指标，比如“付费”（严重右斜）使用正态分布是不合适的，需要其它更适应这种偏斜的分布。\n由于为了保证单调性，可能导致后期\\(\\bar{Y}_n - \\bar{X}_n\\)跑出置信区间，此时Optimizely会重置显著性。这样的做法只会让p值更大、置信区间更宽，不会增加假阳性错误，但是可能增大假阴性错误。"
-  },
-  {
-    "objectID": "posts/msprt/index.html#优化",
-    "href": "posts/msprt/index.html#优化",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "4.1 优化",
-    "text": "4.1 优化\n实验者不会永远等待，因此有最大等待样本量M。\n经过Optimizely验证，带M截断的mSPRT比一般的假设检验平均花费更少的样本量。"
-  },
-  {
-    "objectID": "posts/msprt/index.html#混合分布的选择",
-    "href": "posts/msprt/index.html#混合分布的选择",
-    "title": "Peeking at A/B test：mSPRT简介",
-    "section": "4.2 混合分布的选择",
-    "text": "4.2 混合分布的选择\n之前选择了混合分布为\\(H = N(\\theta_0, \\tau^2)\\)。对于混合分布如何选择，没有现存的理论指导。\nOptimizely选择的先验为\\(G = N(0, \\tau_0^2)\\)，并且通过数据仿真得到\\(\\tau_0^2\\)。"
-  },
-  {
-    "objectID": "posts/贝叶斯和多臂老虎机/index.html",
-    "href": "posts/贝叶斯和多臂老虎机/index.html",
-    "title": "贝叶斯和多臂老虎机",
+    "objectID": "posts/实验设计_多重检验/index.html",
+    "href": "posts/实验设计_多重检验/index.html",
+    "title": "A/B实验设计 —— 多重检验",
     "section": "",
-    "text": "多臂老虎机是一个在探索(exploration)和开发(exploitation)过程中寻找最高收益的问题。此类“实验”能力几乎已经成为了优秀实验平台的标配。\n本篇是阅读《A modern Bayesian look at the multi-armed bandit》后结合个人理解的学习总结。它总结了基于贝叶斯的随机概率匹配法和其它相关方法。"
+    "text": "本文介绍A/B实验中一个常见的错误——多重检验错误，它经常影响实验得到错误的结论。相关数学推导放在文末，跳过不影响理解。"
   },
   {
-    "objectID": "posts/贝叶斯和多臂老虎机/index.html#背景",
-    "href": "posts/贝叶斯和多臂老虎机/index.html#背景",
-    "title": "贝叶斯和多臂老虎机",
+    "objectID": "posts/实验设计_多重检验/index.html#错误原因",
+    "href": "posts/实验设计_多重检验/index.html#错误原因",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "错误原因",
+    "text": "错误原因\n\n假设检验通建立在统计学原理上，假设检验并不能不产生误判，而是控制误判在我们预设范围之内，称为假阳性错误（α水平，一般选在5%）\n\n每次验证都会有错误的概率，因此只要检验次数增加，遇到至少一次错误的概率也会增加。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#案例分析",
+    "href": "posts/实验设计_多重检验/index.html#案例分析",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "案例分析",
+    "text": "案例分析\n上面的例子中，把各种颜色的糖作为不同实验组，与对照组进行对比。假设有20种糖，假阳性水平控制为5%，预期得到的显著结果为 20 * 5% = 1。我们很容易发现某种颜色糖果“似乎”与粉刺有关系，然而这是错误的。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#合理的设计实验",
+    "href": "posts/实验设计_多重检验/index.html#合理的设计实验",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "1. 合理的设计实验",
+    "text": "1. 合理的设计实验\n设计实验前充分分析、调查，针对相关可能最大的因素进行实验，避免大量无用因素干扰得到错误结论。\n宗旨：尽量减少检验次数，降低犯错概率\n\n控制实验组尽可能少\n不同颜色软糖对粉刺的影响不应该有区别，因此只需要设计一组实验组。\n\n控制指标尽可能少\n我们可以同时检验软糖实验组对粉刺、喉咙痛、高血压…再夸张些，婚姻幸福度、孩子情况…检验的指标越多，得到假阳性结果的可能性同样上升（吃软糖与生女孩相关明显是荒谬的）。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#多次检验校正",
+    "href": "posts/实验设计_多重检验/index.html#多次检验校正",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "2. 多次检验校正",
+    "text": "2. 多次检验校正\n统计学领域已经发明了一些方法来对多次检验进行校正。主要思想是检验次数越多，就要对显著采用更严格的限制，但是都会导致power的损失，降低发现率。\n常用方式：Bonferroni correction、Holm–Bonferroni method。\n缺点：会导致power有所损失（特别是检验结果不独立时）。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#实验后分析",
+    "href": "posts/实验设计_多重检验/index.html#实验后分析",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "3. 实验后分析",
+    "text": "3. 实验后分析\n显著不等于一定正确。实验后需要对实验进行因果分析，结果需要可合理解释（不是编故事）。如果采用了多次检验校正，还需要考虑假阴性问题。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#符号定义",
+    "href": "posts/实验设计_多重检验/index.html#符号定义",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "符号定义",
+    "text": "符号定义\n m：总检验假设数\nm0：零假设正确的数量，我们无法得知\nm - m0：备择假设正确的数量\nV：假阳性结论数量\nS：真阳性数量\nT：假阴性数量\nU：真阴性数量\nR = V + S：拒绝零假设数量\n在m个假设检验中，m0个零假设为真，R是观察到的显著情况的随机变量，S、T、U、V都是不可观测的随机变量。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#相关推导",
+    "href": "posts/实验设计_多重检验/index.html#相关推导",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "相关推导",
+    "text": "相关推导\n如果m次检验是独立的，则产生假阳性的概率为:\n\\(\\alpha = 1 - ( 1 - \\alpha_{sub} )^{m}\\)\n如果检验不是独立的，仍然有：\n\\(\\alpha \\leq m * \\alpha_{sub}\\)"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#bonferroni-correction",
+    "href": "posts/实验设计_多重检验/index.html#bonferroni-correction",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "Bonferroni correction",
+    "text": "Bonferroni correction\n方法：将每次检验的显著性从$ {sub}\\(调整为\\){newSub}$ = $ _{sub} / m$\n原理：根据上述不等式，则有\\(\\alpha \\leq m * \\alpha_{newSub} = \\alpha_{sub}\\) ，因此可以有效将假阳性水平控制在预设之内。\n优点：简单好理解。\n缺点：由于条件过于严格，假阴性错误率升高。"
+  },
+  {
+    "objectID": "posts/实验设计_多重检验/index.html#holmbonferroni-method",
+    "href": "posts/实验设计_多重检验/index.html#holmbonferroni-method",
+    "title": "A/B实验设计 —— 多重检验",
+    "section": "Holm–Bonferroni method",
+    "text": "Holm–Bonferroni method\n方法：将得到的P值从小到大排序记序号为i(1 ~ m)，从i = 1开始与 \\(\\alpha / (m - i + 1)\\)比较，小于就继续比较下一个。直到找出不符合条件的i(也可能不存在) ，i之前的全部认为显著，i及i之后的全部不显著。 原理： &gt;1. 将p值从大到小排序；\n&gt;2. 我们只需要关心P值最小的第一个零假设为真的情况：如果被拒绝，产生假阳性；否则，比较过程停止，未产生假阳性；\n&gt;3. 设第一个零假设为真的比较序号为h，则共有h - 1次正确的拒绝零假设，则：\n本次拒绝零假设条件为\\(\\alpha / (m - h + 1)\\) (a);\n\\(h - 1 \\leq m - m0\\)（正确拒绝的次数，一定小于等于备择假设为真的次数）；\n推出\\(\\frac{1}{m - h + 1} \\leq \\frac{1}{m_0}\\) (b)；\n不等式两边乘以\\(\\alpha\\)，得到(a)$ \\(。 &gt;4. 根据相关推导中结论，单次比较\\)_{sub} \\(，又\\)m_0$种等可能情况，则:\n\\(\\alpha_{_{real}} \\leq m_0 * \\alpha_{sub} \\leq \\alpha\\)\n优点：相对简单，假阴性错误率小于等于Bonferroni correction。\n缺点：假阴性依然高于预设（尤其是在检验结果相关情况下）。"
+  },
+  {
+    "objectID": "posts/破产问题和简单序贯检验/index.html",
+    "href": "posts/破产问题和简单序贯检验/index.html",
+    "title": "赌徒破产和序贯检验",
     "section": "",
-    "text": "多臂老虎机是一个在探索(exploration)和开发(exploitation)过程中寻找最高收益的问题。此类“实验”能力几乎已经成为了优秀实验平台的标配。\n本篇是阅读《A modern Bayesian look at the multi-armed bandit》后结合个人理解的学习总结。它总结了基于贝叶斯的随机概率匹配法和其它相关方法。"
+    "text": "本文是对Simple Sequential A/B Testing的解读。 该方法归属序贯检测类，可以用于伯努利分布场景，随着抽样持续进行，判断接受零假设或备择假设（关于序贯检测）。"
   },
   {
-    "objectID": "posts/贝叶斯和多臂老虎机/index.html#随机概率匹配rpm",
-    "href": "posts/贝叶斯和多臂老虎机/index.html#随机概率匹配rpm",
-    "title": "贝叶斯和多臂老虎机",
-    "section": "1. 随机概率匹配（RPM）",
-    "text": "1. 随机概率匹配（RPM）\n定义\\(Y_t = (y_1, ..., y_t)\\)代表t时为止的奖励序列，\\(a_t\\)代表t时选择的臂，t时刻奖励\\(y_t \\sim f_{a_t}(y|\\theta)\\)，\\(\\theta\\)是一个未知向量。\n\\(y_t \\in (0, 1)\\)情况下两种例子：\n1. 伯努利老虎机，\\(\\theta = (\\theta_1, ...,\\theta_k)\\)，\\(f_{a_t}(y|\\theta)\\)参数为\\(\\theta_a\\)\n2. fractional factorial bandit（本文不关注）\n定义\\(\\mu_a(\\theta) = E(y_t | \\theta, a_t = a)\\)是\\(f_{a}(y|\\theta)\\)的期望值，最佳策略应该一直选择\\(\\mu_a(\\theta)\\)最大的臂。\n在伯努利分布下，\\(\\theta_a = \\mu_a(\\theta)\\)。\n定义\\(p(\\theta)\\)是\\(\\theta\\)的先验概率密度，此时以$p() \\(产生\\)\\(，\\)\\(产生y，则0时刻选择a正确概率： &gt;\\)w_{a0} = Pr(_a = max{_1,… })$ （1)\n定义\\(I_a(\\theta)\\)为指示函数，\\(\\mu_a = max\\{\\mu_1,...\\mu_k\\}\\)时\\(I_a(\\theta)=1\\)：\n&gt; \\(w_{a0} = E(I_a(\\theta)) = \\int I_a(\\theta) p(\\theta) d\\theta\\) （2）\n\n\n\n一个例子，先验可以Beta分布，两臂时为二元\n\n\n如果没有关于\\(\\theta\\)的先验，则先验视为各个\\(\\mu\\)是一样的，\\(w_{a0}\\)是均匀分布。\n观测到奖励情况后，通过贝叶斯方法进行更新，\\(p(\\theta | Y_t ) = \\frac{p(Y_t|\\theta)p(\\theta)}{p(Y_t)}\\)。t时刻：\n&gt; \\(p(\\theta | Y_t ) \\propto p(\\theta)\\prod _{\\tau = 1}^t f_{a_\\tau}(y|\\theta)\\) (3)\n则此时$w_{at} = Pr(_a = max{_1,…} | Y_t ) = E(I_a() | Y_t ) $ （4）\n随机概率匹配用\\(w_{at}\\)来分配a的t+1时观测值，通过一种自然平衡探索与开发的方式。\n\n1.1 概率分配计算\n如果\\(\\theta^{(1)},...,\\theta^{(G)}\\)是来自\\(p(\\theta|Y_t)\\)的独立抽样，则基于大数定理：\n&gt;\\(w_{at} = \\lim_{g\\rightarrow \\infty }\\frac{1}{G}\\sum^G_{g=1}I_a(\\theta^g).\\) （5）\n如果\\(f_a\\)是指数族，而且\\(p(\\theta)\\)是它的共轭分布，则可以独立的抽样\\(\\theta\\)，否则可以用马可夫相关的方法进行抽样模拟。\n\\(\\theta\\)的后验抽样足够对概率匹配进行支持。\n\n\n1.2 隐式分配\n（5）可以不用显式计算，从\\(p(\\theta|Y_t)\\)模拟 \\(\\theta^{t}\\)，并选择\\(a = argmax_a\\mu_a(\\theta^t)\\)\n\n\n1.3 探索(exploration)、开发(exploitation)和不确定性\n随机概率匹配自然的包含了不确定性，下图为两臂情况下的情况：\n\n在(a)中，错误选中概率为18%；在(b)中，错误选中概率为0.8%。\n这个例子说明，随着学习的进行，探索的占比会减少。"
+    "objectID": "posts/破产问题和简单序贯检验/index.html#概率计算",
+    "href": "posts/破产问题和简单序贯检验/index.html#概率计算",
+    "title": "赌徒破产和序贯检验",
+    "section": "概率计算",
+    "text": "概率计算\n使用\\(R_{n,d}\\)来表示赌徒起始d元在第n轮输光的概率。 总局：n，输：(n + d) / 2，胜：(n - d) / 2。\n\n赌场可以借钱给赌徒的情况，此时为简单的排列组合关系。\n&gt;\\(R_{n,d} = \\binom{n}{(n + d)/ 2} * 2^{-n}\\)\n赌场不肯借钱给赌徒情况。\n&gt; \\(R_{n,d} = \\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^{-n}\\)\n\n这是简单序贯检测的基础，将在下面推导。"
   },
   {
-    "objectID": "posts/贝叶斯和多臂老虎机/index.html#其它方法",
-    "href": "posts/贝叶斯和多臂老虎机/index.html#其它方法",
-    "title": "贝叶斯和多臂老虎机",
-    "section": "2. 其它方法",
-    "text": "2. 其它方法\n\n2.1 The Gittins index(基廷斯指数)\n此方法假设单臂未来的奖励会与一个几何分布有关：\\(\\sum_{t = 0} ^ {\\infty} \\gamma ^ty_t\\)，其中\\(0 \\leq \\gamma &lt; 1\\)\n基廷斯提供了一种计算各个臂价值的算法，得到的结果称为基廷斯指数。它在前提可保证时是最优方案。\n\n\n这部分的数学相关很复杂先跳过，简单了解可参考《算法之美》第二章相关部分。\n对基廷斯指数的三个问题：\n1. 不完全学习，可能最终收敛到次优解；\n2. 各臂的参数需要是固定的；\n3. 奖励减少结构必须是几何分布。\n\n\n2.2 UCB算法(Upper Confidence Bounds)\n计算每个手臂奖励均值及置信区间上限，然后选上限最高的手臂。\n值得注意的是，此上限并不是常见的置信区间算法，而且比较难计算。\n\n\n2.3 启发式策略\n\n2.3.1 平均分配\n次策略均匀的探索每个臂，直到其中一个臂奖励超过某个阈值，然后一直选择此臂。这种方法对\\(\\theta\\)探索效果很好，但是前期成本高，导致整体奖励效果较差。类似于先进行一轮随机实验评估效果，然后选择效果最好的方案。\n\n2.3.2 连胜就继续，输了就换其它\n至少好于随机选择……当最优秀的策略效果也没有特别好时，此方案会过度探索，导致效果很差。\n\n2.3.3 贪心策略\n简单的贪心策略效果很差，比较好的是deterministic probability matching做法。但是在批量更新场景，一个更新周期只能探索一种方案，所以前期会表现特别差。\n\n2.3.4 混合策略\n混合策略是贪心之外，强制进行一定比例的探索，比如Epsilon-greedy或Epsilon-decreasing。不过上两种方法的敏感度不够高，因此还可以参考Softmax learning方法。\n\n\n\n2.4 与概率匹配的对比\n概率匹配结合了2.3中的多种好处。"
+    "objectID": "posts/破产问题和简单序贯检验/index.html#随机游走和选举定理",
+    "href": "posts/破产问题和简单序贯检验/index.html#随机游走和选举定理",
+    "title": "赌徒破产和序贯检验",
+    "section": "随机游走和选举定理",
+    "text": "随机游走和选举定理\n在此对第二种情况进行计算。\n\n取纵坐标为钱，横坐标为赌博轮次，则过程为一维随机游走。举例：\n\n\n\n此时从A出发到K，满足条件路径数（中途不与0轴接触），等于从K出发到A的路径数。场景转换为从0开始，到d结束。\n\n\n\n在满足中途不触碰0轴条件，第一步必须为正。则从J到A路径数等于从A到K路径数。\n\n如图所示，每一条从J到第一个接触横轴的点的路径，总有一条从K出发到相同点的映射路径，后续都走相同路径。因此J到A经过横轴路径数等于K到A的路径数。\n设从0出发，有p步向上，q步向下。根据3，满足不触碰横轴概率为： $ ( {p - 1} - ) / = $\n\n此公式被称为选举定理。 &gt;将\\(p + q = n, p - q = d\\)带入，原问题最终结果为\\(\\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^ {-n}\\)"
   },
   {
-    "objectID": "posts/贝叶斯和多臂老虎机/index.html#伯努利老虎机上使用不同策略的对比",
-    "href": "posts/贝叶斯和多臂老虎机/index.html#伯努利老虎机上使用不同策略的对比",
-    "title": "贝叶斯和多臂老虎机",
-    "section": "3. 伯努利老虎机上使用不同策略的对比",
-    "text": "3. 伯努利老虎机上使用不同策略的对比\n定义\\(\\theta = (\\theta_1, ...,\\theta_k)\\)，先验为\\(\\theta_a \\sim U(0, 1)\\)，它们之间相互独立。\n\\(Y_{at},N_{at}\\)分别代表t时刻a的累计成功次数和观测次数。\n则\\(\\theta = (\\theta_1, ...,\\theta_k)\\)的后验为：\n&gt;\\(p(\\theta|Y_t) =\\prod ^k_{a=1}Be(\\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\\) (10)\n其中\\(B_e(\\theta|\\alpha, \\beta)\\)是贝塔分布。此时最佳概率为：\n&gt; \\(w_{at} = \\int_{0}^{1}Be(\\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\\prod_{j\\neq a}Pr(\\theta_j &lt; \\theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\\theta_a\\) (11)\n验证主要关注regret，最佳选择\\(\\mu^*(\\theta) = max_a\\{\\mu_a(\\theta) \\}\\)，手臂a在t时刻的观测次数为\\(n_{at}\\)，则t时刻的regret为：\n&gt; $L_t = an{at}(^*() - _a()) $ (12)\n则T时段累计regret为\\(L = \\sum_{t= 1}^TL_t\\)。以下是一些模拟对比结果。\n\n3.1 批量更新场景\n\n3.1.1 RPM对比平均分配\n  \n从测试数据看RPM会比后者好得多。\n\n\n3.1.2 RPM对比贪心\n \n可发现在批量更新场景，两种贪心策略效果都是比RPM差的。\n\n\n\n3.2 实时更新场景\n\n平均效果来看，RPM效果最差，但是它的标准差最小，最优解命中率最高；参数为0.999的Gittins index平均效果最好，标准差较大，且最优解的命中率低于RPM。"
+    "objectID": "posts/破产问题和简单序贯检验/index.html#与赌徒破产问题的关系",
+    "href": "posts/破产问题和简单序贯检验/index.html#与赌徒破产问题的关系",
+    "title": "赌徒破产和序贯检验",
+    "section": "与赌徒破产问题的关系",
+    "text": "与赌徒破产问题的关系\n均等流量的转化率型ab测试场景中，实验组、对照组随着时间推移，都会产生转化。在零假设下，下一次转化发生在实验组或对照组的概率是相等的。因此可以转换为赌徒破产问题。\n每轮次：下一次转化发生； 每轮获胜者：下一次转化所在的组； 破产的轮次n：实验组、对照组转换数之和； 赌徒初始筹码d：因为转换数积累是从零开始的，不能直接套用。可以认为赌徒初始资本为0，输到-d时破产。"
   },
   {
-    "objectID": "posts/贝叶斯和多臂老虎机/index.html#后记",
-    "href": "posts/贝叶斯和多臂老虎机/index.html#后记",
-    "title": "贝叶斯和多臂老虎机",
-    "section": "后记",
-    "text": "后记\nRPM可以用来解决多臂老虎机问题，它基于后验抽样，易于实现、健壮性好，且在批量更新场景表现更佳。"
+    "objectID": "posts/破产问题和简单序贯检验/index.html#假设检验设计",
+    "href": "posts/破产问题和简单序贯检验/index.html#假设检验设计",
+    "title": "赌徒破产和序贯检验",
+    "section": "假设检验设计",
+    "text": "假设检验设计\n以下仅介绍单尾情况，双尾的扩展请参考原文。\n\n原假设\n零假设(H0)：实验组转化率等于对照组转化率（对应未破产情况）； 备择假设(H1)：实验组转化率小于对照组转换率（对应破产情况）。\n\n\n假阳性控制(alpha)\n在零假设假设下，第n轮赌徒破产概率为： \\(R_{n,d} = \\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^{-n}\\) 在N轮及N轮之前，赌徒破产概率为：\\(\\sum_{n = 1} ^{N}R_{n,d}\\) 利用此公式控制假阳性，通过控N和d的选取，可以控制假阳性水平。\n\n\n假阴性控制(beta)\n控制假阴性，需要预设期望的最小观测效果（mde，此处选相对效果）。当实际提升效果等于MDE时，假阴性概率等于预设值。 在备择假设下，当实验组提升了mde时，下一次转化发生在实验概率为\\(P_t = \\frac {1 + mde} {2 + mde}\\)，对照组概率为\\(P_c = \\frac{1}{2 + mde}\\)。 第n轮破产概率：\\(R_{n,d} = \\frac{d}{n}\\binom{n}{(n + d)/ 2} * P_c ^ {(n - d) / 2}* P_t^{(n + d) / 2}\\)。 在N轮及N轮之前，赌徒破产概率为：\\(\\sum_{n = 1} ^{N}R_{n,d}\\) 取上面的概率为功效(power)，通过次N和d的选取，可以控制假阴性水平。\n\n\n选择结束条件\n联立上述不等式，使N和d满足： &gt; \\(\\sum_{n = 1}^N \\frac{d}{n}\\binom{n}{(n + d)/ 2} * 2^{-n} &lt; \\alpha\\) \\(\\sum_{n = 1}^N \\frac{d}{n}\\binom{n}{(n + d)/ 2} * P_c^{(n - d) / 2}* P_t^{(n + d) / 2} &gt; 1 - \\beta\\)\n不等式很难直接求解，可通过计算机遍历可能的N和d，找到合适的值。\n\n\n具体流程\n\n实验开始，实验组、对照组从0开始计数；\n每有一个转化，对应的组计数+1，并进行判断；\n对照转化数 - 实验组转化数 &gt;= d，接受备择假设；\n对照转化数 + 实验组转化数 = N，接受原假设。"
   },
   {
-    "objectID": "posts/BMCP_2/index.html",
-    "href": "posts/BMCP_2/index.html",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
+    "objectID": "posts/破产问题和简单序贯检验/index.html#优点",
+    "href": "posts/破产问题和简单序贯检验/index.html#优点",
+    "title": "赌徒破产和序贯检验",
+    "section": "优点",
+    "text": "优点\n\n基于弱假设，易于理解和证明；\n过程易于操作；\n在低转换率时，需要样本量小于固定水平检验需要的样本量；\n不存在“偷看”问题。"
+  },
+  {
+    "objectID": "posts/破产问题和简单序贯检验/index.html#缺点",
+    "href": "posts/破产问题和简单序贯检验/index.html#缺点",
+    "title": "赌徒破产和序贯检验",
+    "section": "缺点",
+    "text": "缺点\n\n只适用于近似伯努利分布场景；\n结束条件难以直接计算，需要通过计算机遍历查找；\n在高转化率时，需求样本量大于固定水平检验需要的样本量；\n无法直接给出置信区间和P值。"
+  },
+  {
+    "objectID": "posts/cuped/index.html",
+    "href": "posts/cuped/index.html",
+    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
     "section": "",
-    "text": "上一章中贝叶斯推断是关于基于数据和先验知识，通过贝叶斯公式计算后验概率，从而得到后验分布的过程。但是现实中远没有这么简单，成功的贝叶斯分析还有很多其它挑战。\n本章将讨论其中的一些，包括检验模型假设、诊断推理结果和模型比较原文链接。"
+    "text": "CUPED（Controlled-experiment Using Pre-Experiment Data）是一种通过联系实验前数据，让方差变小的方法。"
   },
   {
-    "objectID": "posts/BMCP_2/index.html#推断之前和之后都有要做的事情",
-    "href": "posts/BMCP_2/index.html#推断之前和之后都有要做的事情",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
-    "section": "2.1. 推断之前和之后都有要做的事情！",
-    "text": "2.1. 推断之前和之后都有要做的事情！\n除推断外，一次成功的贝叶斯建模的工作列举：\n\n通过数值方法诊断推断结果质量；\n模型批判，评价模型假设和模型预测结果；\n模型比较，选择模型或者模型混合；\n为特定受众准备结果。\n\n以上工作统称为贝叶斯模型探索分析（Exploratory Analysis of Bayesian Models）。"
+    "objectID": "posts/cuped/index.html#思路",
+    "href": "posts/cuped/index.html#思路",
+    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
+    "section": "1. 思路",
+    "text": "1. 思路\n构建\\(\\Delta^*\\)，满足：\n\n\\(\\Delta^*\\)与\\(\\Delta\\)一样，是\\(E(Y_t - Y_c)\\)的无偏估计；\n\n\\(\\Delta^*\\)相对\\(\\Delta\\)，方差更小。\n\n使用\\(\\Delta^*\\)来评估实验效果，效果相似，方差变小。"
   },
   {
-    "objectID": "posts/BMCP_2/index.html#理解你的假设",
-    "href": "posts/BMCP_2/index.html#理解你的假设",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
-    "section": "2.2. 理解你的假设",
-    "text": "2.2. 理解你的假设\n选择先验的一个问题是很难理解它们在模型计算中的效果。基于先验分布预测是一种理解假设的好方法。通过仅从先验预测分布抽样得到观察数据，我们完成从参数空间到观测空间的转换（参数分布 -&gt; 参数 -&gt; 先验预测分布 -&gt; 观测值）。 这被称为prior predictive checks。\n举一个对足球建模的例子，我们感兴趣的是点球得分率。\n\n模型假设期望射门角度\\(\\alpha\\)服从正态分布，进球概率模型为： \\[p\\left(|\\alpha| &lt; \\tan^{-1}\\left(\\frac{L}{x}\\right)\\right) = 2\\Phi\\left(\\frac{\\tan^{-1}\\left(\\frac{L}{x}\\right)}{\\sigma}\\right) - 1\n\\]\n上述公式表达的是，足球射出角度\\(\\alpha\\)在±\\(\\tan^{-1}\\left(\\frac{L}{x}\\right)\\)的概率（这样才能进球），其中\\(L\\)是球门二分之一宽度，\\(x\\)是球门中心到球员的距离。球员会尽量踢直线，但是有各种因素影响导致波动从而有标准差\\(\\sigma\\)\n上述公式中唯一未知的参数是\\(\\sigma\\)，我们可以选择它的先验来建模，例如服从Half-normal分布。则以上模型为：\n\\[\\sigma \\sim \\mathcal{HN}(\\sigma_{\\sigma})\\]\n\\[\\text{p\\_goal} = 2\\Phi\\left(\\frac{\\tan^{-1}\\left(\\frac{L}{x}\\right)}{\\sigma}\\right) - 1\\]\n\\[Y \\sim \\text{Bin}(n=1, p=\\text{p\\_goal})\\]\n我们很难直接抉择\\(\\sigma_{\\sigma}\\)怎么选择，但是我们可以通过先验预测分布来理解它的影响。\n\n%matplotlib inline\nimport arviz as az\nimport matplotlib.pyplot as plt\nimport numpy as np\nimport pymc as pm\nfrom scipy import stats\nfrom pytensor import tensor as tt\nimport pandas as pd\n\n\naz.style.use(\"arviz-grayscale\")\nplt.rcParams['figure.dpi'] = 300\nnp.random.seed(5201)\n\n\nhalf_length = 3.66  # meters\npenalty_point = 11  # meters\ndef Phi(x):\n    \"\"\"Calculates the standard normal cumulative distribution function.\"\"\"\n    return 0.5 + 0.5 * tt.erf(x / tt.sqrt(2.0))\n\nppss = []\nsigmas_deg = [5, 20, 60]\nsigmas_rad = np.deg2rad(sigmas_deg)\nfor sigma in sigmas_rad:\n    with pm.Model() as model:\n        σ = pm.HalfNormal(\"σ\", sigma)\n        α = pm.Normal(\"α\", 0, σ)\n        p_goal = pm.Deterministic(\"p_goal\", 2 * Phi(tt.arctan(half_length / penalty_point) / σ) - 1)\n        pps = pm.sample_prior_predictive(250)\n        ppss.append(pps)\n\nSampling: [α, σ]\nSampling: [α, σ]\nSampling: [α, σ]\n\n\n\nfig, axes = plt.subplots(1, 3, subplot_kw=dict(projection=\"polar\"), figsize=(10, 4))\n\nmax_angle = np.arctan(half_length/penalty_point)\n\nfor sigma, pps, ax in zip(sigmas_deg, ppss, axes):\n    cutoff = pps.prior.data_vars.get(\"p_goal\")[0] &gt; 0.1\n    cax = ax.scatter(pps.prior.data_vars.get(\"α\")[0][cutoff], np.ones_like(pps.prior.data_vars.get(\"α\")[0][cutoff]), c=pps.prior.data_vars.get(\"p_goal\")[0][cutoff],\n               marker=\".\", cmap=\"viridis_r\", vmin=0.1)\n    ax.fill_between(np.linspace(-max_angle, max_angle, 100), 0, 1.01, alpha=0.25)\n    ax.set_yticks([])\n    ax.set_title(f\"$\\sigma = \\mathcal{{HN}}({sigma})$\")\n    ax.plot(0,0, 'o')\nfig.colorbar(cax, extend=\"min\", ticks=[1, 0.5, 0.1], shrink=0.7, aspect=40)\n\n&lt;matplotlib.colorbar.Colorbar at 0x17b8dc090&gt;\n\n\n\n\n\n对\\(\\sigma_\\sigma\\) 分别取5,20,60的三个先验分布向后采样得到上述结果。\n灰色区域表示「射门期望能进球」范围（对应\\(\\alpha\\)，没有风、摩擦等干扰因素），颜色表示进球概率（对应p_goal，实际收干扰后的概率）。可以发现即使射的在灰色范围内，也不能100%进球。而对60来说，某些射向相反方向也有可能进球，这个分布可能不太好。\n此时我们可以做更多选择：我们可以重新思考模型结构引入更多几何知识；或者我们可以使用先验来减少nonsensical的结果，或直接拟合看数据信息是否足够让后验结果合理。\n下面的示例为一个逻辑回归模型，它包含一些二元变量，每个变量回归系数的先验为\\(\\mathcal{N}(0, 1)\\)。\n\nfrom scipy.special import expit\nfig, axes = plt.subplots(1, 3, figsize=(10, 4), sharex=True,  sharey=True)\naxes = np.ravel(axes)\n\nfor dim, ax in zip([2, 5, 20], axes):\n    β = np.random.normal(0, 1, size=(10000, dim))\n    X = np.random.binomial(n=1, p=0.75, size=(dim, 500))\n    az.plot_kde(expit(β @ X).mean(1), ax=ax)\n    ax.set_title(f\"{dim} predictors\")\n    ax.set_xticks([0, 0.5, 1])\n    ax.set_yticks([0, 1, 2])\n\nfig.text(0.34, -0.075, size=18, s=\"mean of the simulated data\")\n\nText(0.34, -0.075, 'mean of the simulated data')\n\n\n\n\n\n可以发现随着predictors的增加先验预测结果分布更偏向于产生极值。 因此我们可能需要一些更强的正则化先验（比如拉普拉斯分布）以保持模型远离极值。\n上述的两个例子都表明先验不能孤立地理解，我们需要将它们放在特定模型的背景下。"
+    "objectID": "posts/cuped/index.html#原理",
+    "href": "posts/cuped/index.html#原理",
+    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
+    "section": "2. 原理",
+    "text": "2. 原理\n如果有另一随机变量\\(X\\)，并且已知\\(E(X)\\)。则有互相独立的二维随机变量\\((X_i, Y_i)\\)，定义：\n\\[\\hat{ Y }_{ cu } = \\bar{ Y } - \\theta \\bar{ X } + \\theta E(X)\\]\n由于$E( E(X) - { X } ) = 0 \\(，所以\\)_{cu} \\(是\\)E(Y)$的无偏估计，则\n\\[ var( \\hat{Y}_{cu} ) =   var(Y - \\theta X) / n = \\frac {1} {n} (var(Y) + \\theta^2 var(X) - 2\\theta cov(X,Y))\\]\n当\\(\\theta = cov(X,Y) / var(X)\\)时，$var(_{cu}) $的值最小（最小二乘法），此时：\n\\[var (\\hat{Y}_{cu}) = \\frac {1}{n}(var(Y)  - cov(X,Y)^{2}/var(X)) = \\frac{var(Y)}{n} (1 - \\frac { cov(X,Y)^{2}}{var(X)var(Y)}) = var ( \\bar{ Y } ) (1 - \\rho ^{2} ) \\leq var( \\bar { Y })\\]\n\\(X\\)与\\(Y\\)的相关系数越大，得到的方差越小。"
   },
   {
-    "objectID": "posts/BMCP_2/index.html#理解你的预测",
-    "href": "posts/BMCP_2/index.html#理解你的预测",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
-    "section": "2.3. 理解你的预测",
-    "text": "2.3. 理解你的预测\n我们可以通过posterior predictive checks来理解模型预测的效果。基本思想是后验预测分布抽样应该与观测数据类似。\n下图是一个binomial model的例子。\n\nY = stats.bernoulli(0.7).rvs(100)\nwith pm.Model() as model:\n    θ = pm.Beta(\"θ\", 1, 1)\n    y_obs = pm.Binomial(\"y_obs\",n=1, p=θ, observed=Y)\n    trace_b = pm.sample(1000)\n\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [θ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 18 seconds.\n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\npred_dist = pm.sample_posterior_predictive(trace_b, model=model).posterior_predictive.y_obs.values[0]\n\nSampling: [y_obs]\n\n\n\n\n\n\n\n    \n      \n      0.12% [5/4000 00:00&lt;00:09]\n    \n    \n\n\n\n_, ax = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)\n\naz.plot_dist(pred_dist.sum(1),\n             hist_kwargs={\"color\":\"C2\"}, ax=ax[0])\nax[0].axvline(Y.sum(), color=\"C4\", lw=2.5);\nax[0].axvline(pred_dist.sum(1).mean(), color=\"k\", ls=\"--\")\nax[0].set_yticks([])\nax[0].set_xlabel(\"number of success\")\n\npps_ = pred_dist.mean(1)\nax[1].plot((np.zeros_like(pps_), np.ones_like(pps_)), (1-pps_, pps_), 'C1', alpha=0.01)\n\nax[1].plot((0, 1), (1-Y.mean(), Y.mean()), 'C4', lw=2.5)\nax[1].plot((0, 1), (1-pps_.mean(), pps_.mean()), 'k--')\nax[1].set_xticks((0,1))\nax[1].set_xlabel(\"observed values\")\nax[1].set_ylabel(\"probability\")\n\nText(0, 0.5, 'probability')\n\n\n\n\n\n左图可以比较观测成功数据（蓝色）和后验预测的成功数值分布。右边是另一种概率方式的呈现。上图可知我们后验模型在平均值方面的预测很好。\n后验预测还可以数值进行测试。一种计算方法是：\\[p_{B} = p(T_{sim} \\leq T_{obs} \\mid \\tilde Y)\\]\n其中\\(p_{B}\\)是Bayesian p-value：仿真生成的统计量\\(T_{sim}\\)小于等于观测统计量\\(T_{obs}\\)的概率。统计量\\(T\\)可以是任意指标。在上面的例子中，\\(T_{obs}\\)是成功率（均值）并且比较后验预测结果分布的成功率\\(T_{sim}\\)。当 \\(p_{B} = 0.5\\) 时 \\(T_{sim}\\) 一半大于观测结果一半小于观测结果，这是拟合良好的预期结果。\n以下是Bayesian p-value的绘制，注意 az.plot_bpv(idata, kind=\"p_value\") 新版本绘制有误\n\nidata = az.from_dict(posterior_predictive={\"y\":pred_dist.reshape(2, 500, 100)}, observed_data={\"y\":Y})\n\n\n_, ax = plt.subplots(1, 2, figsize=(10, 4))\naz.plot_bpv(idata, kind=\"p_value\", ax=ax[0])\nax[0].legend([f\"bpv={(Y.mean() &gt; pred_dist.mean(1)).mean():.2f}\"], handlelength=0)\naz.plot_bpv(idata, kind=\"u_value\", ax=ax[1])\nax[1].set_yticks([])\nax[1].set_xticks([0., 0.5, 1.])\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n\n\n\n\n\n以上是 Beta-Binomial model 的后验预测分布。左图显示有误待修复，右图中白色代表理想情况，黑线是预测值比例的KDE。\n\n_, ax = plt.subplots(1, 2, figsize=(10, 4))\naz.plot_bpv(idata, kind=\"t_stat\", t_stat=\"mean\", ax=ax[0])\nax[0].set_title(\"mean\")\naz.plot_bpv(idata, kind=\"t_stat\", t_stat=\"std\", ax=ax[1])\nax[1].set_title(\"standard deviation\")\nax[1].set_xticks([0.32, 0.41, 0.5])\n\n\n\n\n有很多 \\(T\\) 统计量可以被选择。上图中左边为均值，右边为标准差。\n下图有4个例子来帮助我们建立直觉。下图的蓝色线是同一份观测数据来自正态分布，并且有四个后验样本。\n\nn_obs = 500\nsamples = 2000\ny_obs = np.random.normal(0, 1, size=n_obs)\n\nidata1 = az.from_dict(posterior_predictive={\"y\":np.random.normal(0.5, 1, size=(1, samples, n_obs))},\n                      observed_data={\"y\":y_obs})\n\nidata2 = az.from_dict(posterior_predictive={\"y\":np.random.normal(0, 2, size=(1, samples, n_obs))},\n                      observed_data={\"y\":y_obs})\n\nidata3 = az.from_dict(posterior_predictive={\"y\":np.random.normal(0, 0.5, size=(1, samples,n_obs))},\n                      observed_data={\"y\":y_obs})\n\nidata4 = az.from_dict(posterior_predictive={\"y\":np.concatenate(\n                                                [np.random.normal(-0.25, 1, size=(1, samples//2, n_obs)),\n                                                 np.random.normal(0.25, 1, size=(1, samples//2, n_obs))]\n                                                                )},\n                      observed_data={\"y\":y_obs})\n\nidatas = [idata1,\n          idata2,\n          idata3,\n          idata4,\n]\n\n\n_, axes = plt.subplots(len(idatas), 3, figsize=(10, 10), sharex=\"col\")\n\nfor idata, ax in zip(idatas, axes):\n    az.plot_ppc(idata, ax=ax[0], color=\"C1\", alpha=0.01, mean=False, legend=False)\n    az.plot_kde(idata.observed_data[\"y\"].values, ax=ax[0], plot_kwargs={\"color\":\"C4\", \"zorder\":3})\n    ax[0].set_xlabel(\"\")\n    az.plot_bpv(idata, kind=\"p_value\", ax=ax[1])\n    az.plot_bpv(idata, kind=\"u_value\", ax=ax[2])\n    ax[2].set_yticks([])\n    ax[2].set_xticks([0., 0.5, 1.])\n    for ax_ in ax:\n        ax_.set_title(\"\")\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/ppcplot.py:241: FutureWarning: color has been deprecated in favor of colors\n  warnings.warn(\"color has been deprecated in favor of colors\", FutureWarning)\n\n\n\n\n\n以上四个分布：\n\n第一行的预测偏右\n\n第二行的预测结果更离散\n第三行的预测结果更集中\n第四行的预测结果来自高斯混合分布"
+    "objectID": "posts/cuped/index.html#扩展到ab",
+    "href": "posts/cuped/index.html#扩展到ab",
+    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
+    "section": "3. 扩展到A/B",
+    "text": "3. 扩展到A/B\n如果选择的\\(X\\)不会被实验干扰，则$ E( X ^ {t} ) - E( X ^ {c} ) = 0\\(， 实验组、对照组在零假设下还有**相同的\\)$**，得：\n\\[\\Delta_{cv} = \\hat {Y}_{cu} ^{t} - \\hat{Y}_{cu}^{c}  = ( \\bar {Y}_{cu} ^{t} - \\bar {Y}_{cu}^{c} ) - \\theta(\\bar{X}_{cu}^{t} - \\bar {X}_{cu}^{c})  + \\theta (E( X ^ {t}  -  X ^ {c} ) ) = \\Delta - \\theta \\Delta _ { x } \\]\n得到 \\[var(\\Delta_{cv}) = var(\\Delta)(1-\\rho ^2)\\]"
   },
   {
-    "objectID": "posts/BMCP_2/index.html#数值诊断",
-    "href": "posts/BMCP_2/index.html#数值诊断",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
-    "section": "2.4. 数值诊断",
-    "text": "2.4. 数值诊断\n在本节中，我们将讨论马尔可夫链蒙特卡罗方法的最常见和最有用的诊断工具。\n为了演示我们创建人造的后验：\n第一个是good_chains来自 \\(\\Beta(2, 5)\\) ；\n第二个是 bad_chains0 代表不良的后验，通过对good_chains排序及增加小的高斯噪音产生：\n\n值之间不独立，相反它们是高度自相关的；\n两组抽样不是一个分部，因为经历 reshape 和 重排序后，拆分为两部分。\n\n第三个是 bad_chains1 基于 good_chains 并随机在一些位置上插入一些来自同一分布的样本。这种场景很常见，代表一个采样器在一些参数空间表现很好，但是有一些区域很难采样到\n\ngood_chains = stats.beta.rvs(2, 5,size=(2, 2000))\nbad_chains0 = np.random.normal(np.sort(good_chains, axis=None), 0.05,\n                               size=4000).reshape(2, -1)\n\nbad_chains1 = good_chains.copy()\nfor i in np.random.randint(1900, size=4):\n    bad_chains1[i%2:,i:i+100] = np.random.beta(i, 950, size=100)\n\nchains = {\"good_chains\":good_chains,\n          \"bad_chains0\":bad_chains0,\n          \"bad_chains1\":bad_chains1}\n\n\n2.4.1. Effective Sample Size\n当使用 MCMC 方法时，我们需要足够的样本来估计后验分布。样本量是否充足不能直接由抽样次数觉得，因为 MCMC 有自相关性，所以其中包含的信息量会少于iid抽样结果。\nEffective Sample Size (ESS) 可以被理解为考虑了自相关性后换算为iid抽样的样本量。\n\naz.ess(chains).data_vars\n\nData variables:\n    good_chains  float64 3.845e+03\n    bad_chains0  float64 2.443\n    bad_chains1  float64 597.0\n\n\n我们真实抽样次数为4000次，good_chains 与此结果很接近，bad_chains1 少了很多，bad_chains0 则更少。\n以上ess的算法为bulk即中心区域，可以切换为tail或quantile等。\n可视化可以更好的理解ESS在参数空间上的变化。可以用 az.plot_ess(., kind=\"quantiles\") 或者 az.plot_ess(., kind=\"local\")\n\n_, axes = plt.subplots(2, 3, sharey=True, sharex=True)\naz.plot_ess(chains, kind=\"local\", ax=axes[0]);\naz.plot_ess(chains, kind=\"quantile\", ax=axes[1]);\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n\n\n\n\n\n一般认为 ESS 值要大于400，否则评估结果基本是不靠谱的。\n\n\n2.4.2. Potential Scale Reduction Factor \\(\\hat{R}\\)\n在一般条件下有理论可证明，无论马尔科夫蒙特卡洛方法的起点为哪里都会得到相同的结果。然而这是在无限抽样的情况下，现实中我们只能有限抽样因此需要校验其收敛性。 一种校验方法是从不同起点执行多个 MCMC 链看几个链是否相似。\\(\\hat{R}\\) 就是这种诊断方法的结果。\n\\(\\hat{R}\\) 被解释为 MCMC 有限抽样造成的方差高估，因此成为 “potential scale reduction factor(PSRF)” 。 \\(\\hat{R} = 1\\) 意味着增加样本量不会再降低结果的方差。然而在实践中，最好将其视为一种诊断工具，而不要过度解释它。\n\n计算方法\n假设有 k 个链，每个链有 n 个样本，感兴趣的量为 \\(\\phi\\)，其在目标分布下有期望 \\(\\mu\\) 和 方差 \\(\\sigma ^ 2\\)。\n记 \\(\\phi_{jt}\\) 为链 j 的第 t 个样本 \\(\\phi\\) 的值，那么混合样本中，\\(\\mu\\) 的无偏估计为 \\(\\mu = \\bar{\\phi}\\) 。链之间的方差 B/n 和链内的方差 W 分别为： \\[B/n = \\frac{1}{k-1} \\sum_{j = 1}^{k}(\\bar{\\phi_j} - \\bar{\\phi})^2 \\] \\[W = \\frac{1}{k(n-1)}\\sum_{j = 1}^{k}\\sum_{t=1}^{n}(\\phi_{jt} - \\bar{\\phi}_j) ^ 2\\] 从而可以通过 B 和 W 加权估计 \\(\\sigma ^ 2\\)： \\[\\hat{\\sigma}_{+} ^ 2 = \\frac{n - 1}{n}W + \\frac{B}{n}\\] 如果初始值是从目标分布中抽取的，\\(\\hat{\\sigma}_+^2\\)就是\\(\\sigma\\)的无偏估计。但是如过渡分散则会高估。考虑估计量\\(\\hat{\\mu}\\)的抽样波动，方差的估计值为\\(\\hat{V} = \\hat{\\sigma}^2_+ + \\frac{B}{kn}\\)\n比较混合和链内的推断可以通过： \\[R = \\frac{\\hat{V}}{\\sigma ^ 2}\\] 称 \\(\\sqrt{R}\\) 为 scale reduction factor(SRF) ，其估计值 potential scale reduction factor(PSRF) 为 \\[\\hat{R} = \\frac{\\hat{V}}{W}\\]\n\n理论上 \\(\\hat{R}\\) 应该为1，但是实际中会有一些误差。一般认为 \\(\\hat{R} &lt; 1.1\\) 时可以认为收敛。\n\naz.rhat(chains).data_vars\n\nData variables:\n    good_chains  float64 1.0\n    bad_chains0  float64 2.392\n    bad_chains1  float64 1.023\n\n\n以上结果说明 good_chains 收敛很好，bad_chains0 收敛很差，bad_chains1 稍微好一些但是仍然不符合标准。\n\n\n2.4.3. 蒙特卡洛标准误\n由于通过有限样本的 MCMC 来逼近后验，这引入了额外的不确定性。我们通过 Monte Carlo standard error (MCSE) 来评估引入的不确定性大小。\n如果我们评估参数的值精确度要到小数点后两位，则需要 MCSE 低于小数点后两位。\n当然 MCSE 仅在 ESS 足够高且 \\(\\hat{R}\\) 足够小时才有意义。\n\naz.mcse(chains).data_vars\n\nData variables:\n    good_chains  float64 0.002561\n    bad_chains0  float64 0.107\n    bad_chains1  float64 0.00688\n\n\n与 ESS 一样，MCSE 在参数空间中变化，可能需要在不同区间（比如分位点）评估。我们可以进行可视化：\n\naz.plot_mcse(chains);\n\n\n\n\nESS ，\\(\\hat{R}\\) 和 MCSE 可以通过 az.summary(.) 一起计算：\n\naz.summary(chains, kind=\"diagnostics\")\n\n\n\n\n\n\n\n\nmcse_mean\nmcse_sd\ness_bulk\ness_tail\nr_hat\n\n\n\n\ngood_chains\n0.003\n0.002\n3845.0\n3883.0\n1.00\n\n\nbad_chains0\n0.107\n0.087\n2.0\n11.0\n2.39\n\n\nbad_chains1\n0.007\n0.005\n597.0\n1268.0\n1.02\n\n\n\n\n\n\n\n\n\n2.4.4. Trace Plots\nTrace Plots 可能是最常用的分析方法。从中我们可以观察到不同 chains 是否收敛到相似分布。\n\naz.plot_trace(chains);\n\n\n\n\n\n\n2.4.5. Autocorrelation Plots\n自相关性是导致 MCMC 结果信息量不足的主要原因。我们可以通过自相关图来观察自相关性。\n\naz.plot_autocorr(chains, combined=True);\n\n\n\n\n\n\n2.4.6. Rank Plots\nRank Plots是另一种常见诊断方法。它先将所有链混合排序，在分别绘制各个链的rank分布。如果所有链都是从同一分布中抽取的，那么rank分布应该是相似的，并且为均匀分布。\n\naz.plot_rank(chains, kind=\"bars\");\n\n\n\n\n\naz.plot_rank(chains, kind=\"vlines\");\n\n\n\n\nRank Plots 可能比 Trace Plots 更敏感。可以将它们一起绘制\n\naz.plot_trace(chains, kind=\"rank_bars\");\n\n\n\n\n\naz.plot_trace(chains, kind=\"rank_vlines\");\n\n\n\n\n\n\n2.4.7. Divergences（散度）\n以上都是基于 MCMC 生成的样本进行诊断。另一种诊断方法是监控抽样过程。\n其中一个典型的例子是 Hamiltonian Monte Carlo (HMC) 中的Divergences，它是一种强大且敏感的方法，可以作为前面方法的补充。\n以下是一个示例\n\nmodel_0：\\(\\theta_2\\) 服从 \\([-\\theta_1, \\theta_1]\\)的均匀分布，而 \\(\\theta_1\\) 来自一个正态分布\nmodel_1：\\(\\theta_2\\) 服从 \\([-\\theta_1, \\theta_1]\\)的均匀分布，而 \\(\\theta_1\\) 来自一个半正态分布\nmodel_2：\\(\\theta_2\\) 服从 \\([-\\theta_1, \\theta_1]\\)的均匀分布，而 \\(\\theta_1\\) 来自一个正态分布\n\n\nwith pm.Model() as model_0:\n    theta_1 = pm.Normal(\"theta_1\", 0, 1, initval=0.1)\n    theta_2 = pm.Uniform(\"theta_2\", -theta_1, theta_1)\n    idata_0 = pm.sample(return_inferencedata=True)\n\nwith pm.Model() as model_1:\n    theta_1 = pm.HalfNormal(\"theta_1\",1 / (2/np.pi)**0.5)\n    theta_2 = pm.Uniform(\"theta_2\", -theta_1, theta_1)\n    idata_1 = pm.sample(return_inferencedata=True)\n\nwith pm.Model() as model_1bis:\n    theta_1 = pm.HalfNormal(\"theta_1\",1 / (2/np.pi)**0.5)\n    theta_2 = pm.Uniform(\"theta_2\", -theta_1, theta_1)\n    idata_1bis = pm.sample(return_inferencedata=True, target_accept=0.95)\n\nidatas = [idata_0, idata_1, idata_1bis]\n\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [theta_1, theta_2]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 20 seconds.\nThere were 2202 divergences after tuning. Increase `target_accept` or reparameterize.\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [theta_1, theta_2]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 19 seconds.\nThere were 20 divergences after tuning. Increase `target_accept` or reparameterize.\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [theta_1, theta_2]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 19 seconds.\n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:02&lt;00:00 Sampling 4 chains, 2,202 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 20 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:02&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\nfig, axes = plt.subplots(6, 2, figsize=(10, 10))\n\naxes = axes.reshape(3, 2, 2)\nfor idata, ax, color in zip(idatas, axes, [\"0.95\", \"1\", \"0.95\"]):\n    az.plot_trace(idata, kind=\"rank_vlines\", axes=ax);\n    [ax_.set_facecolor(color) for ax_ in ax.ravel()]\nfig.text(0.45, 1, s=\"model 0\", fontsize=16)\nfig.text(0.45, 0.67, s=\"model 1\", fontsize=16)\nfig.text(0.45, 0.33, s=\"model 1bis\", fontsize=16)\n\nText(0.45, 0.33, 'model 1bis')\n\n\n\n\n\n以上在KDEs图中可以看到底部的黑线，每个黑线代表一次divergence，说明抽样中产生了问题。\n\nmodel_0：有很多divergence，这是因为我们先验选择了正态分布，会出现 \\(-\\theta_1 &gt; \\theta_1\\) 的情况；\nmodel_1：divergence少了很多，因为我们先验选择了半正态分布，不会出现 \\(-\\theta_1 &gt; \\theta_1\\) 的情况；\nmodel_2：基于model_1，将 target_accept 从默认的0.8改为0.95，消除了所有divergence。\n\n我们也可以用散点图来观察divergence：\n\n_, axes = plt.subplots(1, 3, figsize=(12, 5), sharex=True, sharey=True)\n\nfor idata, ax, model in zip(idatas, axes, [\"model 0\", \"model 1\", \"model 1bis\"]):\n    az.plot_pair(idata, divergences=True, scatter_kwargs={\"color\":\"C1\"}, divergences_kwargs={\"color\":\"C4\"}, ax=ax)\n    ax.set_xlabel(\"\")\n    ax.set_ylabel(\"\")\n    ax.set_title(model)\naxes[0].set_ylabel('θ2', rotation=0, labelpad=15)\naxes[1].set_xlabel('θ1', labelpad=10)\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/xarray/core/utils.py:494: FutureWarning: The return type of `Dataset.dims` will be changed to return a set of dimension names in future, in order to be more consistent with `DataArray.dims`. To access a mapping from dimension names to lengths, please use `Dataset.sizes`.\n  warnings.warn(\n\n\nText(0.5, 0, 'θ1')\n\n\n\n\n\n\n\n2.4.8. 采样器参数和其他诊断信息\n大部分抽样方法都有影响效果的超参数，比如有时增大 target_accept 可以消除 divergence。还有其他参数可以调整，比如有些模型更复杂需要更多的跌打，可以增加 tune 去增大 ESS 和减少 \\(\\hat{R}\\)。也可以增加采样次数，但是一般效果不大。重新参数化、改进模型结构、提供更多信息的先验，甚至更改模型通常会更有效。"
+    "objectID": "posts/cuped/index.html#选择协变量x",
+    "href": "posts/cuped/index.html#选择协变量x",
+    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
+    "section": "1. 选择协变量(X)",
+    "text": "1. 选择协变量(X)\n选择相关系数更大的协变量，效果更好。微软的建议：\n\n选择实验运行之前的指标数据最好；\n实验之前指标数据的时间粒度越长，效果越好；\n实验运行周期并不是越长越好。\n\n实验前数据并不是X得唯一选择，只要是不会被实验干预影响的变量，都可以选择。比如用户加入实验的日期。"
   },
   {
-    "objectID": "posts/BMCP_2/index.html#模型比较",
-    "href": "posts/BMCP_2/index.html#模型比较",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
-    "section": "2.5. 模型比较",
-    "text": "2.5. 模型比较\n建模时不能过于简单从而丢失信息，也不能过于复杂从而过拟合。\n一种有用的解决方案是计算泛化误差，也称为样本外预测准确性。这是指模型在新数据上的表现。 \\[\\text{ELPD} = \\sum_{i=1}^{n} \\int p_t(\\tilde y_i) \\; \\log p(\\tilde y_i \\mid y_i) \\; d\\tilde y_i\\]\n上述公式被称为 expected log pointwise predictive density (ELPD)。其中 \\(p_t(\\tilde y_i)\\) 是真实分布，\\(p(\\tilde y_i \\mid y_i)\\) 是模型预测的后验分布。\n现实生活中无法知道 \\(p_t(\\tilde y_i)\\) ，因此 ELPD 无法直接计算，可以通过下面公式代替： \\[\\sum_{i=1}^{n} \\log \\int \\ p(y_i \\mid \\boldsymbol{\\theta}) \\; p(\\boldsymbol{\\theta} \\mid y) d\\boldsymbol{\\theta}\\]\n\n2.5.1. Cross-validation and LOO\nLeave-one-out cross-validation (LOO-CV) 是交叉验证的一种特别方法，每次只留一个数据点作为测试集，其余作为训练集。 \\[\\text{ELPD}_\\text{LOO-CV} = \\sum_{i=1}^{n} \\log\n    \\int \\ p(y_i \\mid \\boldsymbol{\\theta}) \\; p(\\boldsymbol{\\theta} \\mid y_{-i}) d\\boldsymbol{\\theta}\n\\]\n以上直接计算消耗很大，好在可以用 Pareto smoothed importance sampling leave-one-out cross validation (PSIS-LOO-CV) 近似，后面会称为 LOO 。以下是示例：\n\ny_obs =  np.random.normal(0, 1, size=100)\nidatas_cmp = {}\n\nwith pm.Model() as mA:\n    σ = pm.HalfNormal(\"σ\", 1)\n    y = pm.SkewNormal(\"y\", 0, σ, observed=y_obs)\n    loglik = pm.Deterministic('log_likelihood', pm.logp(y, y_obs))\n    idataA = pm.sample(return_inferencedata=True)\n    idataA.add_groups({\"posterior_predictive\": {\"y\":pm.sample_posterior_predictive(idataA).posterior_predictive.y.values}})\n    idataA.add_groups({\"log_likelihood\": {\"y\":idataA.posterior.log_likelihood}})\n    idatas_cmp[\"mA\"] = idataA\n\nwith pm.Model() as mB:\n    σ = pm.HalfNormal(\"σ\", 1)\n    y = pm.Normal(\"y\", 0, σ, observed=y_obs)\n    loglik = pm.Deterministic('log_likelihood', pm.logp(y, y_obs))\n    idataB = pm.sample(return_inferencedata=True)\n    idataB.add_groups({\"posterior_predictive\": {\"y\":pm.sample_posterior_predictive(idataB).posterior_predictive.y.values}})\n    idataB.add_groups({\"log_likelihood\": {\"y\":idataB.posterior.log_likelihood}})\n    idatas_cmp[\"mB\"] = idataB\n\nwith pm.Model() as mC:\n    μ = pm.Normal(\"μ\", 0, 1)\n    σ = pm.HalfNormal(\"σ\", 1)\n    y = pm.Normal(\"y\", μ, σ, observed=y_obs)\n    loglik = pm.Deterministic('log_likelihood', pm.logp(y, y_obs))\n    idataC = pm.sample(return_inferencedata=True)\n    idataC.add_groups({\"posterior_predictive\": {\"y\":pm.sample_posterior_predictive(idataC).posterior_predictive.y.values}})\n    idataC.add_groups({\"log_likelihood\": {\"y\":idataC.posterior.log_likelihood}})\n    idatas_cmp[\"mC\"] = idataC\n\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [σ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 20 seconds.\nThere were 29 divergences after tuning. Increase `target_accept` or reparameterize.\nSampling: [y]\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [σ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 19 seconds.\nSampling: [y]\nAuto-assigning NUTS sampler...\nInitializing NUTS using jitter+adapt_diag...\nMultiprocess sampling (4 chains in 4 jobs)\nNUTS: [μ, σ]\nSampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 21 seconds.\nSampling: [y]\n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 29 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [4000/4000 00:00&lt;00:00]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [4000/4000 00:00&lt;00:00]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [8000/8000 00:01&lt;00:00 Sampling 4 chains, 0 divergences]\n    \n    \n\n\n\n\n\n\n\n    \n      \n      100.00% [4000/4000 00:00&lt;00:00]\n    \n    \n\n\n\ncmp = az.compare(idatas_cmp)\ncmp.round(2)\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.\n  warnings.warn(\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:307: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'True' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.\n  df_comp.loc[val] = (\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:307: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'log' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.\n  df_comp.loc[val] = (\n\n\n\n\n\n\n\n\n\nrank\nelpd_loo\np_loo\nelpd_diff\nweight\nse\ndse\nwarning\nscale\n\n\n\n\nmA\n0\n-140.80\n0.31\n0.00\n0.84\n6.50\n0.00\nTrue\nlog\n\n\nmB\n1\n-141.02\n0.89\n0.21\n0.16\n6.82\n0.80\nFalse\nlog\n\n\nmC\n2\n-142.10\n1.95\n1.30\n0.00\n6.84\n0.97\nFalse\nlog\n\n\n\n\n\n\n\n注意：PyMC更换新版本后计算结果与原文不一致，而且mA出现warning。以上模型中mB最好，但是给出的列表中mA最好（本应最差），这是因为mA的计算有问题。\n以上列含义：\n\nrank：对比排名；\nelpd_loo：ELPD值；\np_loo：惩罚项的值。我们可以粗略地认为这个值是估计的有效参数数量（但不要太认真）。该值可能低于具有更多结构（如分层模型）的模型中参数的实际数量，或者当模型具有非常弱的预测能力并且可能指示严重的模型错误指定时，该值可能远高于实际数量；\nelpd_diff：与最佳模型的ELPD差值；\nweight：分配给每个模型的权重。这些权重可以粗略地解释为给定数据的每个模型（在比较模型中）的概率；\nse：ELPD的标准误；\ndse：ELPD差值的标准误；\nwarning：如果为 True 则这是一个警告，表明 LOO 近似可能不可靠；\nscale：报告值的计算方式，默认为对数刻度。\n\n\n\n2.5.2. Expected Log Predictive Density\n上述是全局比较，因此将模型和数据简化为单个数字。但LOO是逐点的总和，因此也可以通过az.plot_elpd(.)进行局部比较。\n\n\n2.5.3. Pareto Shape Parameter\n以上通过 \\(\\text{ELPD}_\\text{LOO-CV}\\) 来逼近 LOO 。以上计算中 $$ 会有问题， 特别是 \\(\\hat \\kappa &gt; 0.7\\)时（mA）。\n这种情况下的建议为：\n\n使用匹配矩法。通过一些额外的计算，可以转换从后验分布得出的 MCMC，以获得更可靠的重要性采样估计；\n对有问题的观察结果执行精确的留一交叉验证或使用 k 折交叉验证；\n使用对异常观察更稳健的模型。\n\n当以上问题发生时会在得到warning，可以可视化检查 $$\n\n_, axes = plt.subplots(1, 3, figsize=(12, 4), sharey=True)\nfor idx, (model, ax) in enumerate(zip((\"mA\", \"mB\", \"mC\"), axes)):\n    loo_ = az.loo(idatas_cmp[model], pointwise=True)\n    az.plot_khat(loo_, ax=ax, threshold=0.09, show_hlines=True, hlines_kwargs={\"hlines\":0.09, \"ls\":\"--\"})\n    ax.set_title(model)\n    if idx:\n        axes[idx].set_ylabel(\"\")\n    if not idx % 2:\n        axes[idx].set_xlabel(\"\")\n\n/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:803: UserWarning: Estimated shape parameter of Pareto distribution is greater than 0.7 for one or more samples. You should consider using a more robust model, this is because importance sampling is less likely to work well if the marginal posterior and LOO posterior are very different. This is more likely to happen with a non-robust model and highly influential observations.\n  warnings.warn(\n\n\n\n\n\n\n\n2.5.4. \\(\\hat {\\kappa}\\) 很大时 p_loo 的含义\np_loo 可以宽松地解释为模型中参数的估计有效数量。当 \\(\\hat {\\kappa}\\) 很大时，它还可以提供额外信息。具体可参考原文。\n\n\n2.5.5. LOO-PIT\nLOO除了声明一个模型比另一个模型更好之外，还可以用于其他目的。我们可以通过比较模型来更好地理解它们。随着模型复杂性的增加，仅仅通过查看其数学定义或我们用来实现它的代码来理解它就变得更加困难。因此，使用 LOO 或其他工具（如后验预测检查）比较模型可以帮助我们更好地理解它们。\n对 posterior predictive checks（后验预测检查）的一个批评是我们使用数据两次，一次是为了拟合模型，一次是为了批评它。 LOO-PIT 为这个问题提供了答案。\n\n_, axes = plt.subplots(1, 3, figsize=(12, 4), sharey=True)\nfor model, ax in zip((\"mA\", \"mB\", \"mC\"), axes):\n    az.plot_loo_pit(idatas_cmp[model], y=\"y\", legend=False, use_hdi=True, ax=ax)\n    ax.set_title(model)\n    ax.set_xticks([0, 0.5, 1])\n    ax.set_yticks([0, 1, 2])\n\n\n\n\n\n\n2.5.6. Model Averaging\n像我们关于参数不确定性的贝叶斯学派一样。如果我们不能绝对确定模型就是模型（通常我们不能），那么我们应该在分析时考虑到这种不确定性。考虑模型不确定性的一种方法是对所有考虑的模型进行加权平均，为似乎能更好地解释或预测数据的模型赋予更多权重。\n贝叶斯模型加权的一种方法是通过其 marginal likelihoods ，这称为 Bayesian Model Averaging 贝叶斯模型平均。虽然这在理论上很有吸引力，但在实践中却存在问题。另一种方法是使用 LOO 的值来估计每个模型的权重： \\[w_i = \\frac {e^{-\\Delta_i }} {\\sum_j^k e^{-\\Delta_j }}\\]\n其中 $_i $ 是当前与最优模型的 LOO 之差。这种方法称为 pseudo Bayesian model averaging 伪贝叶斯模型平均。\n模型平均的另一个选择是叠加预测分布。主要思想是将多个模型组合在一个元模型中，从而最小化元模型和真实生成模型之间的差异。当使用对数评分规则时，这相当于计算： \\[\\max_{w} \\frac{1}{n} \\sum_{i=1}^{n}log\\sum_{j=1}^{k} w_j p(y_i \\mid y_{-i}, M_j)\\]\n其中 n 是样本个数，k 是模型个数。为了有解约束 \\(w_j \\geq 0\\) 而且 \\(\\sum_{j=1}^{k} w_j = 1\\) 。 \\(p(y_i \\mid y_{-i}, M_j)\\) 是第 j 个模型的 leave-one-out 预测分布。"
+    "objectID": "posts/cuped/index.html#实验前数据缺失yi对应的xi不存在",
+    "href": "posts/cuped/index.html#实验前数据缺失yi对应的xi不存在",
+    "title": "A/B实验进阶——通过实验前数据减小方差（CUPED）",
+    "section": "2. 实验前数据缺失(\\(Yi\\)对应的\\(Xi\\)不存在)",
+    "text": "2. 实验前数据缺失(\\(Yi\\)对应的\\(Xi\\)不存在)\n新用户或太久没回归的用户，可能没有旧的记录。可以对缺失的数据，补为适当的值。"
   },
   {
-    "objectID": "posts/BMCP_2/index.html#练习",
-    "href": "posts/BMCP_2/index.html#练习",
-    "title": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析",
-    "section": "2.6. 练习",
-    "text": "2.6. 练习\n待完善"
-  },
-  {
-    "objectID": "posts/sqr/index.html",
-    "href": "posts/sqr/index.html",
-    "title": "SQR：平衡实验速度、质量和风险的框架",
+    "objectID": "posts/实验设计_偷看问题/index.html",
+    "href": "posts/实验设计_偷看问题/index.html",
+    "title": "A/B实验设计 —— 偷看问题",
     "section": "",
-    "text": "为了加速实验迭代，需要兼顾：速度、质量、风险，Linkin提出了SQR框架：SQR: Balancing Speed, Qality and Risk in Online Experiments。"
+    "text": "偷看是ab测试中最常遇到的问题，本文将说明影响，分析用户为什么偷看，探讨如何应对。"
   },
   {
-    "objectID": "posts/sqr/index.html#关于实验放量的三个误区",
-    "href": "posts/sqr/index.html#关于实验放量的三个误区",
-    "title": "SQR：平衡实验速度、质量和风险的框架",
-    "section": "1.1. 关于实验放量的三个误区",
-    "text": "1.1. 关于实验放量的三个误区\n\n误区#1：让实验一直跑直到显著\n\n多重检验导致的假阳性问题；\n样本量随时间增加速度越来越慢。 \n\n\n\n误区#2: 小流量实验的消耗很低\n长期的小流量实验消耗很大：\n\n机会消耗：让创新变少变慢\n平台消耗：运行实验数更多\n商业消耗：命中用户长期处于较差体验导致流失\n\n\n\n误区#3：10%流量就够了\n许多实验都是面向用户子集，而且付费相关的指标需要更大量的用户"
+    "objectID": "posts/实验设计_偷看问题/index.html#a.-我们有偷看的需求",
+    "href": "posts/实验设计_偷看问题/index.html#a.-我们有偷看的需求",
+    "title": "A/B实验设计 —— 偷看问题",
+    "section": "a. 我们有偷看的需求",
+    "text": "a. 我们有偷看的需求\n\n及时止损，尽早结束失败（有害）的实验；\n\n扩大胜利成果，尽早发现成功的实验。"
   },
   {
-    "objectID": "posts/sqr/index.html#sqr原则",
-    "href": "posts/sqr/index.html#sqr原则",
-    "title": "SQR：平衡实验速度、质量和风险的框架",
-    "section": "2.2. SQR原则",
-    "text": "2.2. SQR原则\n做实验的原因：定量测量、减少风险、学习用户\nMaximun Power Ramp(MPR)：最大power的放量\n\n\n原则#1：风险可接受，尽快放量到MPR\n风险影响因素：\n\n先验信念\n采样数据结果\n转换率：实验影响的用户比率\n\n\n\n原则#2：MPR阶段等待足够的时间\n至少一周，存在burn-in效果时更久\n\n\n原则#3：post-MPR阶段尽快结束\n\n\n原则#4：仅在研究目标明确下才进行长期观察实验"
+    "objectID": "posts/实验设计_偷看问题/index.html#b.-存在允许偷看的客观条件",
+    "href": "posts/实验设计_偷看问题/index.html#b.-存在允许偷看的客观条件",
+    "title": "A/B实验设计 —— 偷看问题",
+    "section": "b. 存在允许偷看的客观条件",
+    "text": "b. 存在允许偷看的客观条件\n固定水平检验产生在大约100年前。我们来看下当年与现代的对比。\n100年前：\n- 数据成本高、收集缓慢\n著名的统计学家费希尔，使用假设检验对农业进行研究。作物的生长周期是很难改变的，无法预知结果…数据的采集、计算依赖人力。\n- 对操作者要求高\n实验者是经过训练的专家。\n现在：\n- 数据及时、廉价 科技降低了数据获取的成本，可以研究更精细的事物。互联网业采集、分析用户行为已经越来越成熟。 - 人人都可以是操作者 在成熟ab测试平台上，实验者可以轻松进行实验，也更容易在实验分析中犯错。"
   },
   {
-    "objectID": "posts/sqr/index.html#mpr前放量",
-    "href": "posts/sqr/index.html#mpr前放量",
-    "title": "SQR：平衡实验速度、质量和风险的框架",
-    "section": "2.1. MPR前放量",
-    "text": "2.1. MPR前放量\n在风险可承受之内，尽快放量到MPR阶段。\n\n2.1.1. 风险和可承受风险\n将流量放至q的风险为(其实就是treatment对大盘影响的估计)：\n\\[R(q) = |\\delta| * g(r) * h(q)\\]\n其中： \\[\\delta = \\frac{treatment mean - control mean}{control mean}\\]\n是影响效果， \\[g(r) = \\begin{cases}\n& r, r &gt;= r_0 \\\\\n& r_0, r &lt; r_0\n\\end{cases}\\]\n是左截断的触发率， \\[h(r) = \\begin{cases}\n& q, q &gt;= q_0 \\\\\n& q_0, q &lt; q_0\n\\end{cases}\n\\]\n是左截断的放量比。\n如果满足： \\[R(q) &lt;= \\tau\\]\n就认为风险是可承受的。\n关于\\(\\tau\\)的选择，不同指标选择不同（todo）\n\n\n2.1.2. 假设检验\n\\(Q = \\{q_1, q_2, ...\\}\\)为可能的放量比，在linkedIn一般{1%, 5%, 10%, 25%, 50%}。\n假设模板： \\[H_0^q : R(q) &lt;= \\tau \\\\\nH_0^q : R(q) &gt; \\tau\\]\n\n\n2.1.3. 贯序检验\n使用Generalized Sequential Probability Ratio Test (GSPRT)，任意时刻t的检验统计量： \\[L_t(H_k^q) = \\frac{\\sup_{H^q_k}\\pi_kf_{k}^{t}(X^t)}{\\sum_{j=0}^1\\sup_{H^q_j}\\pi_jf_{j}^{t}(X^t)}, k=0,1\\]\n其中\\(f_{k}^{t}\\)是似然函数，\\(X^t = (X^t_1,X^t_2,...)\\)是t时刻用户级别的指标值，\\(\\pi_k\\)是\\(H_k\\)的先验概率。\n在GSPRT下，\\(H^q_k\\)被接受的条件为： \\[L_t(H^q_k) &gt; \\frac{1}{1 + A_k}\\]\n由于后验概率\\(L_t(H^q_0) + L_t(H^q_1) = 1\\)，所以要选择\\(0 &lt; A_k &lt; 1\\)以保证最多有一个假设被接受。\n\n基于大数定理和终极极限定理，组间均值差\\(\\Delta\\)的分布近似正态，方程转化为（此处方法用的是贝叶斯）： \\[L_t(H_k^q) = \\frac{\\sup_{H^q_k}\\pi_kexp(-\\frac{(\\Delta - \\delta)^2}{2s^2})}{\\sum_{j=0}^1\\sup_{H^q_j}\\pi_jexp(-\\frac{(\\Delta - \\delta)^2}{2s^2})}\\] 其中\\(s^2\\)是\\(\\Delta\\)的方差，\\(\\delta\\)来自假设模板。\n\\(H_0\\)对应的\\(A_0\\)越高，越容易接受原假设，产生二类错误；\n\\(H_1\\)对应的\\(A_1\\)越高，越容易拒绝原假设，产生一类错误。\nlinkedIn的选择：\\(A_0 = 0.2, A_1 = 0.1\\)。\n最终流程：\n1). 如果任意环节q，\\(L_t(H^q_1) &gt; \\frac{1}{1 + A_1}\\)，拒绝原假设，不能继续放量； 2). 如果某些环节，\\(L_t(H^q_0) &gt; \\frac{1}{1 + A_0}\\)，接受原假设，放量到其中最大q阶段； 3). 其他情况，继续观察到t+1，根据\\(L_(t+1)\\)进行决策； 4). 如果直到\\(t = 7\\)都没满足条件，建议放量。\n\n\n2.1.4. 多个指标情况\n通过控制FDR来矫正多重检验问题，通过类似Benjamini-Hochberg方差来处理\\(L_t(H_1^q)\\)：\n1). 将M个指标结果\\(L_t^{(1)}(H_1^q),\\ L_t^{(2)}(H_1^q),\\ L_t^{(3)}(H_1^q)...\\)进行降序排列； 2). 按顺序进行比较： \\[L_t^{(m)}(H_1^q) &gt; \\frac{1}{1 + \\frac{mA_1}{M}}\\]\n至少一个指标满足条件时，接受\\(H_1^q\\)。\n所以放量条件为：\n1). \\(H_1^q\\)未被接受； 2). 主要指标都接受\\(H_0^q\\)。"
+    "objectID": "posts/实验设计_偷看问题/index.html#c.-实验平台模板不适合",
+    "href": "posts/实验设计_偷看问题/index.html#c.-实验平台模板不适合",
+    "title": "A/B实验设计 —— 偷看问题",
+    "section": "c. 实验平台模板不适合",
+    "text": "c. 实验平台模板不适合\n实验平台提供了固定的模板，以及在此模板下的终止条件，常见为限定实验周期、分析单位等，并以此得到结束条件。\n固化的模板不能通用于所有的实验，因此用户自己判断是否停止也不足为奇。\n平台需要增强实验个性化的能力。"
   },
   {
-    "objectID": "posts/sqr/index.html#mpr阶段的放量",
-    "href": "posts/sqr/index.html#mpr阶段的放量",
-    "title": "SQR：平衡实验速度、质量和风险的框架",
-    "section": "2.2. MPR阶段的放量",
-    "text": "2.2. MPR阶段的放量\nMPR之前主要关注规避风险，MPR阶段关注速度和决策质量。\n\n2.2.1. MPR时长\n至少一周的时间\n\n\n2.2.2. 指标的影响\n重要的指标：任意指标p小于0.05，就需要仔细研究；\n其他指标：显著性为0.1，并控制错误发现率，如果负向显著就不建议放量到100%。\n\n\n2.2.3. 其他发现的警告\n如果有其他发现，比如burn-in效应、inconsistent results、heterogeneous treatment效应等。这些应该被自动计算，并给出更好、更全面的推荐方案。"
+    "objectID": "posts/实验设计_偷看问题/index.html#不偷看",
+    "href": "posts/实验设计_偷看问题/index.html#不偷看",
+    "title": "A/B实验设计 —— 偷看问题",
+    "section": "不偷看",
+    "text": "不偷看\n这是最简单可靠的方案，但是经常很困难。参考以下场景：\n\n大佬：B方案显著正面了，上线了吧\n小弟：不行，我们还需要再等三天\n大佬：B方案负面显著了，快回滚\n小弟：还需要等三天……\n大佬：这个方案竟然不显著？在跑几天！\n小弟：不行，我们已经达到停止条件了"
   },
   {
-    "objectID": "posts/sqr/index.html#评估",
-    "href": "posts/sqr/index.html#评估",
-    "title": "SQR：平衡实验速度、质量和风险的框架",
-    "section": "2.3. 评估",
-    "text": "2.3. 评估\n分两方面评估：\n\n一致性 理想情况下，t阶段放量结论，在t+1阶段依然符合；\n速度 理想情况下，用更少的阶段、合计更短的时间，到达MPR。\n\nLinkedIn收集了484个去年在MPR阶段满一周的实验。由于他们的放量各异，采用了50%流量阶段进行模拟，pre-MPR前取\\(q\\in \\{1\\%,5\\%,10\\%,25\\%\\}\\)。\n\n\n\n5% ramp Day=1 vs Day-7\n\n\n全阶段的模拟："
+    "objectID": "posts/实验设计_偷看问题/index.html#非固定水平检验",
+    "href": "posts/实验设计_偷看问题/index.html#非固定水平检验",
+    "title": "A/B实验设计 —— 偷看问题",
+    "section": "非固定水平检验",
+    "text": "非固定水平检验\n比如贯序检验系列方法，他们一般掌握成本更高，过程更复杂。由于结束条件改变了，并不一定会比固定水平检验更快结束。 Optimizely采用了这种方案，过程中用户可以偷看，每次平台提供可靠的P值与置信区间，整个过程后假阳性依然控制在预定水平。"
+  },
+  {
+    "objectID": "posts/实验设计_偷看问题/index.html#使用非检验方法",
+    "href": "posts/实验设计_偷看问题/index.html#使用非检验方法",
+    "title": "A/B实验设计 —— 偷看问题",
+    "section": "使用非检验方法",
+    "text": "使用非检验方法\n有时我们不需要解释，只是希望得到最好的组合，这种问题为multi-armed bandit problem，已经有很多相关的研究。"
+  },
+  {
+    "objectID": "posts/delta方法/index.html",
+    "href": "posts/delta方法/index.html",
+    "title": "ab实验与Delta方法",
+    "section": "",
+    "text": "背景\n互联网实验一般使用基于正态分布模型的检验方法，但是在ab实验中我们可能遇到这样的情况：\n1.实验结果分析，实验组均值比对照组均值提升了10%，相对提升的置信区间是多少呢？ 2.实验组用户合计点击率为26%，对照组未25%，置信度与置信区间如何计算？\n在场景1中，实验组均值、对照组均值是分别服从正态分布的，但是它们的比值会服从正态分布么？标准差怎么计算？\n而场景2中，平均浏览数、平均点击数是服从正态分布的，但平均点击率等于平均点击除以平均浏览。我们又陷入了正态分布随机变量除以正态分布随机变量的问题！\nDelta method可以帮助我们解决这类问题。\n\n\nDelta method是什么\nDelta method说的是当一个随机变量服从正态分布时，经过可导的函数变化后仍然概率趋向正态分布，并且提供了期望、方差的计算公式。\n\n单变量下：\n如 \\(\\sqrt{n}[X - \\theta] \\overset{\\nu }{\\rightarrow} N(0, \\sigma^2)\\)，且函数g(x)可导，\n则\\(\\sqrt{n}[g(X) - g(\\theta)] \\overset{\\nu }{\\rightarrow} N(0, \\sigma^2 * [g’(\\theta)]^2)\\)\n\n\n多变量下：\n如 \\(\\sqrt{n}[B - \\beta] \\overset{\\nu }{\\rightarrow} N(0, \\Sigma)\\)，且函数g(x)可导，\n则\\(\\sqrt{n}[h(B) - h(\\theta)] \\overset{\\nu }{\\rightarrow} N(0, \\Delta h(B)^T * \\Sigma * \\Delta h(B))\\)。\n其中\\(\\Sigma\\)是多元正态分布的协方差矩阵，\\(\\Delta h\\)为\\(h\\)函数的梯度向量。\n\n\n\nDelta method的直观理解\n以下为单变量下的个人理解，不等于严格证明。\n泰勒公式：\n\\(f(x) = f(a) + \\frac{f'(a) }{1!}(x -a)+\\frac{f''(a) }{2!}(x -a)^2+...\\)\n根据泰勒公式：\n\\(g(X) \\approx g(\\theta) + g'(\\theta)(X - \\theta)\\)\n则：\n\\(g(X) - g(\\theta) \\approx g'(\\theta)(X - \\theta) \\overset{\\nu }{\\rightarrow} N(0, \\sigma^2 * [g’(\\theta)]^2)\\)\n由于\\(g'(\\theta)(X - \\theta)\\)服从正态分布，左边也近似服从相同的正态分布，且有接近的均值与方差。\n\n\n为什么可以解决AB的问题\n场景1与场景2都是两个正态分布随机变量做除法运算的问题，设一个为Xn，一个为Yn，则(Xn, Yn)服从二元正态分布：\n$ (X_n, Y_n) N((_x，_y), )$\n我们对Xn,Yn的操作等于函数\\(h((x, y)) = y/x\\) ，根据Delta方法：\n\\(\\frac{Yn}{Xn} \\overset{\\nu }{\\rightarrow} N(\\frac{ E[Yn] }{ E[Xn] }, \\Delta h( (X_n, Y_n))^T * \\Sigma * \\Delta h( (X_n, Y_n)))\\)\n其中\\(\\Delta h((x, y)) = [-\\frac{ y}{x^2}, \\frac{1}{x}]^T\\)，\\(\\Sigma = \\begin{bmatrix} {\\sigma(X_n)^2 }&{cov(X_n, Y_n)}\\\\ {cov(X_n, Y_n)}&{\\sigma(Y_n)^2}\\\\ \\end{bmatrix}\\)\n\n\n联系背景问题\n于是我们可以对两个问题的解决方案：\n场景1：\\(X_n\\)对照组均值，\\(Y_n\\)为实验组均值，使用样本均值、样本方差做期望、方差的点估计；\n场景2：\\(X_n\\)为平均用户页面浏览次数，\\(Y_n\\)为平均用户页面点击次数，同样使用样本均值、样本方差做期望、方差的点估计。\n\n\n总结\nDelta方法对实验分析至关重要，已经几乎成为所有AB实验平台的一部分，主要用来解决随机化单位与分析单位不同的问题。\nDelta方法还可以扩展到更高维度，如微软的CUPED论文中通过四元正态分布的Delta方法解决比例型指标的CUPED计算难点。"
+  },
+  {
+    "objectID": "posts/实验设计_如何选择样本量/index.html",
+    "href": "posts/实验设计_如何选择样本量/index.html",
+    "title": "A/B实验设计 —— 样本量计算",
+    "section": "",
+    "text": "本文介绍样本量对实验效果的影响，以及如何正确选择样本量。仅作为实验设计者可跳过最后数学推导过程，直接使用工具运算。"
+  },
+  {
+    "objectID": "posts/实验设计_如何选择样本量/index.html#实验角度样本量越多越好",
+    "href": "posts/实验设计_如何选择样本量/index.html#实验角度样本量越多越好",
+    "title": "A/B实验设计 —— 样本量计算",
+    "section": "实验角度，样本量越多越好",
+    "text": "实验角度，样本量越多越好\n样本数量变多，实验则有了更多的“证据”，实验的“可靠性”也就越强。"
+  },
+  {
+    "objectID": "posts/实验设计_如何选择样本量/index.html#业务角度样本量越少越好",
+    "href": "posts/实验设计_如何选择样本量/index.html#业务角度样本量越少越好",
+    "title": "A/B实验设计 —— 样本量计算",
+    "section": "业务角度，样本量越少越好",
+    "text": "业务角度，样本量越少越好\n样本量应该越少越好，因为：\n\n试错成本大。假设我们拿50%用的户来跑实验，但不幸的是，1周后结果表明实验组的总收入下降了20%。算下来，你的实验在一周内给整个公司带来了10%的损失。这个试错成本未免高了一些…\n其它风险增加。移动端例子，假设B方案崩溃率增长，1%流量我们可以从容处理，50%流量会对业务造成严重影响，甚至事故定责。\n流量有限。流量总数是确定的，同类型的实验不能重叠，实验流量更小，就可以同时运行更多的实验。"
+  },
+  {
+    "objectID": "posts/实验设计_如何选择样本量/index.html#参数解释",
+    "href": "posts/实验设计_如何选择样本量/index.html#参数解释",
+    "title": "A/B实验设计 —— 样本量计算",
+    "section": "参数解释",
+    "text": "参数解释\n\nBaseline conversion rate：填入实验前估测到的转化率，可以通过旧数据统计作为估算。\nMinimum Detectable Effect：填入希望观测到的最小效果。填入实验的预期。\nStatistical power：1 - 假阴性概率。实验效果真实有效时，能被正确发现的概率。\nSignificance level：假阳性概率。实验实际没有效果时，被错误发现的概率。"
+  },
+  {
+    "objectID": "posts/实验设计_如何选择样本量/index.html#单尾假设检验",
+    "href": "posts/实验设计_如何选择样本量/index.html#单尾假设检验",
+    "title": "A/B实验设计 —— 样本量计算",
+    "section": "单尾假设检验",
+    "text": "单尾假设检验\n\n定义θ = μ2 - μ1，图中对应假设可转换为： 原假设：θ = 0，此时对应红色曲线 备择假设：θ &gt; 0，此时对应绿色曲线\nμ1：方案A的期望值，不可改变。 μ2：方案B的期望值，不可改变。 $ x$：方案A的均值，会随机波动。 $ y$：方案B的均值，会随机波动。\n$ = ( &gt; C | = ) $ ，红色曲线下，红色面积占比。 $ = ( &lt;= C | &gt; ) $ 。 $ power = ( &gt; C | &gt; ) $ ，绿色曲线下，绿色面积占比。 MDE：根据期望效果取的值，会参与样本量计算 μ2 - μ1 &gt;= mde时，power大于等于预设值，实验容易显著。 μ2 - μ1 &lt; mde时，power小于预设，实验不容易显著。\n在$ &gt; C \\(中，C为预设常量，\\) x\\(、\\) y\\(通过实验获取无法控制，唯一可以改变的是\\)SD( y - x))$，样本量增大 -&gt; $ SD( y - x)) $减少 -&gt; 实验显著概率升高。\n计算过程： \\({SD( \\bar y - \\bar x)} = MDE / [ \\phi^{-1} (\\alpha) + \\phi^{-1} (power )]\\) ,\nx、y样本量同为n，标准差同为$$时， \\({SD( \\bar y - \\bar x)} = \\sqrt{2\\sigma ^{2}/ n}\\),\n易得\\(n = 2\\sigma ^{2} [ \\phi^{-1} (1- \\alpha) + \\phi^{-1} (power )]^{2}/MDE^{2}\\)"
+  },
+  {
+    "objectID": "posts/实验设计_如何选择样本量/index.html#双尾假设检验",
+    "href": "posts/实验设计_如何选择样本量/index.html#双尾假设检验",
+    "title": "A/B实验设计 —— 样本量计算",
+    "section": "双尾假设检验",
+    "text": "双尾假设检验\n定义θ = μ2 - μ1，双尾情况下对应假设： 原假设：θ = 0； 备择假设：θ ≠ 0 ，等价于 θ &gt; 0 or θ &lt; 0。\n双尾假设检验一般是对称的，在此情况下有： 1. $= ( &gt; C1 | = ) + ( &lt; C2 | = ) $ 2. $( &gt; C1 | = ) = ( &lt; C2 | = ) $\n正态分布的概率密度函数特点为左右对称(钟形曲线)，由此可知： $ C1 &gt; 0, C2 &lt; 0, |C1| = |C2| $\n可以理解为一个α水平的双尾假设检验，等于两个α/2水平的单尾假设检验。 将α/2带入单尾计算公式，得到双尾检验需要的样本量为： \\(n = 2\\sigma ^{2} [ \\phi^{-1} (1 - \\alpha/2) + \\phi^{-1} (power )]^{2}/MDE^{2}\\)"
   },
   {
     "objectID": "posts/BMCP_1/index.html",
@@ -900,6 +928,6 @@
     "href": "index.html",
     "title": "学习 & 思考",
     "section": "",
-    "text": "【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析\n\n\n\n\n\n\n\n读书摘录\n\n\n贝叶斯建模\n\n\nBayesian Modeling and Computation in Python\n\n\n\n\n\n\n\n\n\n\n\nDec 17, 2023\n\n\n\n\n\n\n  \n\n\n\n\n【Bayesian Modeling and Computation in Python】1.贝叶斯推断\n\n\n\n\n\n\n\n读书摘录\n\n\n贝叶斯建模\n\n\nBayesian Modeling and Computation in Python\n\n\n\n\n\n\n\n\n\n\n\nDec 10, 2023\n\n\n\n\n\n\n  \n\n\n\n\n实验间共享对照组缺陷及对策\n\n\n\n\n\n\n\nAB\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\n  \n\n\n\n\n实验统计简介\n\n\n\n\n\n\n\nAB\n\n\n统计推断\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\n  \n\n\n\n\n流量分配与决策优化\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nApr 3, 2022\n\n\n\n\n\n\n  \n\n\n\n\nSPRT可控制两种错误的证明\n\n\n\n\n\n\n\nAB\n\n\n序贯检验\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nNov 27, 2021\n\n\n\n\n\n\n  \n\n\n\n\nSQR：平衡实验速度、质量和风险的框架\n\n\n\n\n\n\n\nAB\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 29, 2021\n\n\n\n\n\n\n  \n\n\n\n\n贝叶斯和多臂老虎机\n\n\n\n\n\n\n\n贝叶斯\n\n\n多臂老虎机\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJul 25, 2021\n\n\n\n\n\n\n  \n\n\n\n\n荟萃分析简介\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nMay 12, 2021\n\n\n\n\n\n\n  \n\n\n\n\n双样本经验贝叶斯检验\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n贝叶斯\n\n\n序贯检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nFeb 19, 2021\n\n\n\n\n\n\n  \n\n\n\n\n成组序贯检验 —— alpha消耗函数法\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n序贯检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJan 17, 2021\n\n\n\n\n\n\n  \n\n\n\n\nab实验与Delta方法\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJan 16, 2021\n\n\n\n\n\n\n  \n\n\n\n\n如何评估假设检验的好坏\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nDec 15, 2020\n\n\n\n\n\n\n  \n\n\n\n\n赌徒破产和序贯检验\n\n\n\n\n\n\n\nAB\n\n\n序贯检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nOct 20, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验进阶——通过实验前数据减小方差（CUPED）\n\n\n\n\n\n\n\nAB\n\n\n方差缩减\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nSep 22, 2020\n\n\n\n\n\n\n  \n\n\n\n\n多重检验控制策略：FWER/FDR/FCR\n\n\n\n\n\n\n\nAB\n\n\n多重检验\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nSep 15, 2020\n\n\n\n\n\n\n  \n\n\n\n\nPeeking at A/B test：mSPRT简介\n\n\n\n\n\n\n\nAB\n\n\n序贯检验\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 28, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验设计 —— 偷看问题\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 20, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验设计 —— 多重检验\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n多重检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 12, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验设计 —— 样本量计算\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJul 17, 2020\n\n\n\n\n\n\nNo matching items"
+    "text": "【Bayesian Modeling and Computation in Python】11.相关主题\n\n\n\n\n\n\n\n读书摘录\n\n\n贝叶斯建模\n\n\nBayesian Modeling and Computation in Python\n\n\n贝叶斯\n\n\n\n\n\n\n\n\n\n\n\nDec 23, 2023\n\n\n\n\n\n\n  \n\n\n\n\n【Bayesian Modeling and Computation in Python】2.贝叶斯模型探索分析\n\n\n\n\n\n\n\n读书摘录\n\n\n贝叶斯建模\n\n\nBayesian Modeling and Computation in Python\n\n\n贝叶斯\n\n\n\n\n\n\n\n\n\n\n\nDec 17, 2023\n\n\n\n\n\n\n  \n\n\n\n\n【Bayesian Modeling and Computation in Python】1.贝叶斯推断\n\n\n\n\n\n\n\n读书摘录\n\n\n贝叶斯建模\n\n\nBayesian Modeling and Computation in Python\n\n\n贝叶斯\n\n\n\n\n\n\n\n\n\n\n\nDec 10, 2023\n\n\n\n\n\n\n  \n\n\n\n\n实验间共享对照组缺陷及对策\n\n\n\n\n\n\n\nAB\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\n  \n\n\n\n\n实验统计简介\n\n\n\n\n\n\n\nAB\n\n\n统计推断\n\n\n\n\n\n\n\n\n\n\n\nNov 11, 2023\n\n\n\n\n\n\n  \n\n\n\n\n流量分配与决策优化\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nApr 3, 2022\n\n\n\n\n\n\n  \n\n\n\n\nSPRT可控制两种错误的证明\n\n\n\n\n\n\n\nAB\n\n\n序贯检验\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nNov 27, 2021\n\n\n\n\n\n\n  \n\n\n\n\nSQR：平衡实验速度、质量和风险的框架\n\n\n\n\n\n\n\nAB\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 29, 2021\n\n\n\n\n\n\n  \n\n\n\n\n贝叶斯和多臂老虎机\n\n\n\n\n\n\n\n贝叶斯\n\n\n多臂老虎机\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJul 25, 2021\n\n\n\n\n\n\n  \n\n\n\n\n荟萃分析简介\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nMay 12, 2021\n\n\n\n\n\n\n  \n\n\n\n\n双样本经验贝叶斯检验\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n贝叶斯\n\n\n序贯检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nFeb 19, 2021\n\n\n\n\n\n\n  \n\n\n\n\n成组序贯检验 —— alpha消耗函数法\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n序贯检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJan 17, 2021\n\n\n\n\n\n\n  \n\n\n\n\nab实验与Delta方法\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJan 16, 2021\n\n\n\n\n\n\n  \n\n\n\n\n如何评估假设检验的好坏\n\n\n\n\n\n\n\nAB\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nDec 15, 2020\n\n\n\n\n\n\n  \n\n\n\n\n赌徒破产和序贯检验\n\n\n\n\n\n\n\nAB\n\n\n序贯检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nOct 20, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验进阶——通过实验前数据减小方差（CUPED）\n\n\n\n\n\n\n\nAB\n\n\n方差缩减\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nSep 22, 2020\n\n\n\n\n\n\n  \n\n\n\n\n多重检验控制策略：FWER/FDR/FCR\n\n\n\n\n\n\n\nAB\n\n\n多重检验\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nSep 15, 2020\n\n\n\n\n\n\n  \n\n\n\n\nPeeking at A/B test：mSPRT简介\n\n\n\n\n\n\n\nAB\n\n\n序贯检验\n\n\n假设检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 28, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验设计 —— 偷看问题\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 20, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验设计 —— 多重检验\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n多重检验\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nAug 12, 2020\n\n\n\n\n\n\n  \n\n\n\n\nA/B实验设计 —— 样本量计算\n\n\n\n\n\n\n\nAB\n\n\n实验设计\n\n\n旧文迁移\n\n\n\n\n\n\n\n\n\n\n\nJul 17, 2020\n\n\n\n\n\n\nNo matching items"
   }
 ]

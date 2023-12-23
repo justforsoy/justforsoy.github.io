@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-12-23">
+
+<title>Rock’s blog - 【Bayesian Modeling and Computation in Python】11.相关主题</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Rock’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/justforsoy" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">【Bayesian Modeling and Computation in Python】11.相关主题</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">读书摘录</div>
+                <div class="quarto-category">贝叶斯建模</div>
+                <div class="quarto-category">Bayesian Modeling and Computation in Python</div>
+                <div class="quarto-category">贝叶斯</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 23, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>这一章是前面章节的补充内容，我准备根据阅读进展持续更新<a href="https://bayesiancomputationbook.com/markdown/chp_11.html">原文链接</a>。</p>
+<section id="概率" class="level2">
+<h2 class="anchored" data-anchor-id="概率">11.1 概率</h2>
+<p>一个骰子的例子：</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arviz <span class="im">as</span> az</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymc <span class="im">as</span> pm</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> binom, betaln</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>az.style.use(<span class="st">"arviz-grayscale"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'figure.dpi'</span>] <span class="op">=</span> <span class="dv">300</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">14067</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> die():</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    outcomes <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.random.choice(outcomes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>如果我们怀疑骰子不是均匀的。我们应该如何计算概率？科学的方法是收集数据并计算。</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> experiment(N<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    sample <span class="op">=</span> [die() <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N)]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">7</span>):</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>sample<span class="sc">.</span>count(i)<span class="op">/</span>N<span class="sc">:.2g}</span><span class="ss">"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>experiment()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>1: 0
+2: 0
+3: 0.3
+4: 0
+5: 0.2
+6: 0.5</code></pre>
+</div>
+</div>
+<p>当 <code>N = 10</code> 时，几乎每次结果都不相同；但是当 N 非常大比如10000时，频率就会趋于相等，我们也会认为骰子是均匀的。</p>
+<p>这两个观察结果并不局限于骰子和机会游戏。如果我们每天称体重，我们会得到不同的数值，因为我们的体重与我们吃的食物的量、我们喝的水、我们上厕所的次数、体重秤的精度、我们穿的衣服和体重有关。因此单次测量可能无法代表我们的体重。<br>
+统计学基本上是研究如何处理实际问题中的不确定性的领域，概率论是统计学的理论支柱之一。概率论帮助我们将讨论形式化，就像我们刚刚进行的讨论一样，并将其扩展到骰子之外。这样我们就可以更好地提出和回答与预期结果相关的问题，例如当我们增加实验数量时会发生什么，什么事件比另一个事件有更高的机会等等。</p>
+<section id="概率-1" class="level3">
+<h3 class="anchored" data-anchor-id="概率-1">11.1.1. 概率</h3>
+<p>概率是一种数学工具，使我们能够以原则性的方式量化不确定性。与其他数学对象和理论一样，它们可以完全从纯数学角度得到证明。为了思考概率，我们可以用数学集合来思考。 <strong>样本空间 <span class="math inline">\(\mathcal{X}\)</span></strong> 是上面实验的结果集合。任意<strong>事件 <span class="math inline">\(A\)</span></strong>都是 <span class="math inline">\(\mathcal{X}\)</span> 的子集。对上面的骰子来说： <span class="math display">\[\mathcal{X} = \{1,2,3,4,5,6\}\]</span></p>
+<p>我们可以定义 <span class="math inline">\(\mathcal{X}\)</span> 的任意事件子集，比如偶数 <span class="math inline">\(A = \{2,4,6\}\)</span> ，用数学表示为 <span class="math inline">\(P(A)\)</span> 或 <span class="math inline">\(P(A=)\{2,4,6\}\)</span>。<span class="math inline">\(P\)</span> 是一个函数根据事件和概率空间返回一个0到1的数字。</p>
+<p>正如我们刚才看到的，概率有一个明确的数学定义。对于不同的思想流派，我们如何解释概率是不同的。作为贝叶斯学派，我们倾向于将概率解释为不确定性程度。例如，对于公平骰子，掷骰子时得到奇数的概率为 0.5 ，这意味着我们有一半把握会得到一个奇数。或者我们可以将这个数字解释为如果我们无限次掷骰子，一半的时间我们会得到奇数，一半的时间我们会得到偶数。这是频率论的解释，也是思考概率的有用方式。如果您不想无限次地掷骰子，您可以多次掷骰子，并说您大约会获得一半的几率。最后，我们注意到，对于一个公平的骰子，我们期望得到任何单个数字的概率为<span class="math inline">\(\frac{1}{6}\)</span>，但对于非公平骰子，此概率可能有所不同。结果的等概率只是一个特例。</p>
+<p>如果概率代表不确定性，那很自然可以提问火星的质量为 <span class="math inline">\(6.39 \times 10^{23}\)</span>kg 的概率，某处在某天下雨的概率等问题。我们说概率的这种定义是认知性的，因为它不是关于现实世界（无论是什么）的属性，而是关于我们对该世界的知识的属性。我们收集数据并分析它，因为我们认为我们可以根据外部信息更新我们的内部知识状态。</p>
+<p>我们必须意识到包含所有数学概念的柏拉图式思想世界与现实世界不同，比如骰子其实有可能卡在中间的可能，在统计建模中我们不断地在这两个世界之间来回切换。</p>
+</section>
+<section id="条件概率" class="level3">
+<h3 class="anchored" data-anchor-id="条件概率">11.1.2. 条件概率</h3>
+<p>有 <span class="math inline">\(A\)</span> 和 <span class="math inline">\(B\)</span> 两个概率事件且 <span class="math inline">\(P(B) &gt; 0\)</span>，<span class="math inline">\(P(A,B)\)</span> 是 <span class="math inline">\(A\)</span> 和 <span class="math inline">\(B\)</span> 同时发生的概率，也写作 <span class="math inline">\(P(A \cap B)\)</span>。</p>
+<p><span class="math inline">\(A\)</span> 在 <span class="math inline">\(B\)</span> 发生的条件下的概率为： <span class="math display">\[P(A \mid B) = \frac{P(A, B)}{P(B)}\]</span></p>
+<p>条件概率可以理解为样本空间的缩减。如下图所示，<span class="math inline">\(A\)</span> 和 <span class="math inline">\(B\)</span> 都是样本空间 <span class="math inline">\(\mathcal {x}\)</span> 里的事件，但是 <span class="math inline">\(B\)</span> 发生后样本空间变化为： <img src="cond.png" class="img-fluid"></p>
+<p>条件概率的概念是统计学的核心，也是思考我们应该如何根据新数据更新我们对事件的了解的核心。涉及某些假设或模型的所有概率都是有条件的。</p>
+</section>
+<section id="概率分布" class="level3">
+<h3 class="anchored" data-anchor-id="概率分布">1.1.3. 概率分布</h3>
+<p>我们更感兴趣的是找出骰子所有数字的概率列表而不是事件发生的频率。一旦知道这个就可以计算其他量，比如等于或者大于 5 的概率。这个列表称为<strong>概率分布</strong>。</p>
+<p>理论概率分布有精确的数学公式。概率分布有自己的分类，类型成员由一个或多个参数定义。<br>
+以下是 Beta 分布的例子，通过两个参数可以控制分布平缓或者集中，但是参数约束为必须都为正数： <img src="dice_distribution.png" class="img-fluid"></p>
+</section>
+<section id="离散型随机变量和分布" class="level3">
+<h3 class="anchored" data-anchor-id="离散型随机变量和分布">11.1.4. 离散型随机变量和分布</h3>
+<p>随机变量是将样本空间映射到实数的函数。比如如果投掷两次均匀的骰子，我们可以得到概率分布:</p>
+<p><img src="sum_dice_distribution.png" class="img-fluid"></p>
+<p>当一个随机变量 <span class="math inline">\(X\)</span> 的值是有限的 <span class="math inline">\(a_1, a_2, ..., a_n\)</span> 或者 无限但是满足 <span class="math inline">\(\sum_j P(X = a_j) = 1\)</span>，则成为<strong>离散型随机变量</strong>。<br>
+其概率分布称为<strong>概率质量函数 Probability Mass Function (PMF)</strong> 。<span class="math inline">\(X\)</span> 的 PMF 就是 <span class="math inline">\(P(X = x)\ for\ x \in \mathbb{R}\)</span> 的函数。我们也可以使用<strong>累积分布函数 cumulative distribution function (CDF) 定义离散随机变量</strong> 。</p>
+<section id="离散均匀分布-discrete-uniform-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="离散均匀分布-discrete-uniform-distribution">11.1.4.1. 离散均匀分布 Discrete Uniform Distribution</h4>
+<p>该分布将相等的概率分配给从区间 a 到 b 的有限连续整数集。其PMF为： <span class="math display">\[P(X = x) = {\frac {1}{b - a + 1}} = \frac{1}{n}\]</span></p>
+<p>其中 <span class="math inline">\(x\)</span> 属于区间 <span class="math inline">\([a, b]\)</span>，<span class="math inline">\(n = b - a + 1\)</span> 为区间内整数的个数。</p>
+</section>
+<section id="二项分布-binomial-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="二项分布-binomial-distribution">11.1.4.2. 二项分布 Binomial Distribution</h4>
+<p>伯努利实验得结果只能为 0 或 1 。如果执行 n 次独立的伯努利实验，每一次得到 1 的概率相等为 <span class="math inline">\(p\)</span> ，则其累计得到 1 的次数记为随机变量 <span class="math inline">\(X\)</span>。则 <span class="math inline">\(X\)</span> 服从概率为 <span class="math inline">\(p\)</span> 的 n 重二项分布，记为 <span class="math inline">\(X \sim Bin(n, p)\)</span>。其 PMF 为： <span class="math display">\[P(X = x) = \frac{n!}{x!(n-x)!}p^x(1-p)^{n-x}\]</span></p>
+<p>当 <span class="math inline">\(n = 1\)</span> 时，二项分布又称为伯努利分布 Bernoulli distribution 。</p>
+</section>
+<section id="泊松分布-poisson-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="泊松分布-poisson-distribution">11.1.4.3. 泊松分布 Poisson Distribution</h4>
+<p>该分布用于描述单位时间（或者单位空间）内随机事件发生的次数。其 PMF 为： <span class="math display">\[P(X = x)  = \frac{\mu^{x} e^{-\mu}}{x!}, x = 0, 1, 2, \dots\]</span></p>
+<p>其中 <span class="math inline">\(\mu\)</span> 为单位时间（或者单位空间）内随机事件发生的次数的期望值。</p>
+<p>泊松分布的均值和方差相等，即 <span class="math inline">\(\mu = \sigma^2\)</span>。当 <span class="math inline">\(\mu\)</span> 较大时，泊松分布近似于正态分布。<br>
+当伯努利分布的 <span class="math inline">\(n\)</span> 较大，<span class="math inline">\(p\)</span> 较小时，其近似于泊松分布： <span class="math inline">\(\text{Pois}(\mu=np) \approx \text{Bin}(n, p)\)</span>。因此泊松分布也被称为小数定律或稀有事件定律。</p>
+</section>
+</section>
+<section id="连续型随机变量和分布" class="level3">
+<h3 class="anchored" data-anchor-id="连续型随机变量和分布">11.1.5. 连续型随机变量和分布</h3>
+<p>另一种随机变量是<strong>连续型随机变量</strong>，其值可以是区间内的任意实数，但是每个数值对应的概率为 0。</p>
+<p>连续性随机变量的概率分布称为<strong>概率密度函数 Probability Density Function (PDF)</strong>，它可以大于1。为了得到概率，我们必须对 PDF 进行积分： <span class="math display">\[P(a \leq X \leq b) = \int_a^b pdf(x)dx\]</span></p>
+<p>但是注意当我们仅比较 <span class="math inline">\(x_1\)</span> 和 <span class="math inline">\(x_2\)</span> 哪个更可能得到时，我们可以比较<span class="math inline">\(\frac{pdf(x_1)}{pdf(x_2)}\)</span>。</p>
+<p>离散和连续随机分布，CDF 和 PDF 的关系如下： <img src="cmf_pdf_pmf.png" class="img-fluid"></p>
+<section id="均匀分布-uniform-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="均匀分布-uniform-distribution">11.1.5.1. 均匀分布 Uniform Distribution</h4>
+<p>该分布将相等的概率分配给从区间 a 到 b 的连续实数集。其 PDF 为： <span class="math display">\[p(x \mid a,b)=\begin{cases} \frac{1}{b-a} &amp; if a \le x \le b \\ 0 &amp;  \text{otherwise} \end{cases}\]</span></p>
+<p>当 <span class="math inline">\(a = 0\)</span> 且 <span class="math inline">\(b=1\)</span> 时成为标准均匀分布。 <img src="uniform_pdf_cdf.png" class="img-fluid"></p>
+</section>
+<section id="正态分布-gaussian-or-normal-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="正态分布-gaussian-or-normal-distribution">11.1.5.2. 正态分布 Gaussian or Normal Distribution</h4>
+<p>这也许是最知名的分布，因为一方面由于中心极限定律，另一方面是因为数据计算性质良好。</p>
+<p>正态分布有 <span class="math inline">\(\mu\)</span> 和 <span class="math inline">\(\sigma\)</span> 两个参数定义，其 PDF 为： <span class="math display">\[ p (x \mid \mu, \sigma) = \frac {1} {\sigma \sqrt {2 \pi}} e^{-\frac {(x -\mu)^2} {2 \sigma^2}}\]</span></p>
+<p>当 <span class="math inline">\(\mu = 0\)</span> 且 <span class="math inline">\(\sigma = 1\)</span> 时称为标准正态分布。 <img src="normal_pdf_cdf.png" class="img-fluid"></p>
+</section>
+<section id="学生t分布-students-t-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="学生t分布-students-t-distribution">11.1.5.3. 学生t分布 Student’s t-distribution</h4>
+<p>从历史上看，这种分布用于在样本量较小时估计正态分布总体的平均值。pdf为： <span class="math display">\[p (x \mid \nu, \mu, \sigma) = \frac {\Gamma (\frac {\nu + 1} {2})} {\Gamma (\frac{\nu} {2}) \sqrt {\pi \nu} \sigma} \left (1+ \frac{1}{\nu} \left (\frac {x- \mu} {\sigma} \right)^2 \right)^{-\frac{\nu + 1}{2}}\]</span></p>
+<p>其中 <span class="math inline">\(\gamma\)</span> 为伽玛函数，<span class="math inline">\(\nu\)</span> 为自由度。当 <span class="math inline">\(\nu\)</span> 趋向于无穷时，学生t分布趋向于正态分布。</p>
+<p>当 <span class="math inline">\(\nu = 1\)</span> 时，学生t分布退化为柯西分布。它与高斯分布相似，但尾部下降非常缓慢，以至于该分布没有均值和方差。也就是说如果数据来自柯西分布，则平均值的分散度很大，并且这种分散不会随着样本量的增加而减小。出现这种奇怪行为的原因是，像柯西这样的分布由分布的尾部行为主导，这与高斯分布等相反。<br>
+<img src="student_t_pdf_cdf.png" class="img-fluid"></p>
+</section>
+<section id="贝塔分布-beta-distribution" class="level4">
+<h4 class="anchored" data-anchor-id="贝塔分布-beta-distribution">11.1.5.4. 贝塔分布 Beta Distribution</h4>
+<p>Beta 分布定义在区间 [0, 1] 内。它可用于对限制在有限区间内的随机变量的行为进行建模，例如对比例或百分比进行建模。 <span class="math display">\[p (x \mid \alpha, \beta) = \frac {\Gamma (\alpha + \beta)} {\Gamma(\alpha) \Gamma (\beta)} \, x^{\alpha-1} (1 -x)^{\beta-1}\]</span></p>
+<p>当 <span class="math inline">\(\alpha = 1\)</span> 且 <span class="math inline">\(\beta = 1\)</span> 时，Beta分布退化为均匀分布。 <img src="beta_pdf_cdf.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="联合分布条件分布边缘分布" class="level3">
+<h3 class="anchored" data-anchor-id="联合分布条件分布边缘分布">11.1.6. 联合分布、条件分布、边缘分布</h3>
+<p>联合分布是多个随机变量的概率分布。联合分布使我们能够描述同一实验中产生的多个随机变量的行为。</p>
+<p>联合 PMF 为： <span class="math display">\[p_{X,Y}(x, y) = P(X = x, Y = y)\]</span></p>
+<p>满足： <span class="math display">\[\sum_x \sum_y P(X=x, Y=y) = 1\]</span></p>
+<p>类似的 CDF 为： <span class="math display">\[F_{X,Y}(x, y) = P(X \le x, Y \le y)\]</span></p>
+<p>当已知一个变量值是多少时，我们可以计算另一个变量的条件分布。</p>
+<p>基于联合分布计算边缘分布： <span class="math display">\[P(X=x) = \sum_y P(X=x, Y=y)\]</span></p>
+<p><img src="joint_dist_marginal.png" class="img-fluid"></p>
+<p>对连续型用积分计算： <span class="math display">\[pdf_X(x) = \int pdf_{X,Y} (x, y)dy\]</span></p>
+<p><img src="joint_marginal_cond_continuous.png" class="img-fluid"></p>
+</section>
+<section id="概率积分变换-probability-integral-transform-pit" class="level3">
+<h3 class="anchored" data-anchor-id="概率积分变换-probability-integral-transform-pit">11.1.7. 概率积分变换 Probability Integral Transform (PIT)</h3>
+<p>如果已知随机变量 <span class="math inline">\(X\)</span> 和它的 CDF 函数 <span class="math inline">\(F_Z\)</span>，我们可以定义随机变量 <span class="math inline">\(Y\)</span> ：<span class="math display">\[ Y = F_X(X)\]</span><br>
+Y的CDF定义为：<span class="math display">\[F_Y(y) = P(Y \leq y)\]</span> 则：<span class="math display">\[F_Y(y) = P(F_X(X) \leq y)\]</span> 则：<span class="math display">\[F_Y(y) = F_X (F^{-1}_X (y))\]</span> 最后我们得到：<span class="math display">\[F_Y(y) = y\]</span></p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>xs <span class="op">=</span> (np.linspace(<span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">200</span>), np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">200</span>), np.linspace(<span class="op">-</span><span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">200</span>))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>dists <span class="op">=</span> (stats.expon(scale<span class="op">=</span><span class="dv">5</span>), stats.beta(<span class="fl">0.5</span>, <span class="fl">0.5</span>), stats.norm(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">3</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, (dist, x) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(dists, xs)):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    draws <span class="op">=</span> dist.rvs(<span class="dv">100000</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> dist.cdf(draws)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># PDF original distribution</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    ax[idx, <span class="dv">0</span>].plot(x, dist.pdf(x))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Empirical CDF</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    ax[idx, <span class="dv">1</span>].plot(np.sort(data), np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="bu">len</span>(data)))</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Kernel Density Estimation</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    az.plot_kde(data, ax<span class="op">=</span>ax[idx, <span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="期望类-expectations" class="level3">
+<h3 class="anchored" data-anchor-id="期望类-expectations">11.1.8. 期望类 Expectations</h3>
+<p>期望是总结随机分布质量中心的数值。对于离散型随机变量，期望为：<span class="math display">\[\mathbb{E}(X) = \sum_x x P(X = x)\]</span></p>
+<p>统计上还经常要评估离散程度。常用方差来表示，它同样是一种期望：<span class="math display">\[\mathbb{V}(X) = \mathbb{E}(X - \mathbb{E}X)^2 = \mathbb{E}(X^2 ) - (\mathbb{E}X)^2\]</span></p>
+<p>期望的几个性质： <span class="math display">\[\mathbb{E}(cX) = c\mathbb{E}(X)\]</span></p>
+<p>其中 c 为常数。 <span class="math display">\[\mathbb{E}(X + Y) = \mathbb{E}(X) + \mathbb{E}(Y)\]</span></p>
+<p>无论 X 和 Y 是否独立。</p>
+<p>我们定义 <span class="math inline">\(X\)</span> 的 n 阶距为 <span class="math inline">\(\mathbb{E}(X^n)\)</span>，其中 <span class="math inline">\(n\)</span> 为正整数。 <span class="math inline">\(X\)</span> 的期望值是一阶距，方差是二阶距。三阶距是偏度，期望为 <span class="math inline">\(\mu\)</span> 和标准差为 <span class="math inline">\(\sigma\)</span> 随机变量 <span class="math inline">\(X\)</span> 的三阶距为： <span class="math display">\[\text{skew}(X) = \mathbb{E}\left(\frac{X -\mu}{\sigma}\right)^3\]</span></p>
+<p>将偏斜计算为标准化量（即减去平均值并除以标准差）的原因是为了使偏斜独立于 <span class="math inline">\(X\)</span>。<br>
+举例：Beta(2,2) 偏度为0，代表分布是对称的；Beta(2,5) 偏度大于0，；Beta(5,2) 偏度小于0。</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>xs <span class="op">=</span> (np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">200</span>), np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">200</span>), np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">200</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dists <span class="op">=</span> (stats.beta(<span class="dv">2</span>,<span class="dv">2</span>), stats.beta(<span class="dv">2</span>, <span class="dv">5</span>), stats.beta(<span class="dv">5</span>, <span class="dv">2</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize <span class="op">=</span> (<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, (dist, x) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(dists, xs)):</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    draws <span class="op">=</span> dist.rvs(<span class="dv">100000</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> dist.cdf(draws)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    ax[idx].plot(x, dist.pdf(x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-6-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>四阶距是峰度 kurtosis，描述尾部的行为： <span class="math display">\[\text{Kurtosis}(X) = \mathbb{E}\left(\frac{X -\mu}{\sigma}\right)^4 - 3 \]</span></p>
+<p>公式中减3的是为了让高斯分布的峰度为0，因此公式表达的是本分布的峰度与高斯分布的峰度的差异。</p>
+</section>
+<section id="转换" class="level3">
+<h3 class="anchored" data-anchor-id="转换">11.1.9. 转换</h3>
+<p>将随便变量 <span class="math inline">\(X\)</span> 带入函数 <span class="math inline">\(g\)</span>，得到新的随机变量 <span class="math inline">\(Y = g(X)\)</span>。如果我们知道 <span class="math inline">\(X\)</span> 的分布函数，如何求出 <span class="math inline">\(Y\)</span> 的分布呢？<br>
+最简单的方法是从 <span class="math inline">\(X\)</span> 抽样转换并绘制分布图。还有其它方法，其中之一是变量变换方法 change of variables。</p>
+<p>如果 <span class="math inline">\(X\)</span> 是连续型随机变量，而 <span class="math inline">\(g\)</span> 是单调函数，那么 <span class="math inline">\(Y\)</span> 的 PDF 为：<span class="math display">\[p_Y(y) = p_X(x) \left| \frac{dx}{dy} \right|\]</span></p>
+<p>推导如下： <span class="math display">\[
+\begin{split}
+   F_Y(y) =&amp; P(Y \le y) \\
+          =&amp; P(g(X) \le y) \\
+          =&amp; P(X \le g^{-1}(y)) \\
+          =&amp; F_X(g^{-1}(y)) \\
+          =&amp; F_X(x) \\
+\end{split}
+\]</span></p>
+<p>然后应用链式法则： <span class="math display">\[p_Y(y) = p_X(x) \frac{dx}{dy}\]</span></p>
+<p>多元随机变量也类似，省略。</p>
+</section>
+<section id="极限" class="level3">
+<h3 class="anchored" data-anchor-id="极限">11.1.10. 极限</h3>
+<p>大数定律和中心极限定律是最知名的两条定律。</p>
+<section id="大数定律-law-of-large-numbers-lln" class="level4">
+<h4 class="anchored" data-anchor-id="大数定律-law-of-large-numbers-lln">11.1.10.1. 大数定律 Law of Large Numbers (LLN)</h4>
+<p>大数定律告诉我们，随着样本数量的增加，独立同分布随机变量的样本均值收敛到随机变量的期望值。<br>
+注意：这对于某些分布（例如柯西分布（没有均值或有限方差））而言不成立。</p>
+</section>
+<section id="中心极限定律-central-limit-theorem-clt" class="level4">
+<h4 class="anchored" data-anchor-id="中心极限定律-central-limit-theorem-clt">11.1.10.2. 中心极限定律 Central Limit Theorem (CLT)</h4>
+<p>中心极限定理告诉我们，随着样本数量的增加，独立同分布随机变量的样本均值的分布收敛到正态分布。 <span class="math display">\[\bar X_n \dot \sim \mathcal{N} \left (\mu, \frac{\sigma^2} {n} \right)\]</span></p>
+<p>满足中心极限定理，必须满足以下假设：</p>
+<ul>
+<li>这些值是独立采样的</li>
+<li>每个值都来自相同的分布</li>
+<li>分布的平均值和标准差必须是有限的</li>
+</ul>
+<p>注意：标准1和2可以放宽一些，我们仍然会得到近似高斯分布，但无法摆脱标准3。对于没有定义均值或方差的分布（例如柯西分布），该定理不适用。柯西分布的样本均值仍然服从柯西分布。</p>
+</section>
+</section>
+<section id="马尔科夫链-markov-chains" class="level3">
+<h3 class="anchored" data-anchor-id="马尔科夫链-markov-chains">11.1.11. 马尔科夫链 Markov Chains</h3>
+<p>马尔科夫链是一种随机过程，未来状态仅取决于当前状态：<span class="math display">\[P(X_{n+1} = j \mid X_n = i, X_{n-1} = i_{n-1} , \dots, X_0 = i_0) = P(X_{n+1} = j \mid X_n = i)\]</span></p>
+<p>马尔可夫链可视化的一种有效的方法是想象你或某个物体在空间中移动。如果空间有限，这个类比就更容易理解。<br>
+例如像跳棋一样移动方板上的棋子或访问不同城市的销售人员。这种情况下可以提出以下问题：访问一个州（棋盘上的特定方块、城市等）的可能性有多大？如果我们不断从一个州转移到另一个州，从长远来看我们将在每个州花费多少时间？</p>
+<p>以下是四个马尔科夫链的例子： <img src="markov_chains_graph.png" class="img-fluid"></p>
+<p>研究马尔科夫链的一种便捷方法是收集每一步的转移概率并将其组合成转移矩阵。对于上面的a例子转移矩阵为： <span class="math display">\[\begin{bmatrix}
+0.9 &amp; 0.1 \\
+0.8 &amp; 0.2
+\end{bmatrix}\]</span></p>
+<p>而b例子转移矩阵为： <span class="math display">\[\begin{bmatrix}
+0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+1 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\
+2 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+3 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\
+4 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\
+5 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+\end{bmatrix}\]</span></p>
+<p>矩阵的第 i 行第 j 列的元素是从状态 i 转移到状态 j 的概率。</p>
+<p>在研究马尔可夫链时，我们有理由定义单个状态的属性以及整个链的属性。例如，如果一个链反复返回到一个状态，我们称该状态为常返状态。相反，一个瞬态状态是链最终会永远离开的状态，例如在上图的例子(d)，除了0或N的所有状态都是瞬态的。此外，我们也可以称一个链为不可约的，如果它可以在有限步骤内从任何状态到达任何其他状态。例如例子(c)，它不是不可约的，因为状态1、2和3与状态A和B是断开的。</p>
+<p>理解马尔可夫链的长期行为是有意义的。前面提到的常返和瞬态的概念对于理解这种长期运行行为非常重要。如果我们有一个包含瞬态和常返状态的链，该链可能会在瞬态状态中花费时间，但最终会在常返状态中花费所有的时间。我们可以自然地提问，链将在每个状态中停留多长时间。答案是通过找到链的稳态分布 stationary distribution 。</p>
+<p>对有限状态空间的马尔可夫链，稳态分布 <span class="math inline">\(s\)</span> 满足 <span class="math inline">\(sT = s\)</span>。也就是对本分布来说，不受状态转移矩阵 <span class="math inline">\(T\)</span> 的变换影响。</p>
+<p>有趣的是在一定条件下，马尔可夫链的稳态分布是唯一的。这些条件是：链必须是不可约的和正常的。<br>
+比如上图例子中，(d) 的稳定分布不唯一，分别是 <span class="math inline">\(s_0=(1, 0, \dots , 0)\)</span> 和 <span class="math inline">\(s_N=(0, 0, \dots , 1)\)</span>，它代表了赌徒A或B输光了所有的钱；而 (b) 的稳定分布唯一，<span class="math inline">\(s=(1/6, 1/6, 1/6, 1/6, 1/6, 1/6)\)</span></p>
+<p>如果概率质量函数满足可逆性条件（也称为详细平衡），即对所有的i和j都有 <span class="math inline">\(s_i t_{ij} = s_j t_{ji}\)</span>，可以保证 <span class="math inline">\(s\)</span> 这是马尔可夫链转移矩阵 <span class="math inline">\(T = t_{ij}\)</span> 的稳态分布。这样的马尔可夫链被称为可逆的。在推理方法一节中，我们将使用这个属性来说明为什么Metropolis-Hastings能够保证在渐进意义上有效。</p>
+<p>马尔科夫链满足中心极限定律，但是要除以有效样本量 effective sample size (ESS)。</p>
+</section>
+</section>
+<section id="熵-entropy" class="level2">
+<h2 class="anchored" data-anchor-id="熵-entropy">11.2. 熵 Entropy</h2>
+<p>在维也纳的<em>Zentralfriedhof</em>，我们可以找到路德维希·玻尔兹曼的墓碑。他的墓碑上刻着 <span class="math inline">\(S = k \log W\)</span>，这是一种美妙的方式，表明热力学第二定律是概率定律的结果。玻尔兹曼通过这个等式为现代物理学的一个支柱 —— 统计力学的发展做出了贡献。统计力学描述了如温度这样的宏观观测如何与微观的分子世界相关。想象一下一杯水，我们的感官感知到的基本上是杯子里大量水分子的平均行为。水分子排列数量会与温度相关。随着我们降低温度，可能的排列会越来越少，直到仅有找一种。此时温度为达到了0开尔文，这是宇宙中可能的最低温度！如果我们增加问题，我们会发现分子有越来越多的排列方式。</p>
+<p><img src="entropy_T.png" class="img-fluid"></p>
+<p>当温度为0开尔文时，水分子的排列方式只能有一种，状态是确定性的；当温度越来越高时，水分子的排列可能越来越多，状态越来越不确定。由此，我们可以将熵视为不确定性的衡量方式。</p>
+<p>熵的概念不仅适用于分子。它还可以应用于像素的排列、文本中的字符、音符、袜子、酵母面包中的气泡等等。熵如此灵活的原因是它量化了对象的排列， 这一底层分布的属性。分布的熵越大，该分布的信息量就越少。“42”比“42±5”更确定，而后者比“任意实数”更确定。熵可以将这些定性观察转化为定量数字。</p>
+<p>熵的概念适用于连续分布和离散分布，但使用离散状态更容易思考它，我们将在本节的其余部分看到一些示例。但请记住，相同的概念适用于连续情况。</p>
+<p>对有 <span class="math inline">\(n\)</span> 种可能得分布 <span class="math inline">\(p\)</span> 来说，熵的定义是： <span class="math display">\[H(p) = - \mathbb{E}[\log{p}] = -\sum_{i}^n p_i \log{p_i}\]</span></p>
+<p>这只是 <span class="math inline">\(S = k \log W\)</span> 的另一种写法。使用 <span class="math inline">\(H\)</span> 替换掉 <span class="math inline">\(S\)</span> 并且设置 <span class="math inline">\(k = 1\)</span>，而玻尔兹曼的 <span class="math inline">\(W\)</span> 是所有可能不同结果的总数： <span class="math display">\[W = \frac{N!}{n_1!n_2! \cdots n_t!}\]</span></p>
+<p>可以理解为投掷一个 <span class="math inline">\(t\)</span> 面的骰子 <span class="math inline">\(N\)</span> 次。当 <span class="math inline">\(N\)</span> 特别大时，可以用斯特林近似 <span class="math inline">\(x! \approx (\frac{x}{e})^x\)</span>。 <span class="math display">\[W =  \frac{N^N}{n_1^{n_1} n_2^{n_2} \cdots n_t^{n_t}} e^{(n_1 n_2 \cdots n_t-N)}\]</span></p>
+<p>由于 <span class="math inline">\(p_i = \frac{n_i}{N}\)</span> <span class="math display">\[W = \frac{1}{p_1^{n_1} p_2^{n_2} \cdots p_t^{n_t}}\]</span></p>
+<p>最终转换为 <span class="math display">\[\log W = -\sum_{i}^n p_i \log{p_i}\]</span></p>
+<p>下面用python演示如何计算熵</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">26</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>q_pmf <span class="op">=</span> stats.binom(<span class="dv">10</span>, <span class="fl">0.75</span>).pmf(x)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>qu_pmf <span class="op">=</span> stats.randint(<span class="dv">0</span>, np.<span class="bu">max</span>(np.nonzero(q_pmf))<span class="op">+</span><span class="dv">1</span>).pmf(x)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>r_pmf <span class="op">=</span> (q_pmf <span class="op">+</span> np.roll(q_pmf, <span class="dv">12</span>)) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>ru_pmf <span class="op">=</span> stats.randint(<span class="dv">0</span>, np.<span class="bu">max</span>(np.nonzero(r_pmf))<span class="op">+</span><span class="dv">1</span>).pmf(x)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>s_pmf <span class="op">=</span> (q_pmf <span class="op">+</span> np.roll(q_pmf, <span class="dv">15</span>)) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>su_pmf <span class="op">=</span> (qu_pmf <span class="op">+</span> np.roll(qu_pmf, <span class="dv">15</span>)) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                     constrained_layout<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> np.ravel(ax)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>zipped <span class="op">=</span> <span class="bu">zip</span>([q_pmf, qu_pmf, r_pmf, ru_pmf, s_pmf, su_pmf],</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>             [<span class="st">"q"</span>, <span class="st">"qu"</span>, <span class="st">"r"</span>, <span class="st">"ru"</span>, <span class="st">"s"</span>, <span class="st">"su"</span>])</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, (dist, label) <span class="kw">in</span> <span class="bu">enumerate</span>(zipped):</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    ax[idx].vlines(x, <span class="dv">0</span>, dist, label<span class="op">=</span><span class="ss">f"H = </span><span class="sc">{</span>stats<span class="sc">.</span>entropy(dist)<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    ax[idx].set_title(label)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    ax[idx].legend(loc<span class="op">=</span><span class="dv">1</span>, handlelength<span class="op">=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>以上是 6 个分布及对应熵。</p>
+<ul>
+<li>最集中向中心的且离散度最小的是 <span class="math inline">\(q\)</span> ， 它的熵最小；</li>
+<li><span class="math inline">\(qu\)</span> 同样有11种可能但是均匀分布，熵比前者要大，且11种可能得分布中没有比均匀分布更大熵的分布；</li>
+<li><span class="math inline">\(r\)</span> 是 <span class="math inline">\(qu\)</span> 继续加工出来的，比 <span class="math inline">\(qu\)</span> 变换过来的，有更多种取值可能，分布更离散，熵也更大；</li>
+<li><span class="math inline">\(ru\)</span> 与 <span class="math inline">\(r\)</span> 取值空间相同的均分分布，熵继续增加；</li>
+<li><span class="math inline">\(s\)</span> 与 <span class="math inline">\(r\)</span> 类似，但是两峰间距离更远，熵与 <span class="math inline">\(r\)</span> 相同；</li>
+<li><span class="math inline">\(su\)</span> 是 <span class="math inline">\(qu\)</span> 加工的，它虽然更离散但是取值可能性比 <span class="math inline">\(qu\)</span> 少，熵小于 <span class="math inline">\(qu\)</span></li>
+</ul>
+</section>
+<section id="kl散度-kullback-leibler-divergence" class="level2">
+<h2 class="anchored" data-anchor-id="kl散度-kullback-leibler-divergence">11.3. KL散度 Kullback-Leibler Divergence</h2>
+<p>在统计中常常用一个分布 <span class="math inline">\(q\)</span> 去代表另一个分布 <span class="math inline">\(p\)</span>，比如 <span class="math inline">\(p\)</span> 未知但是可以用 <span class="math inline">\(q\)</span> 近似，后者 <span class="math inline">\(p\)</span> 比较难计算时。此时产生一个问题，<span class="math inline">\(q\)</span> 代替 <span class="math inline">\(p\)</span> 损失了多少信息，或者说引入了多少额外的不确定性。<br>
+根据熵的定义，我们可以通过计算 <span class="math inline">\(log(p)\)</span> 和 <span class="math inline">\(log(q)\)</span> 的差异来衡量。这被称为 KL散度： <span class="math display">\[\mathbb{KL}(p \parallel q) = \mathbb{E}_p[\log{p}-\log{q}]\]</span></p>
+<p><span class="math inline">\(\mathbb{KL}(p \parallel q)\)</span> 给出了 <span class="math inline">\(q\)</span> 代替 <span class="math inline">\(p\)</span> 时的对数概率平均差异。因为事件实际是以 <span class="math inline">\(p\)</span> 的概率发生的，所以对离散分布来说： <span class="math display">\[\mathbb{KL}(p \parallel q) = \sum_{i}^n p_i (\log{p_i} - \log{q_i})\]</span></p>
+<p>使用对数计算的性质，可以转为更常见的表示方法： <span class="math display">\[\mathbb{KL}(p \parallel q)  = \sum_{i}^n p_i \log{\frac{p_i}{q_i}}\]</span></p>
+<p>也可以转为： <span class="math display">\[\mathbb{KL}(p \parallel q) = - \sum_{i}^n p_i (\log{q_i} - \log{p_i})\]</span></p>
+<p>将其展开可以得到： <span class="math display">\[\mathbb{KL}(p \parallel q) =  \overbrace{-\sum_{i}^n p_i \log{q_i}}^{H(p, q)} -  \overbrace{\left(-\sum_{i}^n p_i \log{p_i}\right)}^{H(p)}\]</span></p>
+<p>其中 <span class="math inline">\(H(p)\)</span> 代表 <span class="math inline">\(p\)</span> 分布的熵，<span class="math inline">\(H(p, q) = - \mathbb{E}_p[\log{q}]\)</span> 有点像计算 <span class="math inline">\(q\)</span> 的熵但是每种可能出现的概率是 <span class="math inline">\(p\)</span>。</p>
+<p>由上可以得到： <span class="math display">\[H(p, q) = H(p) + D_\text{KL}(p \parallel q)\]</span></p>
+<p>这表明 KL 散度可以有效地解释为 <span class="math inline">\(q\)</span> 代替 <span class="math inline">\(p\)</span> 增加的熵。</p>
+<p>为了更加指标，我们将计算 KL 散度的一些值并绘制它们，继续使用熵一节中的例子：</p>
+<div class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dists <span class="op">=</span> [q_pmf, qu_pmf, r_pmf, ru_pmf, s_pmf, su_pmf]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> [<span class="st">"q"</span>, <span class="st">"qu"</span>, <span class="st">"r"</span>, <span class="st">"ru"</span>, <span class="st">"s"</span>, <span class="st">"su"</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>KL_matrix <span class="op">=</span> np.zeros((<span class="dv">6</span>, <span class="dv">6</span>))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, dist_i <span class="kw">in</span> <span class="bu">enumerate</span>(dists):</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, dist_j <span class="kw">in</span> <span class="bu">enumerate</span>(dists):</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        KL_matrix[i, j] <span class="op">=</span> stats.entropy(dist_i, dist_j)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(np.arange(<span class="bu">len</span>(names)))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>ax.set_yticks(np.arange(<span class="bu">len</span>(names)))</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels(names)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>ax.set_yticklabels(names)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>plt.set_cmap(<span class="st">"viridis"</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>cmap <span class="op">=</span> plt.cm.get_cmap()</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>cmap.set_bad(<span class="st">'w'</span>, <span class="fl">0.3</span>)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> ax.imshow(KL_matrix)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>fig.colorbar(im, extend<span class="op">=</span><span class="st">"max"</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/var/folders/mf/vz25j9w14ng0kgrg7jz5tc7w0000gn/T/ipykernel_95623/3045023848.py:15: MatplotlibDeprecationWarning: The get_cmap function was deprecated in Matplotlib 3.7 and will be removed two minor releases later. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap(obj)`` instead.
+  cmap = plt.cm.get_cmap()</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-8-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>首先上图不是对称的，因为 <span class="math inline">\(\mathbb{KL}(p \parallel q)\)</span> 并不一定与 <span class="math inline">\(\mathbb{KL}(q \parallel p)\)</span> 相等；其次有一些空白区域，它们代表无穷大。KL 散度的定义使用中有以下约定： <span class="math display">\[0 \log \frac{0}{0} = 0, \quad
+0 \log \frac{0}{q(\boldsymbol{x})} = 0, \quad
+p(\boldsymbol{x}) \log \frac{p(\boldsymbol{x})}{0} = \infty\]</span></p>
+<p>我们可以基于 KL 散度，在计算预期对数逐点预测密度时使用 log-score 。假设我们有 <span class="math inline">\(k\)</span> 个模型 <span class="math inline">\(\{q_{M_1}, q_{M_2}, \cdots q_{M_k}\}\)</span>，并且假设我们知道真实的模型 <span class="math inline">\(M_0\)</span>，则我们可以计算： <span class="math display">\[
+\begin{split}
+        \mathbb{KL}(p_{M_0} \parallel q_{M_1}) =&amp;\; \mathbb{E}[\log{p_{M_0}}] - \mathbb{E}[\log{q_{M_1}}] \\
+        \mathbb{KL}(p_{M_0} \parallel q_{M_2}) =&amp;\; \mathbb{E}[\log{p_{M_0}}] - \mathbb{E}[\log{q_{M_2}}] \\
+        &amp;\cdots \\
+        \mathbb{KL}(p_{M_0} \parallel q_{M_k}) =&amp;\; \mathbb{E}[\log{p_{M_0}}] - \mathbb{E}[\log{q_{M_k}}]
+    \end{split}
+\]</span></p>
+<p>以上似乎没有用，因为显示中我们不知道 <span class="math inline">\(M_0\)</span>。但是由于所有比较中的 <span class="math inline">\(p_{M_0}\)</span> 都是相同的，所以基于KL散度构建一个排名等同于基于 log-score 构建一个排名。这是一个技巧，它意味着我们可以通过比较 log-score 来间接比较KL散度，即使我们可能无法直接计算KL散度。这在模型选择或比较中是非常有用的，因为 log-score 通常比KL散度更容易计算。</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
