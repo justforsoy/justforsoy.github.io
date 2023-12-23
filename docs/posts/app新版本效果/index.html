@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-06-07">
+
+<title>Rock’s blog - 因果推断：准实验法评估App新版本增益</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Rock’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/justforsoy" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">因果推断：准实验法评估App新版本增益</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">因果推断</div>
+                <div class="quarto-category">旧文迁移</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">June 7, 2021</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="背景" class="level1">
+<h1>背景</h1>
+<p>做A/B实验相关工作中遇到一些问题，其中之一就是如何判断新版本对用户影响，以前的做法：</p>
+<p>1.所有新功能都预埋开关(默认关)，对新版本用户随机分桶后对实验组开启，用标准A/B实验方法评估。但是这在需要很高开发成本，而且容易出错； 2.同时构建两个新版本，a版本不包含任何新功能，b版本包含全部新功能，对用户随机分桶后，分别开放不同版本的升级，之后对a版本用户、b版本用户用随机实验法进行评估。这也需要较高成本，而且对第三方渠道不能自由控制用户是否可以，仅能用在灰度发布阶段，样本量较小； 3.随机分桶后，仅对实验组开放升级，之后与对照组对比，并可对实验组中升级用户作为训练集，通过机器学习方法判断对照组中愿意升级的用户，对他们进行评估。本方法同样存在2中的问题，只是免去了打a版本发布的过程。</p>
+<p>上述问题都有实现难度、成本方面、样本量的问题，那么有没有办法不改变发布流程，科学的评估效果呢？有，LinkedIn用准实验方法做过相同的事情：<a href="https://www.kdd.org/kdd2016/papers/files/adf0943-xuA.pdf">Evaluating Mobile Apps with A/B and Quasi A/B tests</a>。下面记录下我的个人理解。</p>
+</section>
+<section id="准实验是什么" class="level1">
+<h1>准实验是什么?</h1>
+<p>众所周知，相关不一定等于因果，判断因果效应的黄金工具是随机实验。准实验是在没有办法进行随机实验时，对观测数据因果推断的方法。一个详细的介绍可以参考：https://www.scribbr.com/methodology/quasi-experimental-design/。</p>
+</section>
+<section id="为什么需要准实验" class="level1">
+<h1>为什么需要准实验？</h1>
+<p>LinkedIn发布了一个大的更新版本，没有办法把所有的功能做成开关，而且他们不能自己灰度升级发布。因此需要用准实验方法来进行评估。目的是研究版本效果差异，对比的是新版本用户与旧版本用户数据，但是用户是否会升级与个人意愿、是否有wifi、渠道策略等因素有关，直接做diff是有偏的，需要采用因果推断中的准实验法。</p>
+</section>
+<section id="怎么做准实验" class="level1">
+<h1>怎么做准实验？</h1>
+<section id="常用的准实验技术" class="level2">
+<h2 class="anchored" data-anchor-id="常用的准实验技术">1. 常用的准实验技术</h2>
+<ul>
+<li><strong>OLS类方法</strong> 假设指标服从线性模型：<span class="math inline">\(Y = \beta_0 + Z\beta_1 + X\beta_2 + \epsilon\)</span><br>
+其中<span class="math inline">\(Y = (Y_1,...Y_n)^T\)</span>是每个用户的结果数据， <span class="math inline">\(Z = (Z_1,...Z_n)^T\)</span>为0/1代表是否接受干预，<span class="math inline">\(X = (X_1,...X_n)^T\)</span>是<span class="math inline">\(Y\)</span>和<span class="math inline">\(Z\)</span>所有相关协变量的矩阵。在此模型下，<span class="math inline">\(\beta_1\)</span>是干预的影响效果。<br>
+此时如果忽略<span class="math inline">\(X\)</span>，<span class="math inline">\(\beta_1\)</span>的OLS估计是有偏的，偏差为：<span class="math inline">\(bias = (D^TD)^{-1}D^TX\beta_2\)</span>, <span class="math inline">\(D = (1, Z)\)</span><br>
+如果将影响<span class="math inline">\(Z\)</span>、<span class="math inline">\(Y\)</span>的协变量作为<span class="math inline">\(X\)</span>带入公式，偏差就可以变小，但是无法证明所有影响因子都包含在了<span class="math inline">\(X\)</span>中。</li>
+</ul>
+<blockquote class="blockquote">
+<p>可以优化的点：</p>
+<ol type="1">
+<li>效果可能是非线性的，在拟合模型前做Box-Cox transformation；</li>
+<li>泛化为endogenous switching model，对升级和不升级分别拟合： $Y_1 = X_1 _1 + _1&nbsp;if&nbsp;Z=1 $ $Y_0 = X_0 _0 + _0&nbsp;if&nbsp;Z=0 $</li>
+</ol>
+</blockquote>
+<ul>
+<li><strong>基于倾向的方法</strong> 偏差基于用户升级的概率进行修正。倾向得分一般通过逻辑回归估计：<span class="math inline">\(P(Z=1|X=x) = \frac{e^{x\beta}}{1 + e^{x\beta}}\)</span><br>
+分数可以用于：1.匹配或分类，可以构建分层，使每层X与Y相关性减弱；2.<strong>计算权值</strong>，用<a href="https://en.wikipedia.org/wiki/Inverse_probability_weighting">逆概率加权方法</a>，将<span class="math inline">\(\frac{ 1 }{P(Z_i=1|X)}\)</span>作为升级用户权值，将<span class="math inline">\(\frac{1}{P(Z_i=0|X)}\)</span>作为非升级用户权值，构建反事实输出。</li>
+</ul>
+</section>
+</section>
+<section id="linkedin的实践" class="level1">
+<h1>LinkedIn的实践</h1>
+<section id="ios的升级研究" class="level2">
+<h2 class="anchored" data-anchor-id="ios的升级研究">1. iOS的升级研究</h2>
+<p>由于当时苹果市场只支持全量发布，是否升级对是用户自身影响因素决定的，所以是一个经典的准实验问题，可以用上述方法解决。关于方案效果测试，可以对之前没有附带新功能的版本进行”<strong>A/A</strong>”，看能否有效消除偏差。<br>
+<img src="1.webp" class="img-fluid" alt="AUC of the propensity model"></p>
+<p>两个值得注意的点：</p>
+<ul>
+<li>wifi的影响 测试发现，很多用户在有wifi的情况下，会自动或者主动升级。有无wifi是一个随机不可预测的时间，所以用户什么时候会升级也不可预测。导致上图的红色曲线，7天来看AUC较高，短期来看AUC较低。此时将预测升级概率很高但是没有升级的用户作为噪音移除，可以得到绿色曲线。</li>
+<li>选择正确的特征 比如将设备版本信息从特征集中移除，曲线就会变成蓝色那条，效果很差。 <img src="2.webp" class="img-fluid" alt="Bias of various quasi methods evaluated for the iOS release"></li>
+</ul>
+<p>测试结果：<br>
+从上图可看到，bias大幅降低，endogenous OLS模型效果最好。</p>
+</section>
+<section id="android的升级研究" class="level2">
+<h2 class="anchored" data-anchor-id="android的升级研究">2. Android的升级研究</h2>
+<p>谷歌市场可以分阶段配置发布比例，提供给老用户和新用户下载安装，这依然不符合A/B实验要求。<img src="3.webp" class="img-fluid" alt="Illustrate how adoption bias exists even in Google staged roll out."><br>
+图中A1、B1代表愿意升级的用户，其它为不愿意升级用户，而A1、A2代表有资格升级的用户(在分阶段发布里命中)，也就是仅有A1群体成功升级。在用户意愿和分阶段发布共同作用下，上述iOS的方案会表现很差。<br>
+这种机制带来了另一种好处，比如在20%放量阶段，对每个升级者来说，期望有4个与他相似的用户。如果我们识别出其它相似用户，那就可以近似为随机实验。所以需要一种低假阳性的识别方法，哪怕假阴性较高(因为有4个相似用户，召回率没有那么重要)。</p>
+<blockquote class="blockquote">
+<p>假设有个选择标准<span class="math inline">\(S\)</span>用于识别升级用户，将它用于A1、A2 + B1 + B2。在高假阳性，低假阴性情况下： <span class="math inline">\(S(A_1) = A_1\)</span> <span class="math inline">\(S(A_2 + B_1 + B_2) = S(A_2) + B_1 + S(B_2) &gt; B_1\)</span> 但是如果低假阳性，高假阴性： <span class="math inline">\(S(A_1) \subset A_1\)</span> <span class="math inline">\(S(A_2 + B_1 + B_2) = S(B_1) \subset B_1\)</span></p>
+</blockquote>
+<p>由于A1与B1是可比较的，S(A1)与S(B1)也是可以比较的，下面介绍两种基于此的策略。</p>
+<section id="几何分布模型" class="level3">
+<h3 class="anchored" data-anchor-id="几何分布模型">2.1. 几何分布模型</h3>
+<p>思路是将愿意升级用户B1从未升级用户中识别出，不同于iOS那边将升级用户参与模型训练，这里仅使用历史数据来训练，对识别出的用户再按是否升级，判断是否属于B1。 由于随着时间推进，用户升级的概率越来越高，我们需要建模获取<span class="math inline">\(P_{it}\)</span>，代表i个用户t日升级概率。假设每日概率恒定为<span class="math inline">\(P_i\)</span>，则：<br>
+<span class="math inline">\(P_{it} = (1 - P_i)^{a_{it} - 1}P_i\)</span>，其中<span class="math inline">\(a_{it}\)</span>代表活跃天数。</p>
+<p>基于历史数据，可以计算<span class="math inline">\(P_i\)</span>的最大似然估计：<br>
+<span class="math inline">\(\hat{P_i} = \argmax_{P_i}\prod ^s_{j=1}(1 - P_i)^{k_{ij} - 1}P_i^{I_{ij}} = \frac{\sum_jI_{ij}}{\sum_jI_{ij} + \sum_jk_{ij}}\)</span><br>
+<span class="math inline">\(k_{ij}\)</span>代表用户i在可以升级版本j到升级版本j前的活跃天数，<span class="math inline">\(I_{ij}\)</span>代表用户i是否升级了版本j。<br>
+最后，在发布新版本后，每个用户每天计算累计概率<span class="math inline">\(1 - (1 - \hat{P_i})^{a_{it}}\)</span>。选择超过阈值的用户认为是会升级用户。<br>
+<img src="4.webp" class="img-fluid" alt="Bias of the geometric distribution model."></p>
+<p>测试结果看，一周来看几乎可以矫正所有的选择性偏差。但是开始几天精度比较低。</p>
+</section>
+<section id="doubly-robust-with-matching" class="level3">
+<h3 class="anchored" data-anchor-id="doubly-robust-with-matching">2.2. Doubly Robust with Matching</h3>
+<p>由于非升级组有更多的用户与升级用户相似，直接通过协变量将他们与升级用户匹配变得更容易。最基础的两种匹配方法：</p>
+<ul>
+<li><strong>精准匹配</strong>：用协变量的值精准匹配；</li>
+<li><strong>Nearest neighbor匹配</strong>：选择与升级用户距离最近的潜在升级用户。几种方法：(1)局部贪心方法选择最匹配那一个，但是这会与升级用户顺序相关；(2)全局最优方法。</li>
+</ul>
+<p>两种策略都不容易通过GPU运算，尤其在有大量协变量时，带来性能上的问题。<br>
+因此，LinkedIn采取了“Doubly Robust” 方法，先进行匹配算法，在其基础之上进行线性回归。第一阶段仅适用10个重要的连续变量进行匹配分桶，线性回归阶段有大量的协变量，对偏斜进行补偿。此方法可以从第一天起就有不错的表现，是LinkedIn的最终方案。</p>
+<blockquote class="blockquote">
+<p>具体步骤：</p>
+<ol type="1">
+<li>选择不被升级影响的变量；</li>
+<li>对于所有变量，确保采用者和非采用者群体的共同支持；</li>
+<li>选择10个用于执行精准匹配的变量；</li>
+<li>用于精确匹配的协变量被分桶以减少它们的基数；</li>
+<li>利用endogenous switching model 对匹配的样本中的升级用户、非升级用户分别进行加权线性回归，训练得到两个模型。在将全部匹配用户带入两个模型，两个模型的输出带入反事实框架。最终结果估计： <span class="math inline">\(DRE = \frac{1}{\sum^n_{i=1}w_i} (\sum^m_{i=1}w_i({y_i - \hat{y_i}^{0}}) + \sum^n_{i=m+1}w_i({ \hat{y_i}^{1} - y_i}) )\)</span> 其中<span class="math inline">\(w_i\)</span>权重来自匹配阶段，不是一般性1~m代表升级用户。</li>
+</ol>
+</blockquote>
+<p><img src="5.webp" class="img-fluid" alt="Bias of the doubly robust with matching model. Both are for Android 20% roll out."> 结果看起来很棒，在第一天也只有很小的偏差。</p>
+</section>
+</section>
+<section id="新奇效应" class="level2">
+<h2 class="anchored" data-anchor-id="新奇效应">3. 新奇效应</h2>
+<p>大的变更会有强的新奇效应，用户开始阶段会进行很多探索。 需要判断两个问题：1.是否有新奇效应；2.新奇效应持续多久？ 标准ab实验中，可以观测随着效果随着时间的推移是否变弱，以此来判断。在准实验方法中，结合上文相关方法，也可以进行类似的判断。</p>
+</section>
+</section>
+<section id="后记" class="level1">
+<h1>后记</h1>
+<p>在量化分析、数据决策上国外领先的，Netflix的实验平台在18年就对准实验进行了一些支持。<img src="6.webp" class="img-fluid" alt="Netflix实验平台架构"> 对因果推断来说，随机实验总是第一选择，但有时随机成本过高或者根本不可能。准实验方式是流行病学、经济学等领域常常用到的方法，它不失为不能A/B实验时的一种很好补充。</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
