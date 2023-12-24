@@ -520,8 +520,91 @@ p(\boldsymbol{x}) \log \frac{p(\boldsymbol{x})}{0} = \infty\]</span></p>
     \end{split}
 \]</span></p>
 <p>以上似乎没有用，因为显示中我们不知道 <span class="math inline">\(M_0\)</span>。但是由于所有比较中的 <span class="math inline">\(p_{M_0}\)</span> 都是相同的，所以基于KL散度构建一个排名等同于基于 log-score 构建一个排名。这是一个技巧，它意味着我们可以通过比较 log-score 来间接比较KL散度，即使我们可能无法直接计算KL散度。这在模型选择或比较中是非常有用的，因为 log-score 通常比KL散度更容易计算。</p>
+</section>
+<section id="信息准则-information-criterion" class="level2">
+<h2 class="anchored" data-anchor-id="信息准则-information-criterion">11.4. 信息准则 Information Criterion</h2>
+<p>信息准则是统计模型预测准确性的度量。它考虑模型对数据的拟合程度，并按模型的复杂性进行惩罚。有很多种信息准则，其中非贝叶斯领域最出名的是赤池信息准则 Akaike Information Criterion (AIC)。它由两部分组成，第一部分是模型对数据的拟合程度，第二部分是模型的复杂度： <span class="math display">\[AIC = -2 \sum_{i}^{n} \log p(y_i \mid \hat{\theta}_{mle}) + 2 p_{AIC}\]</span></p>
+<p>其中 <span class="math inline">\(\hat{\theta}_{mle}\)</span> 是参数 <span class="math inline">\(\theta\)</span> 的最大似然估计，<span class="math inline">\(p_{AIC}\)</span> 是模型的参数数量。</p>
+<p>AIC 在非贝叶斯环境中相当流行，但通用性不足以处理贝叶斯模型。它不使用完整的后验分布，因此丢弃了潜在有用的信息。一般来说，当我们从平坦先验转向弱信息或信息丰富的先验时，或如果我们在模型中添加更多结构（例如分层模型），AIC 的表现会越来越差。AIC 假设后验可以用高斯分布很好地表示（至少渐进地），但是对于许多模型来说情况并非如此，包括分层模型、混合模型、神经网络等。总之，我们希望使用一些更好的模型备择方案。</p>
+<p>广泛适用的信息准则 Widely applicable Information Crieria (WAIC) 可以被视为是 AIC 的贝叶斯版本。同样有两部分组成，最大的不同是第一部分使用完整的后验分布： <span class="math display">\[WAIC =  \sum_i^n \log \left(\frac{1}{s} \sum_{j}^S p(y_i \mid \boldsymbol{\theta}^j) \right) \; - \sum_i^n  \left(\mathop{\mathbb{V}}_{j}^s \log p(Y_i \mid \boldsymbol{\theta}^j) \right)\]</span></p>
+<p>其中第一项是逐点计算的对数似然，通过 <span class="math inline">\(s\)</span> 次后验分布抽样参数来计算以保持不确定性，它是现实中计算 ELPD 的可行方法。<br>
+第二项有些奇怪，它是 <span class="math inline">\(s\)</span> 次后验分布抽样参数下的方差。抽样对后验细节阅敏感，惩罚就越大。我们还可以从另一个等价的角度来看这一点；更灵活的模型是能够有效容纳更多数据集的模型。例如，包含直线但也包含向上曲线的模型比仅允许直线的模型更灵活；因此，在后面的模型上通过后验评估的那些观察值的对数似然平均而言将具有更高的方差。如果更灵活的模型无法通过更高的估计 ELPD 来补偿这种损失，那么更简单的模型将被我们列为更好的选择。因此，方程中的方差项通过惩罚过于复杂的模型来防止过度拟合，并且可以将其宽松地解释为 AIC 中的参数的有效数量。</p>
+<p>AIC 和 WAIC 都没有试图衡量模型是否真实，它们只是比较替代模型的相对衡量标准。从贝叶斯的角度来看，先验是模型的一部分，但 WAIC 是根据后验进行评估的，并且先验效果只是通过影响所得后验的方式来间接考虑。还有其他信息标准，例如 BIC 和 WBIC 试图回答这个问题，并且可以被视为边际可能性的近似值，但我们不会在本书中讨论它们。</p>
+</section>
+<section id="深入loo" class="level2">
+<h2 class="anchored" data-anchor-id="深入loo">11.5. 深入LOO</h2>
+<p>正如本书中交叉验证和 LOO 一节中所讨论的，我们使用术语 LOO 来指代一种近似留一交叉验证 (LOO-CV) 的特定方法，称为帕累托平滑重要性采样留一次交叉验证 ( PSIS-LOO-CV)。</p>
+<p>LOO是WAIC的替代方案，实际上可以证明它们渐近收敛到相同的数值。而且 LOO 为从业者带来了两个重要的优势。它在有限样本设置中更加稳健，并且在计算过程中提供有用的诊断。</p>
+<p>在 LOO-CV 下新数据集的预期对数逐点预测密度为： <span class="math display">\[
+\text{ELPD}_\text{LOO-CV} = \sum_{i=1}^{n} \log
+    \int \ p(y_i \mid \boldsymbol{\theta}) \; p(\boldsymbol{\theta} \mid y_{-i}) d\boldsymbol{\theta}
+\]</span></p>
+<p>其中 <span class="math inline">\(y_{-i}\)</span> 代表排除 <span class="math inline">\(i\)</span> 后的数据集。</p>
+<p>现实中无法获取 <span class="math inline">\(\theta\)</span>，所以我们使用后验分布的抽样来近似： <span class="math display">\[\sum_{i}^{n} \log
+    \left(\frac{1}{s}\sum_j^s \ p(y_i \mid \boldsymbol{\theta_{-i}^j}) \right)\]</span></p>
+<p>上述公式非常像 WAIC 中的第一项，只是每次排除一个样本，因此它不需要惩罚项。<br>
+以上公式计算消耗非常大，好在 <span class="math inline">\(n\)</span> 次观测是条件独立的，可以用以下近似： <span class="math display">\[\text{ELPD}_{psis-loo} = \sum_i^n \log \sum_j^s w_i^j p(y_i \mid \boldsymbol{\theta}^j)\]</span></p>
+<p>其中 <span class="math inline">\(w\)</span> 是归一化权重向量。</p>
+<p>计算 <span class="math inline">\(w\)</span> 需要通过重要性采样（Importance Sampling），它是一种用于估计目标分布属性的技术。如果我们有随机变量 <span class="math inline">\(X\)</span> 的样本，而且可以按每个点计算 <span class="math inline">\(f(x)\)</span> 和 <span class="math inline">\(g(x)\)</span>，则重要性权重为： <span class="math display">\[w_i = \frac{f(x_i)}{g(x_i)}\]</span></p>
+<p>重要性采样（Importance Sampling）的计算步骤：</p>
+<ul>
+<li><p>从分布 <span class="math inline">\(g\)</span> 中抽取 <span class="math inline">\(N\)</span> 个样本 <span class="math inline">\(x_i\)</span>：这是从我们选择的易于采样的分布（也称为提议分布）中抽取样本的步骤；</p></li>
+<li><p>计算每个样本的概率 <span class="math inline">\(g(x_i)\)</span>：这是计算每个样本在提议分布 <span class="math inline">\(g\)</span> 下的概率；</p></li>
+<li><p>在 <span class="math inline">\(N\)</span> 个样本 <span class="math inline">\(x_i\)</span> 上评估函数 <span class="math inline">\(f\)</span>：这是计算目标函数 <span class="math inline">\(f\)</span> 在每个样本点上的值；</p></li>
+<li><p>返回 <span class="math inline">\(N\)</span> 个样本对应的 <span class="math inline">\((x_i, w_i)\)</span>，带入需要的评估器中。</p></li>
+</ul>
+<p>下图显示了使用两个不同的提案分布来近似相同目标分布（虚线）的示例。在第一行，提案比目标分布更宽。在第二行，提案比目标分布更窄。正如我们所看到的，第一种情况的近似值更好。这是重要性抽样的一般特征。 <img src="importance_sampling.png" class="img-fluid"></p>
+<p>回到 LOO，我们计算的分布是后验分布。为了评估模型，我们需要来自留一后验分布的样本，因此我们要计算的重要性权重是： <span class="math display">\[w_i^j = \frac{p(\theta^j \mid y{-i} )}{p(\theta^j \mid y)} \propto \frac{1}{p(y_i \mid \theta^j)}\]</span></p>
+<p>注意后验可能比 leave-one-out分布 有更细的尾部，正如我们在上图看到的那样，这可能会导致估计结果很差。从数学上讲，问题在于重要性权重可能具有很高甚至无限的方差。为了控制方差，LOO 应用了平滑过程，其中涉及用估计的帕累托分布中的值替换最大的重要性权重。而且要注意估计参数 <span class="math inline">\(\hat{\kappa}\)</span> 检测极具影响力的观察结果，即当被排除时对预测分布有很大影响的观察结果。一般来说大的 <span class="math inline">\(\hat{\kappa}\)</span> 代表数据或者模型有问题，特别是当 <span class="math inline">\(\hat{\kappa} \ge 0.7\)</span> 时。</p>
+</section>
+<section id="杰弗里斯先验的推导" class="level2">
+<h2 class="anchored" data-anchor-id="杰弗里斯先验的推导">11.6. 杰弗里斯先验的推导</h2>
+<p>单变量下 JP 的定义为： <span class="math display">\[p(\theta) = \sqrt{I(\theta)}\]</span><br>
+其中 <span class="math inline">\(I(\theta)\)</span> 是 Fisher 信息： <span class="math display">\[I(\theta) = - \mathbb{E_{Y}}\left[\frac{d^2}{d\theta^2} \log p(Y \mid \theta)\right]\]</span></p>
+<section id="二项分布参数的杰弗里斯先验" class="level3">
+<h3 class="anchored" data-anchor-id="二项分布参数的杰弗里斯先验">11.6.1. 二项分布参数的杰弗里斯先验</h3>
+<p>二项分布可以表示为： <span class="math display">\[p(Y \mid \theta) \propto \theta^{y} (1-\theta)^{n-y}\]</span></p>
+<p>其中 <span class="math inline">\(y\)</span> 是成功次数，<span class="math inline">\(n\)</span> 是总次数。</p>
+<p>为了计算 Fisher 信息，我们需要计算对数似然： <span class="math display">\[\ell = \log(p(Y \mid \theta)) \propto y \log(\theta) + (n-y) \log(1-\theta)\]</span></p>
+<p>计算其二阶导数： <span class="math display">\[
+\begin{aligned}
+\begin{split}
+\frac{d \ell}{d\theta} &amp;= \frac{y}{\theta} - \frac{n-y}{1-\theta} \\
+\frac{d^{2} \ell}{d \theta^{2}} &amp;= -\frac{y}{\theta^{2}} - \frac{n-y}{ (1-\theta)^{2}}
+\end{split}\end{aligned}
+\]</span></p>
+<p>将其带入 Fisher 信息公式： <span class="math display">\[I(\theta) = - \mathbb{E}_{Y}\left[-\frac{y}{\theta^{2}} + \frac{n-y}{ (1-\theta)^{2}} \right]\]</span></p>
+<p>由于 <span class="math inline">\(\mathbb{E}[y] = n\theta\)</span>，可写成： <span class="math display">\[I(\theta)= \frac{n\theta}{\theta^{2}} - \frac{n - n \theta}{(1-\theta)^{2}}\]</span></p>
+<p>化简得： <span class="math display">\[I(\theta)= \frac{n}{\theta} - \frac{n (1 -\theta)}{(1-\theta)^{2}} = \frac{n}{\theta} - \frac{n}{(1-\theta)}\]</span></p>
+<p>将分母通分得： <span class="math display">\[I(\theta)= \frac{n(1-\theta) - n\theta}{\theta(1-\theta)} = \frac{n}{\theta(1-\theta)}\]</span></p>
+<p>如果忽略常数 <span class="math inline">\(n\)</span>，则有： <span class="math display">\[I(\theta) \propto \frac{1}{\theta (1-\theta)} = \theta^{-1} (1-\theta)^{-1}\]</span></p>
+<p>将其带入 JP 公式，最终得到结果： <span class="math display">\[p(\theta) \propto \sqrt{I(\theta)} \propto \sqrt{\theta^{-1} (1-\theta)^{-1}} = \theta^{-1/2} (1-\theta)^{-1/2}\]</span></p>
+</section>
+<section id="二项分布比例-kappa-的杰弗里斯先验" class="level3">
+<h3 class="anchored" data-anchor-id="二项分布比例-kappa-的杰弗里斯先验">11.6.2. 二项分布比例 <span class="math inline">\(\kappa\)</span> 的杰弗里斯先验</h3>
+<p>替换 <span class="math inline">\(\theta = \frac{\kappa}{\kappa + 1}\)</span>： <span class="math display">\[p(Y \mid \kappa) \propto \left({\frac{\kappa}{\kappa + 1}}\right)^{y} \left(1-{\frac{\kappa}{\kappa +1}}\right)^{n-y}\]</span></p>
+<p>可以写为： <span class="math display">\[p(Y \mid \kappa) \propto \kappa^y (\kappa + 1)^{-y} (\kappa +1)^{-n + y}\]</span></p>
+<p>整理后： <span class="math display">\[p(Y \mid \kappa) \propto \kappa^y (\kappa + 1)^{-n}\]</span></p>
+<p>取对数： <span class="math display">\[\ell = \log(p(Y \mid \kappa)) \propto y \log{\kappa} -n \log{(\kappa + 1)}\]</span></p>
+<p>计算二阶导数： <span class="math display">\[
+\begin{aligned}
+\begin{split}
+\frac{d \ell}{d{\kappa}} &amp;= \frac{y}{\kappa} - \frac{n}{\kappa + 1} \\
+\frac{d^2 \ell}{d {\kappa^2}} &amp;= -\frac{y}{\kappa^2} + \frac{n}{(\kappa+1)^2}
+\end{split}\end{aligned}
+\]</span></p>
+<p>则： <span class="math display">\[I(\kappa) = - \mathbb{E}_Y\left[-\frac{y}{\kappa^2} + \frac{n}{ (\kappa+1)^2} \right]\]</span></p>
+<p>由于 <span class="math inline">\(\mathbb{E}[y] = n\frac{\kappa}{\kappa + 1}\)</span>，可写成： <span class="math display">\[I(\kappa) = \frac{n}{\kappa (\kappa + 1)} - \frac{n}{(\kappa + 1)^2}\]</span></p>
+<p>通分得到： <span class="math display">\[I(\kappa) = \frac{n(\kappa + 1) - n\kappa}{\kappa(\kappa + 1)^2} = \frac{n}{\kappa(\kappa + 1)^2}\]</span></p>
+<p>最终得到： <span class="math display">\[p(\kappa) \propto \sqrt{I(\kappa)} \propto \sqrt{\frac{1}{\kappa(\kappa + 1)^2}} = \kappa^{-1/2} (\kappa + 1)^{-1}\]</span></p>
+</section>
+<section id="二项分布似然的杰弗里斯后验" class="level3">
+<h3 class="anchored" data-anchor-id="二项分布似然的杰弗里斯后验">11.6.3. 二项分布似然的杰弗里斯后验</h3>
+<p>结合 <span class="math inline">\(\theta\)</span> 的杰弗里斯先验和二项分布似然： <span class="math display">\[p(\theta \mid Y) \propto  \theta^{y} (1-\theta)^{n-y} \theta^{-0.5} (1-\theta)^{-0.5} = \theta^{y-0.5} (1-\theta)^{n-y-0.5}\]</span></p>
+<p>类似的结合 <span class="math inline">\(\kappa\)</span> 的杰弗里斯先验和二项分布似然： <span class="math display">\[p(\kappa \mid Y) \propto \kappa^y (\kappa + 1)^{-n}  \kappa^{-0.5} (1 + \kappa)^{-1} = \kappa^{(y-0.5)}  (\kappa + 1)^{(-n-1)})\]</span></p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
