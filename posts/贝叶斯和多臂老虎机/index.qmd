@@ -12,31 +12,36 @@ categories: [贝叶斯,多臂老虎机,旧文迁移]
 定义$Y_t = (y_1, ..., y_t)$代表t时为止的奖励序列，$a_t$代表t时选择的臂，t时刻奖励$y_t \sim f_{a_t}(y|\theta)$，$\theta$是一个未知向量。    
 
 $y_t \in (0, 1)$情况下两种例子：    
+
 1. 伯努利老虎机，$\theta = (\theta_1, ...,\theta_k)$，$f_{a_t}(y|\theta)$参数为$\theta_a$    
 2. fractional factorial bandit（本文不关注）    
     
 定义$\mu_a(\theta) = E(y_t | \theta, a_t = a)$是$f_{a}(y|\theta)$的期望值，最佳策略应该一直选择$\mu_a(\theta)$最大的臂。    
 在伯努利分布下，$\theta_a = \mu_a(\theta)$。    
     
-定义$p(\theta)$是$\theta$的先验概率密度，此时以$p(\theta) $产生$\theta$，$\theta$产生y，则0时刻选择a正确概率：    
->$w_{a0} = Pr(\mu_a = max\{\mu_1,... \})$   （1)    
+定义$p(\theta)$是$\theta$的先验概率密度，此时以$p(\theta) $产生$\theta$，$\theta$产生y，则0时刻选择a正确概率：      
+  
+$$w_{a0} = Pr(\mu_a = max\{\mu_1,... \})$$ 
     
 定义$I_a(\theta)$为指示函数，$\mu_a = max\{\mu_1,...\mu_k\}$时$I_a(\theta)=1$：    
-> $w_{a0} = E(I_a(\theta)) = \int I_a(\theta) p(\theta) d\theta$   （2）    
+
+$$w_{a0} = E(I_a(\theta)) = \int I_a(\theta) p(\theta) d\theta$$
     
 ![一个例子，先验可以Beta分布，两臂时为二元](1.webp)
 
 
 如果没有关于$\theta$的先验，则先验视为各个$\mu$是一样的，$w_{a0}$是均匀分布。    
-观测到奖励情况后，通过贝叶斯方法进行更新，$p(\theta | Y_t  ) = \frac{p(Y_t|\theta)p(\theta)}{p(Y_t)}$。t时刻：    
-> $p(\theta | Y_t  ) \propto  p(\theta)\prod _{\tau = 1}^t f_{a_\tau}(y|\theta)$   (3)    
+观测到奖励情况后，通过贝叶斯方法进行更新，$p(\theta | Y_t  ) = \frac{p(Y_t|\theta)p(\theta)}{p(Y_t)}$。t时刻：  
+
+$$p(\theta | Y_t  ) \propto  p(\theta)\prod _{\tau = 1}^t f_{a_\tau}(y|\theta)$$
 则此时$w_{at} = Pr(\mu_a = max\{\mu_1,...\} | Y_t  ) = E(I_a(\theta) | Y_t ) $  （4）    
     
 随机概率匹配用$w_{at}$来分配a的t+1时观测值，通过一种自然平衡探索与开发的方式。    
     
 ### 1.1 概率分配计算
 如果$\theta^{(1)},...,\theta^{(G)}$是来自$p(\theta|Y_t)$的独立抽样，则基于大数定理：    
->$w_{at} = \lim_{g\rightarrow \infty }\frac{1}{G}\sum^G_{g=1}I_a(\theta^g).$ （5）    
+
+$$w_{at} = \lim_{g\rightarrow \infty }\frac{1}{G}\sum^G_{g=1}I_a(\theta^g)$$   
     
 如果$f_a$是指数族，而且$p(\theta)$是它的共轭分布，则可以独立的抽样$\theta$，否则可以用马可夫相关的方法进行抽样模拟。    
     
@@ -87,14 +92,17 @@ $y_t \in (0, 1)$情况下两种例子：
 ## 3. 伯努利老虎机上使用不同策略的对比
 定义$\theta = (\theta_1, ...,\theta_k)$，先验为$\theta_a \sim U(0, 1)$，它们之间相互独立。    
 $Y_{at},N_{at}$分别代表t时刻a的累计成功次数和观测次数。    
-则$\theta = (\theta_1, ...,\theta_k)$的后验为：    
->$p(\theta|Y_t) =\prod ^k_{a=1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)$   (10)    
+则$\theta = (\theta_1, ...,\theta_k)$的后验为：   
+
+$$p(\theta|Y_t) =\prod ^k_{a=1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)$$
 
 其中$B_e(\theta|\alpha, \beta)$是贝塔分布。此时最佳概率为：    
-> $w_{at} = \int_{0}^{1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\prod_{j\neq a}Pr(\theta_j < \theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\theta_a$  (11)    
+
+$$w_{at} = \int_{0}^{1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\prod_{j\neq a}Pr(\theta_j < \theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\theta_a$$    
 
 验证主要关注regret，最佳选择$\mu^*(\theta) = max_a\{\mu_a(\theta) \}$，手臂a在t时刻的观测次数为$n_{at}$，则t时刻的regret为：    
-> $L_t = \sum_an_{at}(\mu^*(\theta) - \mu_a(\theta)) $   (12)    
+
+$$L_t = \sum_an_{at}(\mu^*(\theta) - \mu_a(\theta)) $$    
 
 则T时段累计regret为$L = \sum_{t= 1}^TL_t$。以下是一些模拟对比结果。    
 

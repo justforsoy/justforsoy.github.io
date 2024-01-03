@@ -146,14 +146,18 @@ ul.task-list li input[type="checkbox"] {
 <section id="随机概率匹配rpm" class="level2">
 <h2 class="anchored" data-anchor-id="随机概率匹配rpm">1. 随机概率匹配（RPM）</h2>
 <p>定义<span class="math inline">\(Y_t = (y_1, ..., y_t)\)</span>代表t时为止的奖励序列，<span class="math inline">\(a_t\)</span>代表t时选择的臂，t时刻奖励<span class="math inline">\(y_t \sim f_{a_t}(y|\theta)\)</span>，<span class="math inline">\(\theta\)</span>是一个未知向量。</p>
-<p><span class="math inline">\(y_t \in (0, 1)\)</span>情况下两种例子：<br>
-1. 伯努利老虎机，<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>，<span class="math inline">\(f_{a_t}(y|\theta)\)</span>参数为<span class="math inline">\(\theta_a\)</span><br>
-2. fractional factorial bandit（本文不关注）</p>
+<p><span class="math inline">\(y_t \in (0, 1)\)</span>情况下两种例子：</p>
+<ol type="1">
+<li>伯努利老虎机，<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>，<span class="math inline">\(f_{a_t}(y|\theta)\)</span>参数为<span class="math inline">\(\theta_a\)</span><br>
+</li>
+<li>fractional factorial bandit（本文不关注）</li>
+</ol>
 <p>定义<span class="math inline">\(\mu_a(\theta) = E(y_t | \theta, a_t = a)\)</span>是<span class="math inline">\(f_{a}(y|\theta)\)</span>的期望值，最佳策略应该一直选择<span class="math inline">\(\mu_a(\theta)\)</span>最大的臂。<br>
 在伯努利分布下，<span class="math inline">\(\theta_a = \mu_a(\theta)\)</span>。</p>
-<p>定义<span class="math inline">\(p(\theta)\)</span>是<span class="math inline">\(\theta\)</span>的先验概率密度，此时以$p() <span class="math inline">\(产生\)</span><span class="math inline">\(，\)</span><span class="math inline">\(产生y，则0时刻选择a正确概率： &gt;\)</span>w_{a0} = Pr(_a = max{_1,… })$ （1)</p>
-<p>定义<span class="math inline">\(I_a(\theta)\)</span>为指示函数，<span class="math inline">\(\mu_a = max\{\mu_1,...\mu_k\}\)</span>时<span class="math inline">\(I_a(\theta)=1\)</span>：<br>
-&gt; <span class="math inline">\(w_{a0} = E(I_a(\theta)) = \int I_a(\theta) p(\theta) d\theta\)</span> （2）</p>
+<p>定义<span class="math inline">\(p(\theta)\)</span>是<span class="math inline">\(\theta\)</span>的先验概率密度，此时以$p() <span class="math inline">\(产生\)</span><span class="math inline">\(，\)</span>$产生y，则0时刻选择a正确概率：</p>
+<p><span class="math display">\[w_{a0} = Pr(\mu_a = max\{\mu_1,... \})\]</span></p>
+<p>定义<span class="math inline">\(I_a(\theta)\)</span>为指示函数，<span class="math inline">\(\mu_a = max\{\mu_1,...\mu_k\}\)</span>时<span class="math inline">\(I_a(\theta)=1\)</span>：</p>
+<p><span class="math display">\[w_{a0} = E(I_a(\theta)) = \int I_a(\theta) p(\theta) d\theta\]</span></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="1.webp" class="img-fluid figure-img"></p>
@@ -161,14 +165,13 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 <p>如果没有关于<span class="math inline">\(\theta\)</span>的先验，则先验视为各个<span class="math inline">\(\mu\)</span>是一样的，<span class="math inline">\(w_{a0}\)</span>是均匀分布。<br>
-观测到奖励情况后，通过贝叶斯方法进行更新，<span class="math inline">\(p(\theta | Y_t ) = \frac{p(Y_t|\theta)p(\theta)}{p(Y_t)}\)</span>。t时刻：<br>
-&gt; <span class="math inline">\(p(\theta | Y_t ) \propto p(\theta)\prod _{\tau = 1}^t f_{a_\tau}(y|\theta)\)</span> (3)<br>
-则此时$w_{at} = Pr(_a = max{_1,…} | Y_t ) = E(I_a() | Y_t ) $ （4）</p>
+观测到奖励情况后，通过贝叶斯方法进行更新，<span class="math inline">\(p(\theta | Y_t ) = \frac{p(Y_t|\theta)p(\theta)}{p(Y_t)}\)</span>。t时刻：</p>
+<p><span class="math display">\[p(\theta | Y_t  ) \propto  p(\theta)\prod _{\tau = 1}^t f_{a_\tau}(y|\theta)\]</span> 则此时$w_{at} = Pr(_a = max{_1,…} | Y_t ) = E(I_a() | Y_t ) $ （4）</p>
 <p>随机概率匹配用<span class="math inline">\(w_{at}\)</span>来分配a的t+1时观测值，通过一种自然平衡探索与开发的方式。</p>
 <section id="概率分配计算" class="level3">
 <h3 class="anchored" data-anchor-id="概率分配计算">1.1 概率分配计算</h3>
-<p>如果<span class="math inline">\(\theta^{(1)},...,\theta^{(G)}\)</span>是来自<span class="math inline">\(p(\theta|Y_t)\)</span>的独立抽样，则基于大数定理：<br>
-&gt;<span class="math inline">\(w_{at} = \lim_{g\rightarrow \infty }\frac{1}{G}\sum^G_{g=1}I_a(\theta^g).\)</span> （5）</p>
+<p>如果<span class="math inline">\(\theta^{(1)},...,\theta^{(G)}\)</span>是来自<span class="math inline">\(p(\theta|Y_t)\)</span>的独立抽样，则基于大数定理：</p>
+<p><span class="math display">\[w_{at} = \lim_{g\rightarrow \infty }\frac{1}{G}\sum^G_{g=1}I_a(\theta^g)\]</span></p>
 <p>如果<span class="math inline">\(f_a\)</span>是指数族，而且<span class="math inline">\(p(\theta)\)</span>是它的共轭分布，则可以独立的抽样<span class="math inline">\(\theta\)</span>，否则可以用马可夫相关的方法进行抽样模拟。</p>
 <p><strong><span class="math inline">\(\theta\)</span>的后验抽样足够对概率匹配进行支持</strong>。</p>
 </section>
@@ -228,12 +231,12 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="伯努利老虎机上使用不同策略的对比">3. 伯努利老虎机上使用不同策略的对比</h2>
 <p>定义<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>，先验为<span class="math inline">\(\theta_a \sim U(0, 1)\)</span>，它们之间相互独立。<br>
 <span class="math inline">\(Y_{at},N_{at}\)</span>分别代表t时刻a的累计成功次数和观测次数。<br>
-则<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>的后验为：<br>
-&gt;<span class="math inline">\(p(\theta|Y_t) =\prod ^k_{a=1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\)</span> (10)</p>
-<p>其中<span class="math inline">\(B_e(\theta|\alpha, \beta)\)</span>是贝塔分布。此时最佳概率为：<br>
-&gt; <span class="math inline">\(w_{at} = \int_{0}^{1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\prod_{j\neq a}Pr(\theta_j &lt; \theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\theta_a\)</span> (11)</p>
-<p>验证主要关注regret，最佳选择<span class="math inline">\(\mu^*(\theta) = max_a\{\mu_a(\theta) \}\)</span>，手臂a在t时刻的观测次数为<span class="math inline">\(n_{at}\)</span>，则t时刻的regret为：<br>
-&gt; $L_t = <em>an</em>{at}(^*() - _a()) $ (12)</p>
+则<span class="math inline">\(\theta = (\theta_1, ...,\theta_k)\)</span>的后验为：</p>
+<p><span class="math display">\[p(\theta|Y_t) =\prod ^k_{a=1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\]</span></p>
+<p>其中<span class="math inline">\(B_e(\theta|\alpha, \beta)\)</span>是贝塔分布。此时最佳概率为：</p>
+<p><span class="math display">\[w_{at} = \int_{0}^{1}Be(\theta_a|Y_{at}+1,N_{at} - Y_{at} + 1)\prod_{j\neq a}Pr(\theta_j &lt; \theta_a | Y_{jt} + 1 - N_{jt} - Y_{jt} + 1)d\theta_a\]</span></p>
+<p>验证主要关注regret，最佳选择<span class="math inline">\(\mu^*(\theta) = max_a\{\mu_a(\theta) \}\)</span>，手臂a在t时刻的观测次数为<span class="math inline">\(n_{at}\)</span>，则t时刻的regret为：</p>
+<p><span class="math display">\[L_t = \sum_an_{at}(\mu^*(\theta) - \mu_a(\theta)) \]</span></p>
 <p>则T时段累计regret为<span class="math inline">\(L = \sum_{t= 1}^TL_t\)</span>。以下是一些模拟对比结果。</p>
 <section id="批量更新场景" class="level3">
 <h3 class="anchored" data-anchor-id="批量更新场景">3.1 批量更新场景</h3>
