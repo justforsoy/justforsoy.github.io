@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2023-01-07">
+<meta name="dcterms.date" content="2024-01-14">
 
-<title>Rock’s blog - 【Bayesian Modeling and Computation in Python】2.线性模型和概率编程语言</title>
+<title>Rock’s blog - 【Bayesian Modeling and Computation in Python】3.线性模型和概率编程语言</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -141,7 +141,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">【Bayesian Modeling and Computation in Python】2.线性模型和概率编程语言</h1>
+      <h1 class="title">【Bayesian Modeling and Computation in Python】3.线性模型和概率编程语言</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">读书摘录</div>
                 <div class="quarto-category">贝叶斯建模</div>
@@ -158,7 +158,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">January 7, 2023</p>
+        <p class="date">January 14, 2024</p>
       </div>
     </div>
     
@@ -1509,7 +1509,7 @@ Sampling: [yl]</code></pre>
 </div>
 </div>
 <p>也可以通过 LOO 来比较模型的分类效果。</p>
-<div class="cell">
+<div class="cell" data-execution_count="60">
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>az.compare({<span class="st">"mass"</span>: trace_logistic_penguins_mass,</span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>            <span class="st">"bill"</span>: trace_logistic_penguins_bill_length,</span>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>            <span class="st">"mass_bill"</span>: trace_logistic_penguins_bill_length_mass}).<span class="bu">round</span>(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1521,7 +1521,7 @@ Sampling: [yl]</code></pre>
 /Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/stats/stats.py:307: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'log' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
   df_comp.loc[val] = (</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="73">
+<div class="cell-output cell-output-display" data-execution_count="60">
 <div>
 
 
@@ -1587,20 +1587,20 @@ Sampling: [yl]</code></pre>
 <section id="对数比率-log-odds-的解释" class="level3">
 <h3 class="anchored" data-anchor-id="对数比率-log-odds-的解释">3.4.3. 对数比率 Log Odds 的解释</h3>
 <p>在逻辑回归中，斜率告诉您当 x 增加一个单位时对数比率的增加。最简单的赔率是发生概率与不发生概率之间的比率。比如，我们从 Adelie 和 Chinstrap 企鹅中随机抽取一个企鹅，它是 Chinstrap 的概率是0.68。</p>
-<div class="cell">
+<div class="cell" data-execution_count="61">
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Class counts of each penguin species</span></span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> penguins[<span class="st">"species"</span>].value_counts()</span>
 <span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>adelie_count <span class="op">=</span> counts[<span class="st">"Adelie"</span>],</span>
 <span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>chinstrap_count <span class="op">=</span> counts[<span class="st">"Chinstrap"</span>]</span>
 <span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>adelie_count <span class="op">/</span> (adelie_count <span class="op">+</span> chinstrap_count)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="120">
+<div class="cell-output cell-output-display" data-execution_count="61">
 <pre><code>array([0.68224299])</code></pre>
 </div>
 </div>
 <p>同一事件的比率是：</p>
-<div class="cell">
+<div class="cell" data-execution_count="62">
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>adelie_count <span class="op">/</span> chinstrap_count</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="121">
+<div class="cell-output cell-output-display" data-execution_count="62">
 <pre><code>array([2.14705882])</code></pre>
 </div>
 </div>
@@ -1612,7 +1612,7 @@ Sampling: [yl]</code></pre>
 <h2 class="anchored" data-anchor-id="为回归模型选择先验">3.5. 为回归模型选择先验</h2>
 <p>现在我们已经熟悉了广义线性模型，让我们关注先验及其对后验估计的影响。我们将借用一项研究，其探讨了父母的吸引力与这些父母生下女孩的百分比之间的关系。在这项研究中，研究人员按照五分制评估了美国青少年的吸引力。最终，这些受试者中的许多人有了孩子，计算了每个吸引力类别的性别比例。然而，这一次，要特别关注如何一起评估先验和可能性，而不是独立评估。</p>
 <p>先选择一个非常宽的先验（近似无信息先验）：</p>
-<div class="cell">
+<div class="cell" data-execution_count="63">
 <div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.arange(<span class="op">-</span><span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">1</span>)</span>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.asarray([<span class="dv">50</span>, <span class="dv">44</span>, <span class="dv">50</span>, <span class="dv">47</span>, <span class="dv">56</span>])</span>
 <span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1636,8 +1636,7 @@ Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (4 chains in 4 jobs)
 NUTS: [σ, β_1, β_0]
-Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 22 seconds.
-There were 1 divergences after tuning. Increase `target_accept` or reparameterize.</code></pre>
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 24 seconds.</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 
@@ -1661,12 +1660,12 @@ There were 1 divergences after tuning. Increase `target_accept` or reparameteriz
 
     <div>
       <progress value="8000" class="" max="8000" style="width:300px; height:20px; vertical-align: middle;"></progress>
-      100.00% [8000/8000 00:02&lt;00:00 Sampling 4 chains, 1 divergences]
+      100.00% [8000/8000 00:04&lt;00:00 Sampling 4 chains, 0 divergences]
     </div>
     
 </div>
 </div>
-<div class="cell">
+<div class="cell" data-execution_count="64">
 <div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.ticker <span class="im">as</span> mtick</span>
 <span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>,<span class="dv">1</span>, figsize<span class="op">=</span>(<span class="fl">5.5</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1741,7 +1740,7 @@ There were 1 divergences after tuning. Increase `target_accept` or reparameteriz
 </div>
 <p>经评估，<span class="math inline">\(\beta_1\)</span> 的影响约1.4。从数学角度来看，这个结果是有效的。但从我们的常识和我们对本研究之外的出生性别比的理解来看，这些结果是值得怀疑的。据测算，出生时的“自然”性别比约为 105 比 100 名女孩（男孩约为 103 至 107 人），这意味着出生时性别比为女性 48.5%，标准差为 0.5。此外，即使是与人类生物学更本质相关的因素也不会对出生率产生如此大的影响，从而削弱了主观吸引力应该产生如此大影响的观念。</p>
 <p>让我们再次运行我们的模型，但这次先验与此常识一致。绘制我们的后验样本时，系数的集中度较小，并且在考虑可能的比率时，绘制的后验线落入更合理的范围内。</p>
-<div class="cell">
+<div class="cell" data-execution_count="65">
 <div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> model_informative_prior_sex_ratio:</span>
 <span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.Exponential(<span class="st">"σ"</span>, <span class="fl">.5</span>)</span>
 <span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1763,7 +1762,7 @@ Auto-assigning NUTS sampler...
 Initializing NUTS using jitter+adapt_diag...
 Multiprocess sampling (4 chains in 4 jobs)
 NUTS: [σ, β_1, β_0]
-Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 23 seconds.</code></pre>
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 21 seconds.</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 
@@ -1787,12 +1786,12 @@ Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws 
 
     <div>
       <progress value="8000" class="" max="8000" style="width:300px; height:20px; vertical-align: middle;"></progress>
-      100.00% [8000/8000 00:03&lt;00:00 Sampling 4 chains, 0 divergences]
+      100.00% [8000/8000 00:02&lt;00:00 Sampling 4 chains, 0 divergences]
     </div>
     
 </div>
 </div>
-<div class="cell">
+<div class="cell" data-execution_count="66">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>,<span class="dv">1</span>, figsize<span class="op">=</span>(<span class="fl">5.5</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">0</span>)</span>
