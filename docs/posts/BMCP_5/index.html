@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-01-15">
+
+<title>Rock’s blog - 【Bayesian Modeling and Computation in Python】5.样条曲线 Splines</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Rock’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/justforsoy" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">【Bayesian Modeling and Computation in Python】5.样条曲线 Splines</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">读书摘录</div>
+                <div class="quarto-category">贝叶斯建模</div>
+                <div class="quarto-category">Bayesian Modeling and Computation in Python</div>
+                <div class="quarto-category">贝叶斯</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">January 15, 2024</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>在本章中，我们将讨论样条曲线，它是第 3 章中引入的概念的扩展，旨在增加更多灵活性。<br>
+在第 3 章介绍的模型中，因变量和自变量之间的关系在整个域中是相同的。相比之下，样条曲线可以将问题分解为多个局部解决方案，这些解决方案可以全部组合起来产生有用的全局解决方案。</p>
+<section id="多项式回归" class="level2">
+<h2 class="anchored" data-anchor-id="多项式回归">5.1. 多项式回归</h2>
+<p><span class="math display">\[\mathbb{E}[Y]= \beta_0 + \beta_1 X + \beta_2 X^2 + \cdots + \beta_m X^m\]</span></p>
+<p>以上所有协变量都来自 <span class="math inline">\(X\)</span>，所以就我们的实际问题而言，我们仍然拟合的是单预测器。<span class="math inline">\(m\)</span> 被称为多项式的次数。</p>
+<p>以下是对同样的数据，分别用次数 2，10 和 15 进行多项式回归建模。随着次数提升，曲线变得更灵活。 <img src="polynomial_regression.png" class="img-fluid"></p>
+<p>多项式的一个问题是它们在全局范围内起作用，当我们应用次数为 <span class="math inline">\(m\)</span> 的多项式时，我们是在说自变量和因变量之间的关系在整个数据集中都是 <span class="math inline">\(m\)</span> 阶的。当我们的数据的不同区域需要不同级别的灵活性时，这可能会成为问题。例如这可能导致曲线过于灵活。在上图的最后一个面板中（次数=15），我们可以看到拟合曲线呈现出一个深谷，然后在 <span class="math inline">\(X\)</span> 的高值处呈现出一个高峰，即使没有这么低或高值的数据点。</p>
+<p>此外，随着次数的增加，拟合对于点的移除变得更加敏感，或者等效地说，对于未来数据的添加更加敏感。换句话说，随着次数的增加，模型更容易过拟合。</p>
+</section>
+<section id="扩展特征空间" class="level2">
+<h2 class="anchored" data-anchor-id="扩展特征空间">5.2. 扩展特征空间</h2>
+<p>在概念层面上，我们可以将多项式回归看作是创建新预测因子的一种方法，或者更正式地说，是<strong>扩展特征空间</strong>的方法。通过进行这种扩展，我们能够在扩展的空间中拟合一条线，这为我们在原始数据空间中提供了一条曲线，非常整洁！然而，特征扩展并不是对统计学无政府主义的邀请，我们不能仅仅对数据应用随机变换，然后期望总是得到好的结果。实际上，正如我们刚刚看到的，应用多项式并非没有问题。</p>
+<p>为了概括特征扩展的思想，除了多项式之外，我们可以将方程扩展为以下形式：</p>
+<p><span class="math display">\[ \mathbb{E}[Y]= \beta_0 + \beta_1 B_{1}(X_{1}) + \beta_2 B_{2}(X_{2}) + \cdots + \beta_m B_{m}(X_{m}) \]</span></p>
+<p>其中 <span class="math inline">\(B_i\)</span> 是任意函数，称为基函数。它们的线性组合让我们得到新的函数 <span class="math inline">\(f\)</span> 。 <span class="math display">\[\mathbb{E}[Y]= \sum_i^m \beta_i B_{i}(X_{i}) = f(X)\]</span></p>
+<p>关于 <span class="math inline">\(B_{i}\)</span> 函数的选择有很多种，可以用多项式、对数、开方等等。</p>
+<p>另一种选择是使用指示函数，如 <span class="math inline">\(I(c_i \leq x_k &lt; c_j)\)</span>，将原始的 <span class="math inline">\(\boldsymbol{X}\)</span> 预测因子分解为（非重叠的）子集。然后在这些子集内部局部拟合多项式。这个过程导致拟合<strong>分段多项式</strong>，如下图所示。</p>
+<p><img src="piecewise.png" class="img-fluid"></p>
+<p>在上图的四个面板中，目标是相同的，即逼近蓝色函数。我们首先将函数分成3个子域，用灰色虚线分隔，然后为每个子域拟合一个不同的函数。</p>
+<p>在第一个子面板（分段常数）中，我们拟合一个常数函数，可以将常数函数视为零次多项式。聚合解，被称为阶跃函数。这可能看起来是一个相当粗糙的近似，但这可能就是我们所需要的。例如，如果我们试图找出不连续的结果，如早上、下午和晚上的预期平均温度，阶跃函数可能就可以。或者当我们可以接受非平滑的近似，即使我们认为结果是平滑的。</p>
+<p>在第二个面板（分段线性）中，我们做的和第一个面板一样，但是我们使用的是线性函数，而不是常数函数，这是一个一阶多项式。注意，连续的线性解在虚线处相交，这是有意为之。我们可以将这种限制理解为尽可能使解决方案平滑。</p>
+<p>在第三个面板（分段二次）和第四个面板（分段三次）中，我们使用二次和三次分段多项式。我们可以看到，通过增加分段多项式的次数，我们得到了更加灵活的解决方案，这带来了更好的拟合，但也增加了过拟合的风险。</p>
+<p>因为最终的拟合是一个由局部解（基函数 <span class="math inline">\(B_i\)</span>）构造的函数 <span class="math inline">\(f\)</span>，我们可以更容易地使模型的灵活性适应数据在不同区域的需求。在这个特定的情况下，我们可以使用一个更简单的函数（低阶多项式）来拟合数据在不同区域的数据，同时为整个数据域提供一个良好的整体模型拟合。</p>
+<p>到目前为止，我们假设我们只有一个预测因子 <span class="math inline">\(X\)</span>，但是同样的思想可以扩展到多个预测因子 <span class="math inline">\(X_0, X_1, \cdots, X_p\)</span>。我们甚至可以添加一个逆链接函数 <span class="math inline">\(\phi\)</span>，这种形式的模型被称为广义加法模型（GAM）。 <span class="math display">\[\mathbb{E}[Y]= \phi \left(\sum_i^p f(X_i)\right)\]</span></p>
+<p>总结一下，等式中的 <span class="math inline">\(B_i\)</span> 函数是一种巧妙的统计设备，允许我们拟合更灵活的模型。原则上，我们可以自由选择任意的 <span class="math inline">\(B_i\)</span> 函数，我们可以根据我们的领域知识，作为探索性数据分析阶段的结果，甚至通过试错来做。由于并非所有的转换都具有相同的统计性质，因此能够访问一些在更广泛的数据集上具有良好通用性质的默认函数将是很好的。从下一节开始，直到本章的剩余部分，我们将讨论的基函数限制在一种称为 B-splines 的基函数家族。</p>
+</section>
+<section id="样条线简介" class="level2">
+<h2 class="anchored" data-anchor-id="样条线简介">5.3. 样条线简介</h2>
+<p>样条线可以被看作是试图利用多项式的灵活性，但是要对它们进行控制，从而得到一个具有整体良好统计性质的模型。要定义一个样条线，我们需要定义节点。节点的目的是将变量 <span class="math inline">\(\boldsymbol{X}\)</span> 的域分割成连续的区间。例如，上图中的灰色虚线代表节点。对于我们的目的，样条线是一个被约束为连续的分段多项式，也就是说，我们强制两个连续的子多项式在节点处相交。如果子多项式的次数为 <span class="math inline">\(n\)</span>，我们就说样条线的次数为 <span class="math inline">\(n\)</span>。有时，样条线也被称为它们的阶数，即 <span class="math inline">\(n+1\)</span>。</p>
+<p>我们可以看到，随着我们增加分段多项式的阶数，结果函数的平滑度也在增加。如我们已经提到的，子多项式应该在节点处相交。在第一个面板中，我们可能看起来在不符合，因为每条线之间有一个阶梯，也被称为不连续性，但如果我们在每个区间使用常数值，这是我们能做的最好的。</p>
+<p>在谈论样条线时，子多项式被称为基样条线或简称为B样条线。给定度数的任何样条线函数都可以构造为该度数的基样条线的线性组合。B样条线完全由一组节点和一个度数定义。</p>
+<p>Cox-de Boor递归公式定义： <img src="b-splines-formula.jpg" class="img-fluid"></p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>matplotlib inline</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arviz <span class="im">as</span> az</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cycler <span class="im">import</span> cycler</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymc <span class="im">as</span> pm</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> patsy <span class="im">import</span> bs, dmatrix</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>az.style.use(<span class="st">'arviz-grayscale'</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">"figure.dpi"</span>] <span class="op">=</span> <span class="dv">300</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">435</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>viridish <span class="op">=</span> [(<span class="fl">0.2823529411764706</span>, <span class="fl">0.11372549019607843</span>, <span class="fl">0.43529411764705883</span>, <span class="fl">1.0</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1843137254901961</span>, <span class="fl">0.4196078431372549</span>, <span class="fl">0.5568627450980392</span>, <span class="fl">1.0</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1450980392156863</span>, <span class="fl">0.6705882352941176</span>, <span class="fl">0.5098039215686274</span>, <span class="fl">1.0</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.6901960784313725</span>, <span class="fl">0.8666666666666667</span>, <span class="fl">0.1843137254901961</span>, <span class="fl">1.0</span>),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.2823529411764706</span>, <span class="fl">0.11372549019607843</span>, <span class="fl">0.43529411764705883</span>, <span class="fl">0.5</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1843137254901961</span>, <span class="fl">0.4196078431372549</span>, <span class="fl">0.5568627450980392</span>, <span class="fl">0.5</span>),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1450980392156863</span>, <span class="fl">0.6705882352941176</span>, <span class="fl">0.5098039215686274</span>, <span class="fl">0.5</span>),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.6901960784313725</span>, <span class="fl">0.8666666666666667</span>, <span class="fl">0.1843137254901961</span>, <span class="fl">0.5</span>),</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.2823529411764706</span>, <span class="fl">0.11372549019607843</span>, <span class="fl">0.43529411764705883</span>, <span class="fl">0.3</span>),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1843137254901961</span>, <span class="fl">0.4196078431372549</span>, <span class="fl">0.5568627450980392</span>, <span class="fl">0.3</span>),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.1450980392156863</span>, <span class="fl">0.6705882352941176</span>, <span class="fl">0.5098039215686274</span>, <span class="fl">0.3</span>),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>            (<span class="fl">0.6901960784313725</span>, <span class="fl">0.8666666666666667</span>, <span class="fl">0.1843137254901961</span>, <span class="fl">0.3</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="op">-</span><span class="fl">0.0001</span>, <span class="dv">1</span>, <span class="dv">1000</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>knots <span class="op">=</span> [<span class="dv">0</span>, <span class="fl">0.2</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>, <span class="fl">0.8</span>, <span class="dv">1</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>_, axes <span class="op">=</span> plt.subplots(<span class="dv">4</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> deg, ax <span class="kw">in</span> <span class="bu">enumerate</span>(axes):</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    b_splines <span class="op">=</span> bs(x, degree<span class="op">=</span>deg, knots<span class="op">=</span>knots, lower_bound<span class="op">=-</span><span class="fl">0.01</span>, upper_bound<span class="op">=</span><span class="fl">1.01</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> enu, b_s <span class="kw">in</span> <span class="bu">enumerate</span>(b_splines.T):</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        ax.plot(x, b_s, color<span class="op">=</span>viridish[enu], lw<span class="op">=</span><span class="dv">2</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    ax.plot(x, b_splines[:,deg], lw<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    ax.plot(knots, np.zeros_like(knots), <span class="st">"ko"</span>, mec<span class="op">=</span><span class="st">"w"</span>, ms<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, deg<span class="op">+</span><span class="dv">1</span>):</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        ax.plot([<span class="dv">0</span>, <span class="dv">1</span>], np.array([<span class="dv">0</span>, <span class="dv">0</span>])<span class="op">-</span>(i<span class="op">/</span><span class="dv">15</span>), <span class="st">"k."</span>, clip_on<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ax.plot(knots[:deg<span class="op">+</span><span class="dv">2</span>], np.zeros_like(knots[:deg<span class="op">+</span><span class="dv">2</span>]), <span class="st">"C4o"</span>, mec<span class="op">=</span><span class="st">"w"</span>, ms<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>plt.ylim(<span class="dv">0</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>plt.xticks([])</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>plt.yticks([])<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-4-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>随着我们增加B样条线的度数，B样条线的域越来越大。因此对于高度样条线来说，我们需要定义更多的节点。注意，在所有情况下，B样条线只在给定的区间内非零。这个属性使得样条线回归比我们从多项式回归得到的更局部。</p>
+<p>随着控制每个B样条线的节点数随度数的增长，对于所有大于0的度数，我们无法在边界附近定义B样条线。这就是为什么在图中，随着我们增加度数，B样条线在右边被突出显示为黑色的原因。这提出了一个潜在的问题，因为它使我们在边界处的B样条线少了，所以我们的近似将在那里受到影响。幸运的是，这个边界问题很容易解决，我们只需要在边界添加节点（参见图中的小点）。所以如果我们的节点是（0,1,2,3,4,5）并且我们想要拟合一个立方样条线（就像图的最后一个子图中那样），我们实际上需要使用节点集（0,0,0,0,1,2,3,4,5,5,5,5）。也就是说，我们在开始时将0填充三次，我们在结束时将5填充三次。这样做，我们现在有了五个必要的节点（0,0,0,0,1）来定义第一个B样条线（参见图最后一个子面板中看起来像指数分布的虚线）。然后我们将使用节点0,0,0,1,2来定义第二个B样条线（看起来像Beta分布的那个），等等。看看第一个完整的B样条线（黑色突出显示）是如何由节点（0,1,2,3,4）定义的，这些节点是蓝色的。注意，我们需要在边界处填充节点，填充的次数与样条线的度数相同。这就是为什么我们对于度数为0的没有额外的节点，对于度数为3的有6个额外的节点。</p>
+<p>每一个单独的B样条线本身并不是很有用，但是所有B样条线的线性组合允许我们拟合复杂的函数。因此，在实践中，拟合样条线需要我们选择B样条线的阶数，节点的数量和位置，然后找到一组系数来权衡每个B样条线。这在下图有所展示。我们可以看到基函数用不同的颜色表示，以帮助个别化每个单独的基函数。节点用每个子图底部的黑点表示。第二行更有趣，因为我们可以看到第一行的相同基函数通过一组<span class="math inline">\(\beta_i\)</span>系数进行缩放。较厚的连续黑线表示由B样条线的加权和得到的样条线，权重由<span class="math inline">\(\beta\)</span>系数给出。</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="fl">0.</span>, <span class="fl">1.</span>, <span class="dv">500</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>knots <span class="op">=</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>B0 <span class="op">=</span> dmatrix(<span class="st">"bs(x, knots=knots, degree=0, include_intercept=True) - 1"</span>, </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             {<span class="st">"x"</span>: x, <span class="st">"knots"</span>:knots})</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>B1 <span class="op">=</span> dmatrix(<span class="st">"bs(x, knots=knots, degree=1, include_intercept=True) - 1"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>             {<span class="st">"x"</span>: x, <span class="st">"knots"</span>:knots})</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>B3 <span class="op">=</span> dmatrix(<span class="st">"bs(x, knots=knots, degree=3,include_intercept=True) - 1"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>             {<span class="st">"x"</span>: x, <span class="st">"knots"</span>:knots})</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">1563</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>_, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="st">'row'</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, (B, title) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>((B0, B1, B3),</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                                     (<span class="st">"Piecewise constant"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Piecewise linear"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Cubic spline"</span>))):</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot spline basis functions</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(B.shape[<span class="dv">1</span>]):</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>, idx].plot(x, B[:, i],</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>                          color<span class="op">=</span>viridish[i], lw<span class="op">=</span><span class="dv">2</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># we generate some positive random coefficients </span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># there is nothing wrong with negative values</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    β <span class="op">=</span> np.<span class="bu">abs</span>(np.random.normal(<span class="dv">0</span>, <span class="dv">1</span>, size<span class="op">=</span>B.shape[<span class="dv">1</span>]))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot spline basis functions scaled by its β</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(B.shape[<span class="dv">1</span>]):</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>, idx].plot(x, B[:, i]<span class="op">*</span>β[i],</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>                          color<span class="op">=</span>viridish[i], lw<span class="op">=</span><span class="dv">2</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot the sum of the basis functions</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>, idx].plot(x, np.dot(B, β), color<span class="op">=</span><span class="st">'k'</span>, lw<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># plot the knots</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>, idx].plot(knots, np.zeros_like(knots), <span class="st">"ko"</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>, idx].plot(knots, np.zeros_like(knots), <span class="st">"ko"</span>)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>, idx].set_title(title)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>以上使用Patsy定义了B样条线。在第一行，我们可以看到增加阶数的样条线1（分段常数）、2（分段线性）和4（立方）用灰色虚线表示。为了清晰，每个基函数都用不同的颜色表示。在第二行，我们有第一行的基样条线通过一组系数进行缩放。粗黑线表示这些基函数的和。因为系数的值是随机选择的，我们可以将第二行的每个子面板看作是样条线空间上的先验分布的随机样本。</p>
+</section>
+<section id="用-pasty-构建设计矩阵" class="level2">
+<h2 class="anchored" data-anchor-id="用-pasty-构建设计矩阵">5.4.用 Pasty 构建设计矩阵</h2>
+<p>以上绘制了B样条线，但没有说明如何计算它们。主要原因是计算可能很繁琐，而且在像Scipy这样的包中已经有了有效的算法。因此，我们不会讨论如何从头开始计算B样条线，而是依赖于Patsy，这是一个用于描述统计模型的包，特别是线性模型，或者有线性组件的模型，并构建设计矩阵。它深受R编程语言生态系统中广泛使用的 <em>formula mini-language</em> 启发。一个有两个协变量的线性模型可表示为<code>"y ~ x1 + x2"</code>，如果我们想要添加一个交互作用，我们可以写为<code>"y ~ x1 + x2 + x1:x2"</code>。更多的细节请查看patsy文档。</p>
+<p>在Patsy中，我们需要向<code>dmatrix</code>函数传递一个以 <code>bs()</code>开始的字符串来定义基样条设计矩阵，而这个particle虽然是一个字符串，但是被Patsy解析为一个函数。因此，它也可以接受几个参数，包括数据，一个表示节点位置的类数组，以及样条的度。在以下代码块中，我们定义了3个设计矩阵，一个是度为0的（分段常数），另一个是度为1的（分段线性），最后一个是度为3的（立方样条）。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="fl">0.</span>, <span class="fl">1.</span>, <span class="dv">500</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>knots <span class="op">=</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>B0 <span class="op">=</span> dmatrix(<span class="st">"bs(x, knots=knots, degree=0, include_intercept=True) - 1"</span>, </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>             {<span class="st">"x"</span>: x, <span class="st">"knots"</span>:knots})</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>B1 <span class="op">=</span> dmatrix(<span class="st">"bs(x, knots=knots, degree=1, include_intercept=True) - 1"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>             {<span class="st">"x"</span>: x, <span class="st">"knots"</span>:knots})</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>B3 <span class="op">=</span> dmatrix(<span class="st">"bs(x, knots=knots, degree=3,include_intercept=True) - 1"</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>             {<span class="st">"x"</span>: x, <span class="st">"knots"</span>:knots})</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, (B, title, ax) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>((B0, B1, B3),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                                     (<span class="st">"Piecewise constant"</span>, </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Piecewise linear"</span>, </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Cubic spline"</span>),</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                                      axes)):</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    cax <span class="op">=</span> ax.imshow(B, cmap<span class="op">=</span><span class="st">"cet_gray_r"</span>, aspect<span class="op">=</span><span class="st">"auto"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    ax.set_xticks(np.arange(B.shape[<span class="dv">1</span>]))</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks(np.arange(B.shape[<span class="dv">0</span>]))</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    ax.spines[<span class="st">'left'</span>].set_visible(<span class="va">False</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    ax.spines[<span class="st">'bottom'</span>].set_visible(<span class="va">False</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    ax.set_title(title)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"b-splines"</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">0</span>, labelpad<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>fig.colorbar(cax, aspect<span class="op">=</span><span class="dv">40</span>, ticks<span class="op">=</span>[<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="design_matrices.png" class="img-fluid"></p>
+</section>
+<section id="基于pymc拟合样条线" class="level2">
+<h2 class="anchored" data-anchor-id="基于pymc拟合样条线">5.5. 基于PyMC拟合样条线</h2>
+<p>以下使用来自加州大学欧文分校机器学习存储库的自行车共享系统的数据集。我们将估计24小时周期内各小时单车出租数量。</p>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(<span class="st">"../data/bikes_hour.csv"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>data.sort_values(by<span class="op">=</span><span class="st">"hour"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># We standardize the response variable</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>data_cnt_om <span class="op">=</span> data[<span class="st">"count"</span>].mean()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>data_cnt_os <span class="op">=</span> data[<span class="st">"count"</span>].std()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>data[<span class="st">"count_normalized"</span>] <span class="op">=</span> (data[<span class="st">"count"</span>] <span class="op">-</span> data_cnt_om) <span class="op">/</span> data_cnt_os</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove data, you may later try to refit the model to the whole data</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data[::<span class="dv">50</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, data.count_normalized, <span class="st">"o"</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"hour"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"count_normalized"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<pre><code>Text(0, 0.5, 'count_normalized')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-7-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>上图看起来，不同时间段单车出租数量的分布不同，因此我们可以使用样条线来拟合这些数据。我们选择6个节点来均分：</p>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>num_knots <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>knot_list <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">23</span>, num_knots<span class="op">+</span><span class="dv">2</span>)[<span class="dv">1</span>:<span class="op">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>然后使用 Patsy 定义和构建设计矩阵</p>
+<div class="cell" data-execution_count="125">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> dmatrix(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bs(cnt, knots=knots, degree=3, include_intercept=True) - 1"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"cnt"</span>: data.hour.values, <span class="st">"knots"</span>: knot_list[<span class="dv">1</span>:<span class="op">-</span><span class="dv">1</span>]})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>统计模型为： <span class="math display">\[
+\begin{aligned}
+\begin{split}
+    \tau \sim&amp; \; \mathcal{HC}(1) \\
+    \boldsymbol{\beta} \sim&amp; \; \mathcal{N}(0, \tau) \\
+    \sigma \sim&amp; \; \mathcal{HN}(1) \\
+    Y \sim&amp; \; \mathcal{N}(\boldsymbol{B}(X)\boldsymbol{\beta},\sigma)
+\end{split}\end{aligned}
+\]</span></p>
+<p>以上样条线回归模型与线性模型很像。最困难的工作已经通过设计矩阵 <span class="math inline">\(\boldsymbol{B}\)</span> 和它的扩展特征空间解决了。</p>
+<div class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> splines:</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    τ <span class="op">=</span> pm.HalfCauchy(<span class="st">'τ'</span>, <span class="dv">1</span>) </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    β <span class="op">=</span> pm.Normal(<span class="st">"β"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>B.shape[<span class="dv">1</span>])</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    μ <span class="op">=</span> pm.Deterministic(<span class="st">"μ"</span>, pm.math.dot(np.asfortranarray(B), β))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.HalfNormal(<span class="st">"σ"</span>, <span class="dv">1</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> pm.Normal(<span class="st">"c"</span>, μ, σ, observed<span class="op">=</span>data[<span class="st">"count_normalized"</span>].values)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    idata_s <span class="op">=</span> pm.sample(<span class="dv">1000</span>, return_inferencedata<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [τ, β, σ]
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 20 seconds.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="8000" class="" max="8000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [8000/8000 00:04&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+</div>
+<div class="cell" data-execution_count="54">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pm.model_to_graphviz(splines)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="54">
+<p><img src="index_files/figure-html/cell-11-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="127">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>ax.set_prop_cycle(cycler(<span class="st">'color'</span>, viridish))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>posterior <span class="op">=</span> idata_s.posterior.stack(samples<span class="op">=</span>[<span class="st">'chain'</span>, <span class="st">'draw'</span>])</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, (B<span class="op">*</span>posterior[<span class="st">"β"</span>].mean(<span class="st">"samples"</span>).values <span class="op">*</span> data_cnt_os) <span class="op">+</span> data_cnt_om, lw<span class="op">=</span><span class="dv">2</span>, ls<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, posterior[<span class="st">"μ"</span>].mean(<span class="st">"samples"</span>) <span class="op">*</span> data_cnt_os <span class="op">+</span> data_cnt_om, <span class="st">'k'</span>, lw<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"hour"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"count"</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>ax.plot(knot_list, np.zeros_like(knot_list), <span class="st">'ko'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-12-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>使用重叠样条曲线及其不确定性来绘制数据，结果会更加明显。从这个图中我们不难看出，深夜时租赁自行车的数量是最低的。然后可能会随着人们起床去上班而增加。我们在 10 点左右出现第一个高峰，随后趋于平稳，或者可能略有下降，然后随着人们在 18 点左右上下班回家，出现第二个高峰，此后出现稳定下降。</p>
+<div class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, data[<span class="st">"count"</span>], <span class="st">"o"</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, zorder<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># we use data_cnt_os and data_cnt_om to rescale the cnt data and results</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, (posterior[<span class="st">"μ"</span>].mean(<span class="st">"samples"</span>)  <span class="op">*</span> data_cnt_os) <span class="op">+</span> data_cnt_om, color<span class="op">=</span><span class="st">"C4"</span>, lw<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>az.plot_hdi(data.hour, (posterior[<span class="st">"μ"</span>].T  <span class="op">*</span> data_cnt_os) <span class="op">+</span> data_cnt_om,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>            color<span class="op">=</span><span class="st">"C0"</span>, smooth<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"hour"</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"count"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="45">
+<pre><code>Text(0, 0.5, 'count')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-13-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>在这个自行车租赁的例子中，我们正在处理一个循环变量，也就是说第0小时等于第24小时。这对我们来说可能很明显，但是对我们的模型来说肯定不明显。Patsy提供了一个简单的解决方案来告诉我们的模型这个变量是循环的。我们可以使用<code>cc</code>来定义设计矩阵，而不是使用<code>bs</code>，这是一个<em>circular-aware</em>的立方样条。</p>
+</section>
+<section id="为样条线选择结-knots-和先验-prior" class="level2">
+<h2 class="anchored" data-anchor-id="为样条线选择结-knots-和先验-prior">5.6. 为样条线选择结 Knots 和先验 Prior</h2>
+<p>使用养条线建模是我们需要选择 knots 的数量和位置。我们依然可以使用 LOO 来比较哪种选择更好。以下分别使用 3，6，9，12 和 18 个 knots 来拟合数据，然后使用 LOO 比较它们。可以发现12个 Knots 效果最好。</p>
+<p><img src="knots_select_loo.jpg" class="img-fluid"></p>
+<p>一种有效的建议是根据分位数来划分 knots 而不是均分。比如 <code>knot_list = np.quantile(data.hour, np.linspace(0, 1, num_knots))</code> 。通过这种方式，我们将在数据较多的地方放置更多的 knots，在数据较少的地方放置更少的 knots。让数据更丰富部分的更灵活的近似。</p>
+<section id="样条的正则化先验" class="level3">
+<h3 class="anchored" data-anchor-id="样条的正则化先验">5.6.1. 样条的正则化先验</h3>
+<p>选择太少的节点可能会导致欠拟合，选择太多的节点可能会导致过拟合，因此我们可能希望使用<em>相当大</em>的节点数量，然后选择一个正则化先验。从样条的定义和上图我们可以看到，连续的 <span class="math inline">\(\boldsymbol{\beta}\)</span> 系数越接近彼此，得到的函数就会越平滑。想象一下，如果你在上图的设计矩阵中删除了两列连续的列，实际上将这些系数设置为 0，拟合将会变得不够<em>平滑</em>，因为我们在预测器中没有足够的信息来覆盖某个子区域（回想一下，样条是<em>局部的</em>）。因此，我们可以通过为 <span class="math inline">\(\boldsymbol{\beta}\)</span> 系数选择一个先验，使得 <span class="math inline">\(\beta_{i+1}\)</span> 的值与 <span class="math inline">\(\beta_{i}\)</span> 的值相关，从而得到更平滑的拟合回归线:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{split}
+\beta_i \sim&amp; \mathcal{N}(0, 1) \\
+\tau\sim&amp; \mathcal{N}(0,1) \\
+\beta \sim&amp; \mathcal{N}(\beta_{i-1}, \tau)
+\end{split}\end{aligned}
+\]</span></p>
+<p>通过 PyMC 我们可以用高斯随机过程来表达：</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{split}
+\tau\sim&amp; \mathcal{N}(0, 1) \\
+\beta \sim&amp; \mathcal{G}RW(\beta, \tau)
+\end{split}\end{aligned}
+\]</span></p>
+<p>我们基于高斯随机过程来建模：</p>
+<div class="cell" data-execution_count="129">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>knot_list <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">23</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> dmatrix(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bs(cnt, knots=knots, degree=3, include_intercept=True) - 1"</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"cnt"</span>: data.hour.values, <span class="st">"knots"</span>: knot_list},</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> splines_rw:</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    τ <span class="op">=</span> pm.HalfCauchy(<span class="st">'τ'</span>, <span class="dv">1</span>) </span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    β <span class="op">=</span> pm.GaussianRandomWalk(<span class="st">"β"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>B.shape[<span class="dv">1</span>])</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    μ <span class="op">=</span> pm.Deterministic(<span class="st">"μ"</span>, pm.math.dot(np.asfortranarray(B), β))</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.HalfNormal(<span class="st">"σ"</span>, <span class="dv">1</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> pm.Normal(<span class="st">"c"</span>, μ, σ, observed<span class="op">=</span>data[<span class="st">"count_normalized"</span>].values)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    idata_splines_rw <span class="op">=</span> pm.sample(<span class="dv">1000</span>)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    idata_splines_rw.extend(pm.sample_posterior_predictive(idata_splines_rw))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/pymc/distributions/timeseries.py:293: UserWarning: Initial distribution not specified, defaulting to `Normal.dist(0, 100)`.You can specify an init_dist manually to suppress this warning.
+  warnings.warn(
+Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [τ, β, σ]
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 21 seconds.
+Sampling: [c]</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="8000" class="" max="8000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [8000/8000 00:05&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="4000" class="" max="4000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [4000/4000 00:00&lt;00:00]
+    </div>
+    
+</div>
+</div>
+<p>对比普通正态先验：</p>
+<div class="cell" data-execution_count="139">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> wiggly:</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    τ <span class="op">=</span> pm.HalfCauchy(<span class="st">'τ'</span>, <span class="dv">1</span>) </span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    β <span class="op">=</span> pm.Normal(<span class="st">"β"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>B.shape[<span class="dv">1</span>])</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    μ <span class="op">=</span> pm.Deterministic(<span class="st">"μ"</span>, pm.math.dot(np.asfortranarray(B), β))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.HalfNormal(<span class="st">"σ"</span>, <span class="dv">1</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    c <span class="op">=</span> pm.Normal(<span class="st">"c"</span>, μ, σ, observed<span class="op">=</span>data[<span class="st">"count_normalized"</span>].values)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    idata_wiggly <span class="op">=</span> pm.sample(<span class="dv">1000</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    idata_wiggly.extend(pm.sample_posterior_predictive(idata_wiggly))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [τ, β, σ]
+Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 21 seconds.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="8000" class="" max="8000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [8000/8000 00:05&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+</div>
+<div class="cell" data-execution_count="150">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>_, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, data[<span class="st">"count"</span>], <span class="st">"o"</span>, alpha<span class="op">=</span><span class="fl">0.1</span>, zorder<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>wiggly_posterior <span class="op">=</span> (idata_wiggly.posterior[<span class="st">"μ"</span>] <span class="op">*</span> data_cnt_os) <span class="op">+</span> data_cnt_om</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>mean_f <span class="op">=</span> wiggly_posterior.mean(dim<span class="op">=</span>[<span class="st">'chain'</span>, <span class="st">'draw'</span>])</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, mean_f , color<span class="op">=</span><span class="st">"C0"</span>, lw<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>splines_rw <span class="op">=</span> (idata_splines_rw.posterior[<span class="st">"μ"</span>] <span class="op">*</span> data_cnt_os) <span class="op">+</span> data_cnt_om</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>mean_f <span class="op">=</span> splines_rw.mean(dim<span class="op">=</span>[<span class="st">'chain'</span>, <span class="st">'draw'</span>])</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>ax.plot(data.hour, mean_f, color<span class="op">=</span><span class="st">"C4"</span>, lw<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"hour"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"count"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="150">
+<pre><code>Text(0, 0.5, 'count')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-16-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<p>我们可以看到，具有平滑先验的样条模型 splines_rw 的样条均值函数（蓝线）比没有平滑先验的样条均值函数（黑色）要平滑，尽管我们承认差异似乎相当小。</p>
+</section>
+</section>
+<section id="用样条线对二氧化碳吸收建模" class="level1">
+<h1>5.7. 用样条线对二氧化碳吸收建模</h1>
+<p>一个实验测量了 12 种不同植物在不同条件下的二氧化碳吸收量。这里我们只探讨外部CO2浓度的影响，即环境中的CO2浓度如何影响不同植物对CO2的消耗。在 7 个 CO2 浓度下测量了每株植物的 CO2 吸收量，12 株植物中的每一株都有相同的 7 个值。让我们从加载和整理数据开始。</p>
+<div class="cell" data-execution_count="151">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>plants_CO2 <span class="op">=</span> pd.read_csv(<span class="st">"../data/CO2_uptake.csv"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>plant_names <span class="op">=</span> plants_CO2.Plant.unique()</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Index the first 7 CO2 measurements per plant</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>CO2_conc <span class="op">=</span> plants_CO2.conc.values[:<span class="dv">7</span>]</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get full array which are the 7 measurements above repeated 12 times</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>CO2_concs <span class="op">=</span> plants_CO2.conc.values</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>uptake <span class="op">=</span> plants_CO2.uptake.values</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>index <span class="op">=</span> <span class="bu">range</span>(<span class="dv">12</span>)</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>groups <span class="op">=</span> <span class="bu">len</span>(index)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="161">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>plants_CO2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="161">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Plant</th>
+<th data-quarto-table-cell-role="th">Type</th>
+<th data-quarto-table-cell-role="th">Treatment</th>
+<th data-quarto-table-cell-role="th">conc</th>
+<th data-quarto-table-cell-role="th">uptake</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Qn1</td>
+<td>Quebec</td>
+<td>nonchilled</td>
+<td>95</td>
+<td>16.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Qn1</td>
+<td>Quebec</td>
+<td>nonchilled</td>
+<td>175</td>
+<td>30.4</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Qn1</td>
+<td>Quebec</td>
+<td>nonchilled</td>
+<td>250</td>
+<td>34.8</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>Qn1</td>
+<td>Quebec</td>
+<td>nonchilled</td>
+<td>350</td>
+<td>37.2</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Qn1</td>
+<td>Quebec</td>
+<td>nonchilled</td>
+<td>500</td>
+<td>35.3</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">79</td>
+<td>Mc3</td>
+<td>Mississippi</td>
+<td>chilled</td>
+<td>250</td>
+<td>17.9</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">80</td>
+<td>Mc3</td>
+<td>Mississippi</td>
+<td>chilled</td>
+<td>350</td>
+<td>17.9</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">81</td>
+<td>Mc3</td>
+<td>Mississippi</td>
+<td>chilled</td>
+<td>500</td>
+<td>17.9</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">82</td>
+<td>Mc3</td>
+<td>Mississippi</td>
+<td>chilled</td>
+<td>675</td>
+<td>18.9</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">83</td>
+<td>Mc3</td>
+<td>Mississippi</td>
+<td>chilled</td>
+<td>1000</td>
+<td>19.9</td>
+</tr>
+</tbody>
+</table>
+
+<p>84 rows × 5 columns</p>
+</div>
+</div>
+</div>
+<p>我们将要拟合的第一个模型是具有单一响应曲线的模型，即假设所有12株植物的响应曲线是相同的。我们首先使用 Patsy 定义设计矩阵，就像我们之前做的那样。我们设置 <code>num_knots=2</code>，因为我们每株植物有7个观察值，所以相对较少的节点应该可以工作得很好。<code>CO2_concs</code> 是一个列表，值为 <code>[95, 175, 250, 350, 500, 675, 1000]</code>，每株植物重复一次，共12次。</p>
+<div class="cell" data-execution_count="158">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>num_knots <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>knot_list <span class="op">=</span> np.linspace(CO2_conc[<span class="dv">0</span>], CO2_conc[<span class="op">-</span><span class="dv">1</span>], num_knots<span class="op">+</span><span class="dv">2</span>)[<span class="dv">1</span>:<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>Bg <span class="op">=</span> dmatrix(</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bs(conc, knots=knots, degree=3, include_intercept=True) - 1"</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"conc"</span>: CO2_concs, <span class="st">"knots"</span>: knot_list},</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>这个问题看起来类似于前面章节的自行车租赁问题，因此我们可以开始应用相同的模型。</p>
+<div class="cell" data-execution_count="165">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> sp_global:</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    τ <span class="op">=</span> pm.HalfCauchy(<span class="st">'τ'</span>, <span class="dv">1</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    β <span class="op">=</span> pm.Normal(<span class="st">"β"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>Bg.shape[<span class="dv">1</span>])</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    μg <span class="op">=</span> pm.Deterministic(<span class="st">"μg"</span>, pm.math.dot(np.asfortranarray(Bg), β))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.HalfNormal(<span class="st">"σ"</span>, <span class="dv">1</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    up <span class="op">=</span> pm.Normal(<span class="st">"up"</span>, μg, σ, observed<span class="op">=</span>uptake)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    idata_sp_global <span class="op">=</span> pm.sample(<span class="dv">3000</span>, tune<span class="op">=</span><span class="dv">2000</span>, return_inferencedata<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [τ, β, σ]
+Sampling 4 chains for 2_000 tune and 3_000 draw iterations (8_000 + 12_000 draws total) took 29 seconds.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="20000" class="" max="20000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [20000/20000 00:11&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+</div>
+<div class="cell" data-execution_count="170">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pm.model_to_graphviz(sp_global)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="170">
+<p><img src="index_files/figure-html/cell-21-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="166">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">4</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>), sharey<span class="op">=</span><span class="va">True</span>, sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>μsg <span class="op">=</span> idata_sp_global.posterior.stack(draws<span class="op">=</span>(<span class="st">"chain"</span>, <span class="st">"draw"</span>))[<span class="st">"μg"</span>].values.T</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>μsg_mean <span class="op">=</span> μsg.mean(<span class="dv">0</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> count, (idx, ax) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">84</span>, <span class="dv">7</span>), axes.ravel())):</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, uptake[idx:idx<span class="op">+</span><span class="dv">7</span>], <span class="st">'.'</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, μsg_mean[idx:idx<span class="op">+</span><span class="dv">7</span>], <span class="st">"k"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)<span class="op">;</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    az.plot_hdi(CO2_conc, μsg[:,idx:idx<span class="op">+</span><span class="dv">7</span>], color<span class="op">=</span><span class="st">"C2"</span>, smooth<span class="op">=</span><span class="va">False</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    ax.set_title(plant_names[count])</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>fig.text(<span class="fl">0.4</span>, <span class="op">-</span><span class="fl">0.05</span>, <span class="st">"CO2 concentration"</span>, size<span class="op">=</span><span class="dv">18</span>)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>fig.text(<span class="op">-</span><span class="fl">0.03</span>, <span class="fl">0.4</span>, <span class="st">"CO2 uptake"</span>, size<span class="op">=</span><span class="dv">18</span>, rotation<span class="op">=</span><span class="dv">90</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="166">
+<pre><code>Text(-0.03, 0.4, 'CO2 uptake')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-22-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>上图中黑点代表了植物在七个CO₂浓度下测量的CO₂吸收量。黑线是代码块 sp_global 中模型的平均样条拟合，灰色阴影曲线代表该拟合的94% HDI区间。</p>
+<p>现在让我们尝试使用每个植物具有不同响应的模型，为此我们用 <code>CO2_conc = [95,  175,  250,  350,  500,  675, 1000]</code> 定义设计矩阵 <code>Bi</code>，<code>Bi</code> 是 <span class="math inline">\(7 \times 7\)</span> 矩阵，而 <code>Bg</code> 是 <span class="math inline">\(84 \times 7\)</span> 矩阵.</p>
+<div class="cell" data-execution_count="177">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>Bi <span class="op">=</span> dmatrix(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bs(conc, knots=knots, degree=3, include_intercept=True) - 1"</span>,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"conc"</span>: CO2_conc, <span class="st">"knots"</span>: knot_list})</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> sp_individual:</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    τ <span class="op">=</span> pm.HalfCauchy(<span class="st">'τ'</span>, <span class="dv">1</span>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    βi <span class="op">=</span> pm.Normal(<span class="st">"βi"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>(Bi.shape[<span class="dv">1</span>], groups))</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    μi <span class="op">=</span> pm.Deterministic(<span class="st">"μi"</span>, pm.math.dot(np.asfortranarray(Bi), βi))</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.HalfNormal(<span class="st">"σ"</span>, <span class="dv">1</span>)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    up <span class="op">=</span> pm.Normal(<span class="st">"up"</span>, μi[:,np.asarray(index)].T.ravel(), σ, observed<span class="op">=</span>uptake)</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    idata_sp_individual <span class="op">=</span> pm.sample(<span class="dv">3000</span>, return_inferencedata<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [τ, βi, σ]
+Sampling 4 chains for 1_000 tune and 3_000 draw iterations (4_000 + 12_000 draws total) took 42 seconds.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="16000" class="" max="16000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [16000/16000 00:27&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+</div>
+<div class="cell" data-execution_count="178">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>pm.model_to_graphviz(sp_individual)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="178">
+<p><img src="index_files/figure-html/cell-24-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="179">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">4</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>), sharey<span class="op">=</span><span class="va">True</span>, sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>μsi <span class="op">=</span> idata_sp_individual.posterior.stack(draws<span class="op">=</span>(<span class="st">"chain"</span>, <span class="st">"draw"</span>))[<span class="st">"μi"</span>].values.T</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>μsi_mean <span class="op">=</span> μsi.mean(<span class="dv">0</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> count, (idx, ax) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">84</span>, <span class="dv">7</span>), axes.ravel())):</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, uptake[idx:idx<span class="op">+</span><span class="dv">7</span>], <span class="st">'.'</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, μsi_mean[index[count]], <span class="st">"k"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    az.plot_hdi(CO2_conc, μsi[:,index[count]], color<span class="op">=</span><span class="st">"C2"</span>, smooth<span class="op">=</span><span class="va">False</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    ax.set_title(plant_names[count])</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>fig.text(<span class="fl">0.4</span>, <span class="op">-</span><span class="fl">0.075</span>, <span class="st">"CO2 concentration"</span>, size<span class="op">=</span><span class="dv">18</span>)</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>fig.text(<span class="op">-</span><span class="fl">0.03</span>, <span class="fl">0.4</span>, <span class="st">"CO2 uptake"</span>, size<span class="op">=</span><span class="dv">18</span>, rotation<span class="op">=</span><span class="dv">90</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="179">
+<pre><code>Text(-0.03, 0.4, 'CO2 uptake')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-25-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>我们也可以混合使用前两个模型。如果我们想要估计12株植物的全局趋势以及各自的拟合，这可能会很有趣。<code>sp_mix</code> 模型使用了之前定义的设计矩阵 <code>Bg</code> 和 <code>Bi</code>。</p>
+<div class="cell" data-execution_count="185">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> sp_mix:</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    τ <span class="op">=</span> pm.HalfCauchy(<span class="st">'τ'</span>, <span class="dv">1</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    β <span class="op">=</span> pm.Normal(<span class="st">"β"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>Bg.shape[<span class="dv">1</span>])</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    μg <span class="op">=</span> pm.Deterministic(<span class="st">"μg"</span>, pm.math.dot(np.asfortranarray(Bg), β))</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    βi <span class="op">=</span> pm.Normal(<span class="st">"βi"</span>, mu<span class="op">=</span><span class="dv">0</span>, sigma<span class="op">=</span>τ, shape<span class="op">=</span>(Bi.shape[<span class="dv">1</span>], groups))</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    μi <span class="op">=</span> pm.Deterministic(<span class="st">"μi"</span>, pm.math.dot(np.asfortranarray(Bi), βi))</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    σ <span class="op">=</span> pm.HalfNormal(<span class="st">"σ"</span>, <span class="dv">1</span>)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    up <span class="op">=</span> pm.Normal(<span class="st">"up"</span>, μg<span class="op">+</span>μi[:,np.asarray(index)].T.ravel(), σ, observed<span class="op">=</span>uptake)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    idata_sp_mix <span class="op">=</span> pm.sample(<span class="dv">3000</span>, return_inferencedata<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [τ, β, βi, σ]
+Sampling 4 chains for 1_000 tune and 3_000 draw iterations (4_000 + 12_000 draws total) took 70 seconds.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+</div>
+<div class="cell-output cell-output-display">
+
+    <div>
+      <progress value="16000" class="" max="16000" style="width:300px; height:20px; vertical-align: middle;"></progress>
+      100.00% [16000/16000 00:53&lt;00:00 Sampling 4 chains, 0 divergences]
+    </div>
+    
+</div>
+</div>
+<div class="cell" data-execution_count="186">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pm.model_to_graphviz(sp_mix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="186">
+<p><img src="index_files/figure-html/cell-27-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="187">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">4</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>), sharey<span class="op">=</span><span class="va">True</span>, sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>μsg <span class="op">=</span> idata_sp_mix.posterior.stack(draws<span class="op">=</span>(<span class="st">"chain"</span>, <span class="st">"draw"</span>))[<span class="st">"μg"</span>].values.T</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>μsg_mean <span class="op">=</span> μsg.mean(<span class="dv">0</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>μsi <span class="op">=</span> idata_sp_mix.posterior.stack(draws<span class="op">=</span>(<span class="st">"chain"</span>, <span class="st">"draw"</span>))[<span class="st">"μi"</span>].values.T</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>μsi_mean <span class="op">=</span> μsi.mean(<span class="dv">0</span>)</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> count, (idx, ax) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">84</span>, <span class="dv">7</span>), axes.ravel())):</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, uptake[idx:idx<span class="op">+</span><span class="dv">7</span>], <span class="st">'.'</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, μsg_mean[idx:idx<span class="op">+</span><span class="dv">7</span>]<span class="op">+</span>μsi_mean[index[count]], <span class="st">"C4"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>    az.plot_hdi(CO2_conc, μsg[:,idx:idx<span class="op">+</span><span class="dv">7</span>]<span class="op">+</span>μsi[:,index[count]], color<span class="op">=</span><span class="st">"C4"</span>, smooth<span class="op">=</span><span class="va">False</span>,ax<span class="op">=</span>ax)</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, μsg_mean[idx:idx<span class="op">+</span><span class="dv">7</span>], <span class="st">"k"</span>)</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>    az.plot_hdi(CO2_conc, μsg[:,idx:idx<span class="op">+</span><span class="dv">7</span>], color<span class="op">=</span><span class="st">"k"</span>, smooth<span class="op">=</span><span class="va">False</span>,ax<span class="op">=</span>ax)</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>    ax.plot(CO2_conc, μsi_mean[index[count]], <span class="st">"k"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>    az.plot_hdi(CO2_conc, μsi[:,index[count]], color<span class="op">=</span><span class="st">"C2"</span>, smooth<span class="op">=</span><span class="va">False</span>,ax<span class="op">=</span>ax)</span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>    ax.set_title(plant_names[count])</span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a>fig.text(<span class="fl">0.4</span>, <span class="op">-</span><span class="fl">0.075</span>, <span class="st">"CO2 concentration"</span>, size<span class="op">=</span><span class="dv">18</span>)</span>
+<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a>fig.text(<span class="op">-</span><span class="fl">0.03</span>, <span class="fl">0.4</span>, <span class="st">"CO2 uptake"</span>, size<span class="op">=</span><span class="dv">18</span>, rotation<span class="op">=</span><span class="dv">90</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)
+/Users/admin/blog/rock_blog/env/lib/python3.11/site-packages/arviz/plots/hdiplot.py:160: FutureWarning: hdi currently interprets 2d data as (draw, shape) but this will change in a future release to (chain, draw) for coherence with other functions
+  hdi_data = hdi(y, hdi_prob=hdi_prob, circular=circular, multimodal=False, **hdi_kwargs)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="187">
+<pre><code>Text(-0.03, 0.4, 'CO2 uptake')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="index_files/figure-html/cell-28-output-3.png" class="img-fluid"></p>
+</div>
+</div>
+<p>上图中蓝线是 sp_mix 中模型的平均样条拟合，灰色阴影曲线代表该拟合的94% HDI区间。这个拟合被分解为两个部分。黑线和深灰色带代表全局贡献，灰色和浅灰色带代表从全局贡献中的偏差。蓝线和蓝色带是全局趋势和其偏差的总和。</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
